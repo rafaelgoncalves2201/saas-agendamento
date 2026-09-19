@@ -1,0 +1,112 @@
+import { PrismaService } from '../../database/prisma.service';
+import { CreatePlanDto, UpdatePlanDto } from './dto/plan.dto';
+export declare class PlansService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    listPublicPlans(): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        slug: string;
+        description: string;
+        priceMonthly: import("@prisma/client/runtime/library").Decimal;
+        priceYearly: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        maxProfessionals: number;
+        maxAppointmentsPerMonth: number;
+        maxWhatsappMessages: number;
+        features: import("@prisma/client/runtime/library").JsonValue;
+        sortOrder: number;
+    }[]>;
+    listAllPlans(): Promise<({
+        _count: {
+            subscriptions: number;
+        };
+    } & {
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        slug: string;
+        description: string;
+        priceMonthly: import("@prisma/client/runtime/library").Decimal;
+        priceYearly: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        maxProfessionals: number;
+        maxAppointmentsPerMonth: number;
+        maxWhatsappMessages: number;
+        features: import("@prisma/client/runtime/library").JsonValue;
+        sortOrder: number;
+    })[]>;
+    getPlan(id: string): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        slug: string;
+        description: string;
+        priceMonthly: import("@prisma/client/runtime/library").Decimal;
+        priceYearly: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        maxProfessionals: number;
+        maxAppointmentsPerMonth: number;
+        maxWhatsappMessages: number;
+        features: import("@prisma/client/runtime/library").JsonValue;
+        sortOrder: number;
+    }>;
+    createPlan(dto: CreatePlanDto): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        slug: string;
+        description: string;
+        priceMonthly: import("@prisma/client/runtime/library").Decimal;
+        priceYearly: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        maxProfessionals: number;
+        maxAppointmentsPerMonth: number;
+        maxWhatsappMessages: number;
+        features: import("@prisma/client/runtime/library").JsonValue;
+        sortOrder: number;
+    }>;
+    updatePlan(id: string, dto: UpdatePlanDto): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        slug: string;
+        description: string;
+        priceMonthly: import("@prisma/client/runtime/library").Decimal;
+        priceYearly: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        maxProfessionals: number;
+        maxAppointmentsPerMonth: number;
+        maxWhatsappMessages: number;
+        features: import("@prisma/client/runtime/library").JsonValue;
+        sortOrder: number;
+    }>;
+    deletePlan(id: string): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        slug: string;
+        description: string;
+        priceMonthly: import("@prisma/client/runtime/library").Decimal;
+        priceYearly: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        maxProfessionals: number;
+        maxAppointmentsPerMonth: number;
+        maxWhatsappMessages: number;
+        features: import("@prisma/client/runtime/library").JsonValue;
+        sortOrder: number;
+    }>;
+}

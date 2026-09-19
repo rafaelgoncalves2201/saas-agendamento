@@ -1,0 +1,86 @@
+import { PrismaService } from '../../database/prisma.service';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+export declare class ProductsService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    listProducts(companyId: string): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        sortOrder: number;
+        companyId: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        category: string | null;
+        imageUrl: string | null;
+        promotionalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        stock: number | null;
+        sku: string | null;
+    }[]>;
+    getProduct(companyId: string, id: string): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        sortOrder: number;
+        companyId: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        category: string | null;
+        imageUrl: string | null;
+        promotionalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        stock: number | null;
+        sku: string | null;
+    }>;
+    createProduct(companyId: string, dto: CreateProductDto): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        sortOrder: number;
+        companyId: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        category: string | null;
+        imageUrl: string | null;
+        promotionalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        stock: number | null;
+        sku: string | null;
+    }>;
+    updateProduct(companyId: string, id: string, dto: UpdateProductDto): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        sortOrder: number;
+        companyId: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        category: string | null;
+        imageUrl: string | null;
+        promotionalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        stock: number | null;
+        sku: string | null;
+    }>;
+    deleteProduct(companyId: string, id: string): Promise<{
+        id: string;
+        name: string;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        description: string | null;
+        sortOrder: number;
+        companyId: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        category: string | null;
+        imageUrl: string | null;
+        promotionalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        stock: number | null;
+        sku: string | null;
+    }>;
+}
