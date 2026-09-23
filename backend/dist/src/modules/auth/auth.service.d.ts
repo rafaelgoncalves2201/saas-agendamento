@@ -11,35 +11,41 @@ export declare class AuthService {
         memberships: ({
             company: {
                 id: string;
-                email: string;
                 name: string;
-                phone: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
                 slug: string;
                 document: string | null;
+                email: string;
+                phone: string;
                 logoUrl: string | null;
                 coverUrl: string | null;
                 settings: import("@prisma/client/runtime/library").JsonValue;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                mpAccessToken: string | null;
+                mpRefreshToken: string | null;
+                mpUserId: string | null;
+                mpExpiresIn: number | null;
+                mpTokenType: string | null;
+                mpPublicKey: string | null;
             };
         } & {
             id: string;
-            role: import(".prisma/client").$Enums.Role;
             createdAt: Date;
             companyId: string;
             userId: string;
+            role: import(".prisma/client").$Enums.Role;
         })[];
     } & {
         id: string;
-        email: string;
         name: string;
-        passwordHash: string;
+        email: string;
         phone: string | null;
-        role: import(".prisma/client").$Enums.Role;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
+        passwordHash: string;
+        role: import(".prisma/client").$Enums.Role;
     }) | null>;
     login(loginDto: LoginDto): Promise<{
         user: {
@@ -50,17 +56,23 @@ export declare class AuthService {
             companyId: string | null;
             company: {
                 id: string;
-                email: string;
                 name: string;
-                phone: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
                 slug: string;
                 document: string | null;
+                email: string;
+                phone: string;
                 logoUrl: string | null;
                 coverUrl: string | null;
                 settings: import("@prisma/client/runtime/library").JsonValue;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                mpAccessToken: string | null;
+                mpRefreshToken: string | null;
+                mpUserId: string | null;
+                mpExpiresIn: number | null;
+                mpTokenType: string | null;
+                mpPublicKey: string | null;
             };
         };
         accessToken: string;
@@ -77,17 +89,23 @@ export declare class AuthService {
             companyId: string;
             company: {
                 id: string;
-                email: string;
                 name: string;
-                phone: string;
-                isActive: boolean;
-                createdAt: Date;
-                updatedAt: Date;
                 slug: string;
                 document: string | null;
+                email: string;
+                phone: string;
                 logoUrl: string | null;
                 coverUrl: string | null;
                 settings: import("@prisma/client/runtime/library").JsonValue;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                mpAccessToken: string | null;
+                mpRefreshToken: string | null;
+                mpUserId: string | null;
+                mpExpiresIn: number | null;
+                mpTokenType: string | null;
+                mpPublicKey: string | null;
             };
         };
         accessToken: string;

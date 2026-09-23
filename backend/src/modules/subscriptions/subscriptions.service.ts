@@ -77,6 +77,14 @@ export class SubscriptionsService {
         ? addYears(currentPeriodStart, 1)
         : addMonths(currentPeriodStart, 1);
 
+    const currentSub = await this.prisma.subscription.findUnique({
+      where: { companyId },
+    });
+
+    // Ao contratar um plano oficial, a assinatura entra em INCOMPLETE (aguardando pagamento).
+    // O período de teste gratuito (TRIAL) é apenas para o cadastro inicial e é encerrado na contratação de um plano.
+    const initialStatus = SubscriptionStatus.INCOMPLETE;
+
     // 3. Salvar ou atualizar assinatura no banco de dados
     const subscription = await this.prisma.subscription.upsert({
       where: { companyId },
@@ -85,12 +93,13 @@ export class SubscriptionsService {
         provider: 'ASAAS',
         providerCustomerId: customer.id,
         providerSubscriptionId: asaasSub.id,
-        status: SubscriptionStatus.ACTIVE, // Em sandbox ativa imediatamente para testes
+        status: initialStatus,
         billingCycle: dto.billingCycle,
         amount,
         nextDueDate: new Date(dueDate),
         currentPeriodStart,
         currentPeriodEnd,
+        trialEndsAt: null,
         cancelAtPeriodEnd: false,
       },
       create: {
@@ -99,39 +108,41 @@ export class SubscriptionsService {
         provider: 'ASAAS',
         providerCustomerId: customer.id,
         providerSubscriptionId: asaasSub.id,
-        status: SubscriptionStatus.ACTIVE,
+        status: initialStatus,
         billingCycle: dto.billingCycle,
         amount,
         nextDueDate: new Date(dueDate),
         currentPeriodStart,
         currentPeriodEnd,
+        trialEndsAt: null,
       },
       include: {
         plan: true,
       },
     });
 
-    // 4. Criar registro de pagamento inicial
+    // 4. Criar registro de pagamento inicial com status PENDING (aguardando pagamento)
     const payment = await this.prisma.payment.create({
       data: {
         companyId,
         subscriptionId: subscription.id,
         providerPaymentId: asaasSub.firstPaymentId || `pay_${Date.now()}`,
         amount,
-        status: PaymentStatus.CONFIRMED,
+        status: PaymentStatus.PENDING,
         paymentMethod: dto.paymentMethod,
         dueDate: new Date(dueDate),
-        paidAt: new Date(),
+        paidAt: null,
         invoiceUrl: asaasSub.paymentUrl || null,
       },
     });
 
     return {
       success: true,
-      message: 'Assinatura contratada com sucesso!',
+      message: 'Cobrança gerada com sucesso! Aguardando compensação do pagamento.',
       subscription,
       payment,
       paymentUrl: asaasSub.paymentUrl,
+      pixQrCode: asaasSub.pixQrCode,
     };
   }
 
@@ -271,6 +282,102 @@ export class SubscriptionsService {
         canceledAt: new Date(),
       },
     });
+  }
+
+  // =========================================================================
+  // SINCRONIZAÇÃO ATIVA COM O ASAAS (CONSULTA DIRETA À API)
+  // Garante a ativação mesmo se o Webhook não estiver configurado!
+  // =========================================================================
+  async syncSubscription(companyId: string) {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { companyId },
+      include: { plan: true },
+    });
+
+    if (!sub || !sub.providerSubscriptionId) {
+      throw new NotFoundException('Nenhuma assinatura Asaas vinculada a esta empresa');
+    }
+
+    // 1. Consulta faturas da assinatura diretamente na API oficial do Asaas
+    const payments = await this.asaasProvider.getSubscriptionPayments(sub.providerSubscriptionId);
+
+    // 2. Procura pagamento compensado/recebido
+    const confirmedPayment = payments.find(
+      (p: any) => p.status === 'RECEIVED' || p.status === 'CONFIRMED',
+    );
+
+    if (confirmedPayment) {
+      const nextPeriodEnd =
+        sub.billingCycle === BillingCycle.YEARLY
+          ? addYears(new Date(), 1)
+          : addMonths(new Date(), 1);
+
+      // Ativar a assinatura no banco de dados local
+      const updatedSub = await this.prisma.subscription.update({
+        where: { id: sub.id },
+        data: {
+          status: SubscriptionStatus.ACTIVE,
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: nextPeriodEnd,
+        },
+        include: { plan: true },
+      });
+
+      // Atualizar status do pagamento
+      await this.prisma.payment.upsert({
+        where: { providerPaymentId: confirmedPayment.id },
+        update: {
+          status: PaymentStatus.CONFIRMED,
+          paidAt: confirmedPayment.clientPaymentDate
+            ? new Date(confirmedPayment.clientPaymentDate)
+            : new Date(),
+        },
+        create: {
+          companyId,
+          subscriptionId: sub.id,
+          providerPaymentId: confirmedPayment.id,
+          amount: confirmedPayment.value,
+          status: PaymentStatus.CONFIRMED,
+          paymentMethod:
+            confirmedPayment.billingType === 'PIX'
+              ? PaymentMethod.PIX
+              : PaymentMethod.CREDIT_CARD,
+          dueDate: new Date(confirmedPayment.dueDate),
+          paidAt: new Date(),
+          invoiceUrl: confirmedPayment.invoiceUrl || null,
+        },
+      });
+
+      return {
+        synced: true,
+        active: true,
+        message: 'Pagamento confirmado pelo banco! Seu plano está 100% ativado.',
+        subscription: updatedSub,
+      };
+    }
+
+    // Se ainda não consta como recebido no Asaas
+    const latestPayment = payments[0] || null;
+    let pixQrCode = null;
+    if (latestPayment && latestPayment.billingType === 'PIX' && latestPayment.id) {
+      pixQrCode = await this.asaasProvider.getPixQrCode(latestPayment.id);
+    }
+
+    return {
+      synced: true,
+      active: sub.status === SubscriptionStatus.ACTIVE,
+      message: 'Pagamento ainda não identificado pelo banco. Se realizou via Pix agora, aguarde até 30 segundos e verifique novamente.',
+      subscription: sub,
+      latestPayment: latestPayment
+        ? {
+            id: latestPayment.id,
+            status: latestPayment.status,
+            value: latestPayment.value,
+            invoiceUrl: latestPayment.invoiceUrl,
+            pixQrCode,
+          }
+        : null,
+    };
   }
 }
 

@@ -17,6 +17,7 @@ import { DeleteConfirmationModal } from '../../components/DeleteConfirmationModa
 
 export const AppointmentsPage: React.FC = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [professionals, setProfessionals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 
@@ -34,6 +35,13 @@ export const AppointmentsPage: React.FC = () => {
   const [appointmentToDelete, setAppointmentToDelete] = useState<any | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Reschedule state
+  const [appointmentToReschedule, setAppointmentToReschedule] = useState<any | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [rescheduleTime, setRescheduleTime] = useState('');
+  const [rescheduleProfId, setRescheduleProfId] = useState('');
+  const [rescheduling, setRescheduling] = useState(false);
+
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const showFeedback = (type: 'success' | 'error', text: string) => {
@@ -44,8 +52,14 @@ export const AppointmentsPage: React.FC = () => {
   const fetchAppointments = () => {
     setLoading(true);
     const query = statusFilter !== 'ALL' ? `?status=${statusFilter}` : '';
-    api.get(`/appointments${query}`)
-      .then((res) => setAppointments(res.data))
+    Promise.all([
+      api.get(`/appointments${query}`),
+      api.get('/professionals'),
+    ])
+      .then(([appRes, profRes]) => {
+        setAppointments(appRes.data);
+        setProfessionals(profRes.data);
+      })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   };
@@ -53,6 +67,41 @@ export const AppointmentsPage: React.FC = () => {
   useEffect(() => {
     fetchAppointments();
   }, [statusFilter]);
+
+  const handleOpenReschedule = (app: any) => {
+    setAppointmentToReschedule(app);
+    const start = new Date(app.startDateTime);
+    const yyyy = start.getFullYear();
+    const mm = String(start.getMonth() + 1).padStart(2, '0');
+    const dd = String(start.getDate()).padStart(2, '0');
+    const hh = String(start.getHours()).padStart(2, '0');
+    const min = String(start.getMinutes()).padStart(2, '0');
+    setRescheduleDate(`${yyyy}-${mm}-${dd}`);
+    setRescheduleTime(`${hh}:${min}`);
+    setRescheduleProfId(app.professionalId);
+  };
+
+  const handleConfirmReschedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!appointmentToReschedule || !rescheduleDate || !rescheduleTime) return;
+    setRescheduling(true);
+
+    try {
+      const combinedDateTime = new Date(`${rescheduleDate}T${rescheduleTime}:00`).toISOString();
+      await api.patch(`/appointments/${appointmentToReschedule.id}/reschedule`, {
+        startDateTime: combinedDateTime,
+        professionalId: rescheduleProfId || undefined,
+      });
+
+      setAppointmentToReschedule(null);
+      showFeedback('success', 'Atendimento reagendado com sucesso! O cliente foi notificado no WhatsApp com o novo horário.');
+      fetchAppointments();
+    } catch (err: any) {
+      showFeedback('error', err.response?.data?.message || 'Erro ao reagendar atendimento.');
+    } finally {
+      setRescheduling(false);
+    }
+  };
 
   const handleConfirmApprove = async () => {
     if (!appointmentToApprove) return;
@@ -182,10 +231,10 @@ export const AppointmentsPage: React.FC = () => {
           <Loader2 className="animate-spin text-indigo-600" size={32} />
         </div>
       ) : appointments.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <CalendarIcon className="mx-auto text-slate-300 mb-3" size={48} />
-          <h3 className="font-semibold text-slate-800 text-base">Nenhum agendamento encontrado</h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-xs">
+          <CalendarIcon className="mx-auto text-slate-300 dark:text-slate-600 mb-3" size={48} />
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100 text-base">Nenhum agendamento encontrado</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
             {statusFilter === 'ALL'
               ? 'Compartilhe o link da sua página pública para que seus clientes comecem a agendar horários online.'
               : `Nenhum agendamento com status "${statusFilter}".`}
@@ -296,19 +345,29 @@ export const AppointmentsPage: React.FC = () => {
 
                 {/* Actions */}
                 {app.status === 'PENDING' && (
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <button
-                      onClick={() => {
-                        setAppointmentToCancel(app);
-                        setCancellationReason('Sinal Pix não enviado no prazo estipulado');
-                      }}
-                      className="px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                    >
-                      Recusar Horário
-                    </button>
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setAppointmentToCancel(app);
+                          setCancellationReason('Sinal Pix não enviado no prazo estipulado');
+                        }}
+                        className="px-2.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Recusar
+                      </button>
+                      <button
+                        onClick={() => handleOpenReschedule(app)}
+                        className="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors cursor-pointer flex items-center gap-1 border border-indigo-200 dark:border-indigo-800"
+                        title="Reagendar horário"
+                      >
+                        <Clock size={12} />
+                        <span>Reagendar</span>
+                      </button>
+                    </div>
                     <button
                       onClick={() => setAppointmentToApprove(app)}
-                      className="px-3.5 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shadow-emerald-200 cursor-pointer"
+                      className="px-3.5 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shadow-emerald-200 dark:shadow-none cursor-pointer"
                     >
                       <CheckCircle2 size={14} />
                       <span>Aprovar Sinal</span>
@@ -317,19 +376,29 @@ export const AppointmentsPage: React.FC = () => {
                 )}
 
                 {app.status === 'CONFIRMED' && (
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => {
-                        setAppointmentToCancel(app);
-                        setCancellationReason('');
-                      }}
-                      className="px-3.5 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                    >
-                      Cancelar
-                    </button>
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          setAppointmentToCancel(app);
+                          setCancellationReason('');
+                        }}
+                        className="px-2.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => handleOpenReschedule(app)}
+                        className="px-2.5 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors cursor-pointer flex items-center gap-1 border border-indigo-200 dark:border-indigo-800"
+                        title="Reagendar horário"
+                      >
+                        <Clock size={12} />
+                        <span>Reagendar</span>
+                      </button>
+                    </div>
                     <button
                       onClick={() => setAppointmentToComplete(app)}
-                      className="px-4 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shadow-indigo-200 cursor-pointer"
+                      className="px-3.5 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shadow-indigo-200 dark:shadow-none cursor-pointer"
                     >
                       <CheckCircle size={14} />
                       <span>Concluir</span>
@@ -415,6 +484,102 @@ export const AppointmentsPage: React.FC = () => {
         loading={deleting}
         confirmButtonText="Excluir Permanentemente"
       />
+
+      {/* Modal de Reagendamento de Atendimento */}
+      {appointmentToReschedule && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+                  <CalendarIcon size={16} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base">Reagendar Atendimento</h3>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                    {appointmentToReschedule.client?.name} — {appointmentToReschedule.service?.name}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setAppointmentToReschedule(null)}
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleConfirmReschedule} className="space-y-4 text-xs">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
+                <p>
+                  <strong>Horário Atual:</strong> {new Date(appointmentToReschedule.startDateTime).toLocaleDateString('pt-BR')} às{' '}
+                  {new Date(appointmentToReschedule.startDateTime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+                <p>
+                  <strong>Duração do Procedimento:</strong> {appointmentToReschedule.service?.durationMinutes} min
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Nova Data *</label>
+                <input
+                  type="date"
+                  required
+                  min={new Date().toISOString().slice(0, 10)}
+                  value={rescheduleDate}
+                  onChange={(e) => setRescheduleDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Novo Horário de Início *</label>
+                <input
+                  type="time"
+                  required
+                  value={rescheduleTime}
+                  onChange={(e) => setRescheduleTime(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-mono focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold"
+                />
+              </div>
+
+              {professionals.length > 1 && (
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Profissional Responsável</label>
+                  <select
+                    value={rescheduleProfId}
+                    onChange={(e) => setRescheduleProfId(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  >
+                    {professionals.map((prof) => (
+                      <option key={prof.id} value={prof.id}>
+                        {prof.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setAppointmentToReschedule(null)}
+                  className="px-3.5 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl font-medium cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={rescheduling}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-sm shadow-indigo-200 dark:shadow-none cursor-pointer disabled:opacity-50"
+                >
+                  {rescheduling ? <Loader2 className="animate-spin" size={14} /> : 'Confirmar Reagendamento'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

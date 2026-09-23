@@ -33,6 +33,9 @@ let SubscriptionsController = class SubscriptionsController {
     getFeatures(req) {
         return this.subscriptionsService.getFeatures(req.companyId);
     }
+    syncSubscription(req) {
+        return this.subscriptionsService.syncSubscription(req.companyId);
+    }
     cancelSubscription(req) {
         return this.subscriptionsService.cancelSubscription(req.companyId);
     }
@@ -66,6 +69,16 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], SubscriptionsController.prototype, "getFeatures", null);
+__decorate([
+    (0, common_1.Post)('sync'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, roles_decorator_1.Roles)(client_1.Role.COMPANY_ADMIN, client_1.Role.SUPER_ADMIN),
+    (0, swagger_1.ApiOperation)({ summary: 'Sincronizar status da assinatura diretamente com o gateway Asaas' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], SubscriptionsController.prototype, "syncSubscription", null);
 __decorate([
     (0, common_1.Post)('cancel'),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),

@@ -21,11 +21,14 @@ import { ProductsPage } from './pages/products/ProductsPage';
 import { SubscriptionPage } from './pages/subscription/SubscriptionPage';
 import { CompanySettingsPage } from './pages/settings/CompanySettingsPage';
 import { CouponsPage } from './pages/coupons/CouponsPage';
+import { WaitlistPage } from './pages/waitlist/WaitlistPage';
+import { ReviewsPage } from './pages/reviews/ReviewsPage';
 
 // Super Admin Pages
 import { SuperAdminDashboardPage } from './pages/admin/SuperAdminDashboardPage';
 import { SuperAdminCompaniesPage } from './pages/admin/SuperAdminCompaniesPage';
 import { SuperAdminPlansPage } from './pages/admin/SuperAdminPlansPage';
+import { SuperAdminUsersPage } from './pages/admin/SuperAdminUsersPage';
 
 // Public Customer Pages
 import { PublicBookingPage } from './pages/public/PublicBookingPage';
@@ -85,6 +88,8 @@ export function App() {
           <Route path="professionals" element={<ProfessionalsPage />} />
           <Route path="availability" element={<AvailabilityPage />} />
           <Route path="clients" element={<ClientsPage />} />
+          <Route path="waitlist" element={<WaitlistPage />} />
+          <Route path="reviews" element={<ReviewsPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="coupons" element={<CouponsPage />} />
           <Route path="subscription" element={<SubscriptionPage />} />
@@ -103,6 +108,7 @@ export function App() {
           <Route index element={<SuperAdminDashboardPage />} />
           <Route path="companies" element={<SuperAdminCompaniesPage />} />
           <Route path="plans" element={<SuperAdminPlansPage />} />
+          <Route path="users" element={<SuperAdminUsersPage />} />
         </Route>
 
         {/* Fallback */}

@@ -9,23 +9,23 @@ export declare class AvailabilityController {
         id: string;
         isActive: boolean;
         companyId: string;
+        professionalId: string | null;
         dayOfWeek: number;
         startTime: string;
         endTime: string;
         breakStart: string | null;
         breakEnd: string | null;
-        professionalId: string | null;
     }[]>;
     setAvailabilities(req: any, dto: SetAvailabilityDto): Promise<{
         id: string;
         isActive: boolean;
         companyId: string;
+        professionalId: string | null;
         dayOfWeek: number;
         startTime: string;
         endTime: string;
         breakStart: string | null;
         breakEnd: string | null;
-        professionalId: string | null;
     }[]>;
     createBlockedTime(req: any, dto: CreateBlockedTimeDto): Promise<{
         id: string;

@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Tag,
   X,
+  Star,
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -78,7 +79,30 @@ export const PublicBookingPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [copiedPix, setCopiedPix] = useState(false);
 
-  // 1. Carregar dados públicos da empresa
+  // Avaliações Públicas
+  const [publicReviews, setPublicReviews] = useState<{
+    averageRating: number;
+    totalCount: number;
+    reviews: any[];
+  } | null>(null);
+
+  // Lista de Espera Modal & Formulário
+  const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
+  const [waitlistName, setWaitlistName] = useState('');
+  const [waitlistPhone, setWaitlistPhone] = useState('');
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistServiceId, setWaitlistServiceId] = useState('');
+  const [waitlistProfessionalId, setWaitlistProfessionalId] = useState('');
+  const [waitlistPreferredDate, setWaitlistPreferredDate] = useState('');
+  const [waitlistPreferredPeriod, setWaitlistPreferredPeriod] = useState<
+    'QUALQUER' | 'MANHA' | 'TARDE' | 'NOITE'
+  >('QUALQUER');
+  const [waitlistNotes, setWaitlistNotes] = useState('');
+  const [submittingWaitlist, setSubmittingWaitlist] = useState(false);
+  const [waitlistSuccess, setWaitlistSuccess] = useState(false);
+  const [waitlistError, setWaitlistError] = useState<string | null>(null);
+
+  // 1. Carregar dados públicos da empresa e avaliações
   useEffect(() => {
     if (!companySlug) return;
     setLoading(true);
@@ -99,7 +123,39 @@ export const PublicBookingPage: React.FC = () => {
       })
       .catch(() => setError('Estabelecimento não encontrado ou temporariamente inativo.'))
       .finally(() => setLoading(false));
+
+    // Carregar avaliações aprovadas
+    axios
+      .get(`${apiUrl}/public/companies/${companySlug}/reviews`)
+      .then((res) => setPublicReviews(res.data))
+      .catch((err) => console.error('Erro ao buscar avaliações:', err));
   }, [companySlug, professionalSlug]);
+
+  const handleJoinWaitlist = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!company || !waitlistName.trim() || !waitlistPhone.trim()) return;
+    setSubmittingWaitlist(true);
+    setWaitlistError(null);
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+    try {
+      await axios.post(`${apiUrl}/public/companies/${company.slug}/waitlist`, {
+        clientName: waitlistName.trim(),
+        clientPhone: waitlistPhone.trim(),
+        clientEmail: waitlistEmail.trim() || undefined,
+        serviceId: waitlistServiceId || undefined,
+        professionalId: waitlistProfessionalId || undefined,
+        preferredDate: waitlistPreferredDate || undefined,
+        preferredPeriod: waitlistPreferredPeriod,
+        notes: waitlistNotes.trim() || undefined,
+      });
+      setWaitlistSuccess(true);
+    } catch (err: any) {
+      setWaitlistError(err.response?.data?.message || 'Erro ao registrar na lista de espera.');
+    } finally {
+      setSubmittingWaitlist(false);
+    }
+  };
 
   // 2. Carregar horários disponíveis sempre que data/serviço/profissional mudar
   useEffect(() => {
@@ -191,6 +247,38 @@ export const PublicBookingPage: React.FC = () => {
     }
   };
 
+  // Auto-polling para confirmação automática do Pix do Mercado Pago em tempo real
+  useEffect(() => {
+    const mgmtCode = bookingSuccess?.appointment?.clientManagementCode;
+    const currentStatus = bookingSuccess?.appointment?.status;
+
+    if (step !== 5 || !mgmtCode || currentStatus === 'CONFIRMED') {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        const res = await axios.get(`${apiUrl}/public/appointments/${mgmtCode}`);
+        if (res.data?.status === 'CONFIRMED') {
+          setBookingSuccess((prev: any) => ({
+            ...prev,
+            requiresDeposit: false,
+            appointment: {
+              ...(prev?.appointment || {}),
+              ...res.data,
+              status: 'CONFIRMED',
+            },
+          }));
+        }
+      } catch (err) {
+        // Silencioso em caso de oscilação momentânea de rede
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [step, bookingSuccess?.appointment?.clientManagementCode, bookingSuccess?.appointment?.status]);
+
   const handleCopyPixKey = (key: string) => {
     if (!key) return;
     navigator.clipboard.writeText(key);
@@ -200,31 +288,31 @@ export const PublicBookingPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="animate-spin text-indigo-600" size={36} />
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+        <Loader2 className="animate-spin text-[#6B3E26]" size={36} />
       </div>
     );
   }
 
   if (error && !company) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 text-center">
-        <div className="bg-white p-8 rounded-2xl border border-slate-200 max-w-md shadow-sm">
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Ops!</h2>
-          <p className="text-sm text-slate-500">{error}</p>
+      <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#1A120D] flex items-center justify-center p-4 text-center">
+        <div className="bg-white dark:bg-[#261E18] p-8 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] max-w-md shadow-sm">
+          <h2 className="text-xl font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-2">Ops!</h2>
+          <p className="text-sm text-[#6B3E26] dark:text-[#CDB196]">{error}</p>
         </div>
       </div>
     );
   }
 
-  const primaryColor = company?.settings?.primaryColor || '#4F46E5';
+  const primaryColor = company?.settings?.primaryColor || '#6B3E26';
   const companySettings = company?.settings || {};
   const nextDays = Array.from({ length: 7 }).map((_, i) => addDays(new Date(), i + 1));
 
   // WhatsApp link preparation for Step 5
   const companyPhoneRaw = (bookingSuccess?.depositInfo?.companyPhone || company?.phone || '').replace(/\D/g, '');
   const cleanPhone = companyPhoneRaw.startsWith('55') ? companyPhoneRaw : `55${companyPhoneRaw}`;
-  const depositVal = bookingSuccess?.depositInfo?.depositValue || companySettings.depositValue || 'R$ 20,00';
+  const depositVal = bookingSuccess?.depositInfo?.depositValue || companySettings.depositValue || 'R$ 50';
   const dateFormatted = format(new Date(selectedDate + 'T12:00:00'), 'dd/MM/yyyy');
   const timeLabel = selectedSlot?.endTime
     ? `${selectedSlot.time} até ${selectedSlot.endTime}`
@@ -238,26 +326,27 @@ export const PublicBookingPage: React.FC = () => {
       `*Cliente:* ${clientName}\n` +
       (bookingSuccess?.requiresDeposit
         ? `*Sinal via Pix:* ${depositVal}\n\nEstou enviando o comprovante do sinal via Pix para confirmação da minha vaga!`
-        : `\nGostaria de confirmar que meu agendamento foi realizado com sucesso!`)
+        : `\nGostaria de confirmar que meu agendamento foi realizado com sucesso!`),
   );
 
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${whatsappMessage}`;
+  const whatsappButtonLabel = companySettings.whatsappButtonText || 'Enviar Comprovante pelo WhatsApp';
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col items-center justify-start p-3 sm:p-6 md:py-10 transition-colors">
-      <div className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/60 dark:shadow-none border border-slate-200 dark:border-slate-800 overflow-hidden">
+    <div className="min-h-screen bg-[#F8F5EE] dark:bg-[#120D0A] text-[#2B1D15] dark:text-[#FAF7F2] flex flex-col items-center justify-start p-3 sm:p-6 lg:p-8 transition-colors">
+      <div className="w-full max-w-6xl bg-white dark:bg-[#1C1510] border border-[#E2D9CC] dark:border-[#382A21] rounded-3xl shadow-xl overflow-hidden flex flex-col">
         {/* Banner de Capa + Header da Empresa */}
         <div
-          className="relative text-white p-6 sm:p-8 bg-cover bg-center overflow-hidden"
+          className="relative text-white p-6 sm:p-10 bg-cover bg-center overflow-hidden"
           style={{
             backgroundColor: primaryColor,
             backgroundImage: company?.coverUrl
-              ? `linear-gradient(to bottom, rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.85)), url(${company.coverUrl})`
+              ? `linear-gradient(to bottom, rgba(20, 15, 10, 0.45), rgba(20, 15, 10, 0.85)), url(${company.coverUrl})`
               : undefined,
           }}
         >
-          <div className="flex items-start gap-4 relative z-10">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white font-bold text-2xl shadow-lg shrink-0 overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative z-10">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white font-bold text-3xl shadow-xl shrink-0 overflow-hidden">
               {company?.logoUrl ? (
                 <img
                   src={company.logoUrl}
@@ -270,562 +359,865 @@ export const PublicBookingPage: React.FC = () => {
               )}
             </div>
 
-            <div className="min-w-0">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-white inline-block mb-1">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-white inline-block mb-1.5">
                 Agendamento Online
               </span>
-              <h1 className="text-xl sm:text-2xl font-black text-white leading-tight truncate">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight">
                 {company?.name}
               </h1>
               {companySettings.bio && (
-                <p className="text-xs text-white/80 mt-1 line-clamp-2">{companySettings.bio}</p>
+                <p className="text-xs sm:text-sm text-white/85 mt-1.5 max-w-2xl leading-relaxed">{companySettings.bio}</p>
               )}
-              <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-white/90">
-                <span className="flex items-center gap-1">
-                  <Phone size={12} /> {company?.phone}
-                </span>
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-3 text-xs text-white/90">
+                {company?.phone && (
+                  <span className="flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-2.5 py-1 rounded-lg">
+                    <Phone size={13} /> {company?.phone}
+                  </span>
+                )}
                 {companySettings.instagram && (
-                  <span className="flex items-center gap-1">
-                    <InstagramIcon size={12} /> {companySettings.instagram}
+                  <span className="flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-2.5 py-1 rounded-lg">
+                    <InstagramIcon size={13} /> {companySettings.instagram}
                   </span>
                 )}
                 {companySettings.address && (
-                  <span className="flex items-center gap-1">
-                    <MapPin size={12} /> {companySettings.address}
+                  <span className="flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-2.5 py-1 rounded-lg">
+                    <MapPin size={13} /> {companySettings.address}
                   </span>
                 )}
+                {/* Avaliações Públicas */}
+                <span className="flex items-center gap-1.5 bg-black/25 backdrop-blur-xs px-2.5 py-1 rounded-lg text-amber-300 font-bold">
+                  <Star size={13} className="fill-amber-300" />
+                  <span>{publicReviews?.averageRating ? publicReviews.averageRating.toFixed(1) : '5.0'}</span>
+                  <span className="text-white/80 font-normal">
+                    ({publicReviews?.totalCount || 0} {publicReviews?.totalCount === 1 ? 'avaliação' : 'avaliações'})
+                  </span>
+                </span>
+                {/* Botão Entrar na Lista de Espera */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWaitlistServiceId(selectedService?.id || '');
+                    setWaitlistProfessionalId(selectedProfessional?.id || '');
+                    setWaitlistPreferredDate(selectedDate || '');
+                    setWaitlistSuccess(false);
+                    setWaitlistModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-xs px-3 py-1 rounded-lg text-white font-bold transition-all cursor-pointer shadow-xs"
+                >
+                  <Clock size={13} />
+                  <span>Lista de Espera</span>
+                </button>
               </div>
             </div>
           </div>
 
           {selectedProfessional && (
-            <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white relative z-10 shadow-xs">
+            <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white relative z-10 shadow-xs">
               <User size={14} />
-              <span>Atendimento com {selectedProfessional.name}</span>
+              <span>Profissional selecionado: <strong>{selectedProfessional.name}</strong></span>
             </div>
           )}
         </div>
 
         {/* Mensagem de Boas-Vindas */}
         {step === 1 && companySettings.welcomeMessage && (
-          <div className="px-6 pt-4 pb-1 text-xs text-slate-500 dark:text-slate-400 italic bg-slate-50/50 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800">
+          <div className="px-6 sm:px-10 py-3.5 text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] italic bg-[#FAF8F5] dark:bg-[#261E18] border-b border-[#E2D9CC] dark:border-[#382A21]">
             "{companySettings.welcomeMessage}"
           </div>
         )}
 
-        {/* Barra de Progresso do Agendamento */}
+        {/* Barra de Progresso do Agendamento (Stepper Responsivo) */}
         {step < 5 && (
-          <div className="flex items-center justify-between px-6 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <span style={{ color: step >= 1 ? primaryColor : undefined }}>1. Serviço</span>
-            <span>&rarr;</span>
-            <span style={{ color: step >= 2 ? primaryColor : undefined }}>2. Profissional</span>
-            <span>&rarr;</span>
-            <span style={{ color: step >= 3 ? primaryColor : undefined }}>3. Horário</span>
-            <span>&rarr;</span>
-            <span style={{ color: step >= 4 ? primaryColor : undefined }}>4. Dados</span>
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 px-4 sm:px-10 py-3 bg-[#FAF8F5] dark:bg-[#261E18]/80 border-b border-[#E2D9CC] dark:border-[#382A21] text-xs font-bold overflow-x-auto scrollbar-none">
+            <button
+              onClick={() => setStep(1)}
+              className={`flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                step === 1 ? 'text-[#6B3E26] dark:text-[#E2CEBC] font-bold' : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white'
+              }`}
+            >
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 1 ? 'bg-[#6B3E26] text-white' : 'bg-[#EFE9DF] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196]'}`}>1</span>
+              <span>Serviço</span>
+            </button>
+            <span className="text-[#D0C3B2] dark:text-[#523A2C]">&rarr;</span>
+
+            <button
+              onClick={() => selectedService && setStep(2)}
+              disabled={!selectedService}
+              className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
+                step === 2
+                  ? 'text-[#6B3E26] dark:text-[#E2CEBC] font-bold'
+                  : selectedService
+                  ? 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer'
+                  : 'text-[#CDB196]/60 dark:text-[#523A2C] cursor-not-allowed'
+              }`}
+            >
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 2 ? 'bg-[#6B3E26] text-white' : 'bg-[#EFE9DF] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196]'}`}>2</span>
+              <span>Profissional</span>
+            </button>
+            <span className="text-[#D0C3B2] dark:text-[#523A2C]">&rarr;</span>
+
+            <button
+              onClick={() => selectedService && selectedProfessional && setStep(3)}
+              disabled={!selectedService || !selectedProfessional}
+              className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
+                step === 3
+                  ? 'text-[#6B3E26] dark:text-[#E2CEBC] font-bold'
+                  : selectedService && selectedProfessional
+                  ? 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer'
+                  : 'text-[#CDB196]/60 dark:text-[#523A2C] cursor-not-allowed'
+              }`}
+            >
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 3 ? 'bg-[#6B3E26] text-white' : 'bg-[#EFE9DF] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196]'}`}>3</span>
+              <span>Horário</span>
+            </button>
+            <span className="text-[#D0C3B2] dark:text-[#523A2C]">&rarr;</span>
+
+            <button
+              onClick={() => selectedSlot && setStep(4)}
+              disabled={!selectedSlot}
+              className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
+                step === 4
+                  ? 'text-[#6B3E26] dark:text-[#E2CEBC] font-bold'
+                  : selectedSlot
+                  ? 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer'
+                  : 'text-[#CDB196]/60 dark:text-[#523A2C] cursor-not-allowed'
+              }`}
+            >
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 4 ? 'bg-[#6B3E26] text-white' : 'bg-[#EFE9DF] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196]'}`}>4</span>
+              <span>Dados</span>
+            </button>
           </div>
         )}
 
         {error && (
-          <div className="mx-6 mt-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs rounded-xl flex items-center gap-2">
-            <AlertCircle size={16} />
+          <div className="mx-6 sm:mx-10 mt-6 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs sm:text-sm rounded-2xl flex items-center gap-2.5">
+            <AlertCircle size={18} className="shrink-0 text-red-600 dark:text-red-400" />
             <span>{error}</span>
           </div>
         )}
 
-        <div className="p-6 sm:p-8">
-          {/* PASSO 1: SELECIONAR SERVIÇO COM FOTOS */}
+        <div className="p-6 sm:p-10 flex-1">
+          {/* PASSO 1: SELECIONAR SERVIÇO COM FOTOS (TELA TODA NO COMPUTADOR) */}
           {step === 1 && (
-            <div className="space-y-4">
-              <h2 className="font-bold text-slate-900 dark:text-white text-base">Escolha o Serviço</h2>
-              <div className="space-y-2.5">
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EFE9DF] dark:border-[#382A21] pb-4">
+                <div>
+                  <h2 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-xl sm:text-2xl">
+                    Escolha o Serviço
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+                    Selecione o procedimento que deseja agendar com nossos especialistas.
+                  </p>
+                </div>
+                <span className="text-xs font-semibold px-3 py-1 bg-[#FAF8F5] dark:bg-[#251C16] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#E2D9CC] dark:border-[#382A21] rounded-full w-fit">
+                  {company?.services?.length || 0} serviço(s) disponível(is)
+                </span>
+              </div>
+
+              {/* Grid Responsivo Compacto: 1 no mobile, 2 no tablet, 3-4 no computador */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {company?.services?.map((srv: any) => {
                   const isSelected = selectedService?.id === srv.id;
                   return (
-                    <button
+                    <div
                       key={srv.id}
                       onClick={() => {
                         setSelectedService(srv);
                         setStep(selectedProfessional ? 3 : 2);
                       }}
-                      className={`w-full text-left p-3.5 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
+                      className={`group rounded-2xl border transition-all flex flex-col justify-between cursor-pointer overflow-hidden p-4 w-full max-w-[280px] mx-auto sm:mx-0 ${
                         isSelected
-                          ? 'shadow-sm'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                          ? 'border-[#6B3E26] ring-2 ring-[#6B3E26]/20 bg-[#FAF8F5] dark:bg-[#251C16] shadow-md'
+                          : 'border-[#E2D9CC] dark:border-[#382A21] bg-white dark:bg-[#1F1712] hover:border-[#6B3E26] hover:shadow-lg hover:-translate-y-0.5'
                       }`}
-                      style={{
-                        borderColor: isSelected ? primaryColor : undefined,
-                        backgroundColor: isSelected ? `${primaryColor}10` : undefined,
-                      }}
                     >
-                      <div className="flex items-center gap-3.5 min-w-0">
+                      <div>
+                        {/* Imagem Quadrada do Serviço */}
                         {srv.imageUrl ? (
-                          <img
-                            src={srv.imageUrl}
-                            alt={srv.name}
-                            className="w-14 h-14 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-slate-700 shadow-xs"
-                            onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
-                          />
+                          <div className="w-full aspect-square rounded-2xl overflow-hidden mb-4 border border-[#E2D9CC] dark:border-[#382A21] bg-[#FAF8F5] dark:bg-[#19120D]">
+                            <img
+                              src={srv.imageUrl}
+                              alt={srv.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
+                            />
+                          </div>
                         ) : (
                           <div
-                            className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                            className="w-full aspect-square rounded-2xl flex items-center justify-center mb-4 transition-colors"
                             style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
                           >
-                            <Scissors size={20} />
+                            <Scissors size={32} />
                           </div>
                         )}
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-slate-900 dark:text-white text-sm truncate">{srv.name}</h3>
-                          {srv.description && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{srv.description}</p>
-                          )}
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">{srv.durationMinutes} minutos</p>
+
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] text-base group-hover:text-[#6B3E26] transition-colors">
+                            {srv.name}
+                          </h3>
                         </div>
+
+                        {srv.description && (
+                          <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1.5 line-clamp-2 leading-relaxed">
+                            {srv.description}
+                          </p>
+                        )}
                       </div>
-                      <div className="text-right pl-3 shrink-0">
-                        <span className="font-black text-slate-900 dark:text-white text-sm">
-                          R$ {Number(srv.price).toFixed(2)}
-                        </span>
+
+                      <div className="pt-4 mt-4 border-t border-[#EFE9DF] dark:border-[#382A21] flex items-center justify-between gap-3">
+                        <div>
+                          <span className="flex items-center gap-1.5 text-xs text-[#796758] dark:text-[#CDB196] font-medium">
+                            <Clock size={13} /> {srv.durationMinutes} minutos
+                          </span>
+                          <span className="font-black text-lg text-[#2B1D15] dark:text-[#FAF7F2] block mt-0.5">
+                            R$ {Number(srv.price).toFixed(2)}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="px-4 py-2.5 rounded-xl font-bold text-xs text-white shadow-sm flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          <span>Agendar</span>
+                          <ArrowRight size={13} />
+                        </button>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
-            </div>
-          )}
 
-          {/* PASSO 2: SELECIONAR PROFISSIONAL */}
-          {step === 2 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-bold text-slate-900 dark:text-white text-base">Escolha o Profissional</h2>
+              {/* Banner de Lista de Espera */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-bold text-[#2B1D15] dark:text-[#FAF7F2]">
+                    <Clock size={16} className="text-[#6B3E26]" />
+                    <span>Não encontrou o horário ideal ou agenda concorrida?</span>
+                  </div>
+                  <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+                    Entre na nossa lista de espera! Caso surja um cancelamento ou novo horário, você será o primeiro a ser chamado.
+                  </p>
+                </div>
                 <button
-                  onClick={() => setStep(1)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold"
-                  style={{ color: primaryColor }}
+                  type="button"
+                  onClick={() => {
+                    setWaitlistServiceId(selectedService?.id || '');
+                    setWaitlistProfessionalId(selectedProfessional?.id || '');
+                    setWaitlistPreferredDate(selectedDate || '');
+                    setWaitlistSuccess(false);
+                    setWaitlistModalOpen(true);
+                  }}
+                  className="px-4 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs cursor-pointer"
                 >
-                  <ChevronLeft size={14} /> Voltar
+                  Entrar na Lista de Espera
                 </button>
               </div>
 
-              <div className="space-y-2.5">
+              {/* Seção de Avaliações / Depoimentos de Clientes */}
+              {publicReviews && publicReviews.reviews.length > 0 && (
+                <div className="pt-8 border-t border-[#EFE9DF] dark:border-[#382A21] space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-black text-[#2B1D15] dark:text-[#FAF7F2] flex items-center gap-2">
+                        <Star size={18} className="text-[#6B3E26] fill-[#6B3E26]" />
+                        <span>O que nossos clientes dizem</span>
+                      </h3>
+                      <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-0.5">
+                        Média de {publicReviews.averageRating.toFixed(1)} estrelas com base em {publicReviews.totalCount} avaliação(ões)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {publicReviews.reviews.slice(0, 6).map((rev: any) => (
+                      <div
+                        key={rev.id}
+                        className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] space-y-2.5 flex flex-col justify-between"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-[#2B1D15] dark:text-[#FAF7F2]">
+                              {rev.clientName}
+                            </span>
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star
+                                  key={s}
+                                  size={12}
+                                  className={
+                                    s <= rev.rating
+                                      ? 'text-amber-500 fill-amber-500'
+                                      : 'text-[#D0C3B2]'
+                                  }
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          {rev.comment ? (
+                            <p className="text-xs text-[#5A4A3E] dark:text-[#CDB196] italic line-clamp-3">
+                              "{rev.comment}"
+                            </p>
+                          ) : (
+                            <p className="text-xs text-[#9C8B7D] italic">
+                              Avaliou com {rev.rating} estrelas.
+                            </p>
+                          )}
+                        </div>
+                        {rev.service && (
+                          <div className="pt-2 border-t border-[#E2D9CC]/60 dark:border-[#382A21] text-[10px] text-[#796758] dark:text-[#CDB196]">
+                            Serviço: <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{rev.service.name}</strong>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PASSO 2: SELECIONAR PROFISSIONAL (TELA TODA NO COMPUTADOR) */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-[#EFE9DF] dark:border-[#382A21] pb-4">
+                <div>
+                  <h2 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-xl sm:text-2xl">
+                    Escolha o Profissional
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+                    Serviço selecionado: <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedService?.name}</strong>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setStep(1)}
+                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-[#796758] dark:text-[#CDB196] cursor-pointer hover:bg-[#FAF8F5]"
+                >
+                  <ChevronLeft size={14} /> Trocar Serviço
+                </button>
+              </div>
+
+              {/* Grid Responsivo de Profissionais */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {company?.professionals?.map((prof: any) => {
                   const isSelected = selectedProfessional?.id === prof.id;
                   return (
-                    <button
+                    <div
                       key={prof.id}
                       onClick={() => {
                         setSelectedProfessional(prof);
                         setStep(3);
                       }}
-                      className={`w-full text-left p-3.5 rounded-2xl border transition-all flex items-center gap-3.5 cursor-pointer ${
+                      className={`group p-5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer ${
                         isSelected
-                          ? 'shadow-sm'
-                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                          ? 'border-[#6B3E26] ring-2 ring-[#6B3E26]/20 bg-[#FAF8F5] dark:bg-[#251C16] shadow-md'
+                          : 'border-[#E2D9CC] dark:border-[#382A21] bg-white dark:bg-[#1F1712] hover:border-[#6B3E26] hover:shadow-lg hover:-translate-y-0.5'
                       }`}
-                      style={{
-                        borderColor: isSelected ? primaryColor : undefined,
-                        backgroundColor: isSelected ? `${primaryColor}10` : undefined,
-                      }}
                     >
-                      {prof.avatarUrl ? (
-                        <img
-                          src={prof.avatarUrl}
-                          alt={prof.name}
-                          className="w-12 h-12 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-slate-700 shadow-xs"
-                        />
-                      ) : (
-                        <div
-                          className="w-12 h-12 rounded-xl font-bold text-base flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
-                        >
-                          {prof.name.charAt(0)}
+                      <div className="flex items-center gap-4">
+                        {prof.avatarUrl ? (
+                          <img
+                            src={prof.avatarUrl}
+                            alt={prof.name}
+                            className="w-16 h-16 rounded-2xl object-cover shrink-0 border border-[#E2D9CC] dark:border-[#382A21] shadow-xs"
+                          />
+                        ) : (
+                          <div
+                            className="w-16 h-16 rounded-2xl font-black text-xl flex items-center justify-center shrink-0 shadow-xs"
+                            style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}
+                          >
+                            {prof.name.charAt(0)}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] text-base group-hover:text-[#6B3E26] transition-colors">
+                            {prof.name}
+                          </h3>
+                          <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1 line-clamp-2">
+                            {prof.bio || `Especialista em ${company?.name}`}
+                          </p>
                         </div>
-                      )}
-                      <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white text-sm">{prof.name}</h3>
-                        {prof.bio && <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{prof.bio}</p>}
                       </div>
-                    </button>
+
+                      <div className="pt-4 mt-4 border-t border-[#EFE9DF] dark:border-[#382A21] flex items-center justify-end">
+                        <button
+                          type="button"
+                          className="w-full py-2.5 rounded-xl font-bold text-xs text-white shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          <span>Ver Horários Disponíveis</span>
+                          <ArrowRight size={13} />
+                        </button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
             </div>
           )}
 
-          {/* PASSO 3: SELECIONAR DATA E HORÁRIO */}
+          {/* PASSO 3: SELECIONAR DATA E HORÁRIO (2 COLUNAS NO COMPUTADOR) */}
           {step === 3 && (
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <h2 className="font-bold text-slate-900 dark:text-white text-base">Selecione Data e Horário</h2>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-[#EFE9DF] dark:border-[#382A21] pb-4">
+                <div>
+                  <h2 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-xl sm:text-2xl">
+                    Selecione Data e Horário
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+                    {selectedService?.name} com {selectedProfessional?.name}
+                  </p>
+                </div>
                 <button
                   onClick={() => setStep(selectedProfessional && !professionalSlug ? 2 : 1)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold"
-                  style={{ color: primaryColor }}
+                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-[#796758] dark:text-[#CDB196] cursor-pointer hover:bg-[#FAF8F5]"
                 >
                   <ChevronLeft size={14} /> Voltar
                 </button>
               </div>
 
-              {/* Dias da semana scrolláveis */}
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
-                {nextDays.map((d) => {
-                  const dateStr = format(d, 'yyyy-MM-dd');
-                  const isSelected = selectedDate === dateStr;
-                  return (
-                    <button
-                      key={dateStr}
-                      onClick={() => setSelectedDate(dateStr)}
-                      className={`flex-shrink-0 px-4 py-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                        isSelected
-                          ? 'text-white shadow-md'
-                          : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
-                      }`}
-                      style={{
-                        backgroundColor: isSelected ? primaryColor : undefined,
-                        borderColor: isSelected ? primaryColor : undefined,
-                      }}
-                    >
-                      <p className="text-[10px] uppercase font-bold tracking-wider">
-                        {format(d, 'EEE', { locale: ptBR })}
-                      </p>
-                      <p className="text-base font-black mt-0.5">{format(d, 'dd')}</p>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Lista de Slots Vagos */}
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
-                  Horários Disponíveis ({format(new Date(selectedDate + 'T12:00:00'), 'dd/MM/yyyy')})
-                </h3>
-
-                {loadingSlots ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="animate-spin" style={{ color: primaryColor }} size={24} />
-                  </div>
-                ) : availableSlots.length === 0 ? (
-                  <div className="p-6 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
-                    Nenhum horário disponível para esta data. Por favor, selecione outro dia acima.
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-56 overflow-y-auto pr-1">
-                    {availableSlots.map((slot) => {
-                      const isChosen = selectedSlot?.time === slot.time;
+              {/* Layout em 2 colunas para Computador / Tablet */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Coluna 1 (Esquerda): Seleção da Data */}
+                <div className="lg:col-span-5 space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                    1. Escolha o Dia
+                  </h3>
+                  <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-4 gap-2">
+                    {nextDays.map((d) => {
+                      const dateStr = format(d, 'yyyy-MM-dd');
+                      const isSelected = selectedDate === dateStr;
                       return (
                         <button
-                          key={slot.time}
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`py-2 px-2 rounded-xl border font-bold transition-all cursor-pointer flex flex-col items-center justify-center ${
-                            isChosen
-                              ? 'text-white shadow-sm'
-                              : 'bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-750'
+                          key={dateStr}
+                          onClick={() => setSelectedDate(dateStr)}
+                          className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                            isSelected
+                              ? 'text-white shadow-md'
+                              : 'bg-[#FAF8F5] dark:bg-[#251C16] text-[#2B1D15] dark:text-[#FAF7F2] border-[#E2D9CC] dark:border-[#382A21] hover:bg-[#F0E6DC] dark:hover:bg-[#34241B]'
                           }`}
                           style={{
-                            backgroundColor: isChosen ? primaryColor : undefined,
-                            borderColor: isChosen ? primaryColor : undefined,
+                            backgroundColor: isSelected ? primaryColor : undefined,
+                            borderColor: isSelected ? primaryColor : undefined,
                           }}
                         >
-                          <span className="text-xs">{slot.time}</span>
-                          {slot.endTime && (
-                            <span
-                              className={`text-[10px] font-normal tracking-tight ${
-                                isChosen ? 'text-white/90' : 'text-slate-500 dark:text-slate-400'
-                              }`}
-                            >
-                              até {slot.endTime}
-                            </span>
-                          )}
+                          <p className="text-[10px] uppercase font-bold tracking-wider opacity-85">
+                            {format(d, 'EEE', { locale: ptBR })}
+                          </p>
+                          <p className="text-lg font-black mt-0.5">{format(d, 'dd')}</p>
                         </button>
                       );
                     })}
                   </div>
-                )}
-              </div>
 
-              {selectedSlot && (
-                <button
-                  onClick={() => setStep(4)}
-                  className="w-full py-3.5 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  <span>Continuar para Dados Pessoais</span>
-                  <ArrowRight size={14} />
-                </button>
-              )}
+                  {/* Card Resumo do Serviço Escolhido */}
+                  <div className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] text-xs space-y-2 mt-4">
+                    <span className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] block text-sm">
+                      {selectedService?.name}
+                    </span>
+                    <div className="flex items-center justify-between text-[#796758] dark:text-[#CDB196]">
+                      <span>Profissional:</span>
+                      <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedProfessional?.name}</strong>
+                    </div>
+                    <div className="flex items-center justify-between text-[#796758] dark:text-[#CDB196]">
+                      <span>Duração:</span>
+                      <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedService?.durationMinutes} minutos</strong>
+                    </div>
+                    <div className="flex items-center justify-between text-[#796758] dark:text-[#CDB196] pt-2 border-t border-[#E2D9CC] dark:border-[#382A21]">
+                      <span>Valor:</span>
+                      <strong className="text-base text-[#2B1D15] dark:text-[#FAF7F2]">
+                        R$ {Number(selectedService?.price).toFixed(2)}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Coluna 2 (Direita): Lista de Slots de Horários Vagos */}
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                      2. Horários Disponíveis ({dateFormatted})
+                    </h3>
+                    {selectedSlot && (
+                      <span className="text-xs font-bold text-[#6B3E26] dark:text-[#E2CEBC]">
+                        Horário Selecionado: {selectedSlot.time}
+                      </span>
+                    )}
+                  </div>
+
+                  {loadingSlots ? (
+                    <div className="flex flex-col items-center justify-center py-16 bg-[#FAF8F5] dark:bg-[#251C16] rounded-2xl border border-[#E2D9CC] dark:border-[#382A21]">
+                      <Loader2 className="animate-spin text-[#6B3E26] dark:text-[#E2CEBC]" size={32} />
+                      <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-2 font-medium">Buscando horários disponíveis...</p>
+                    </div>
+                  ) : availableSlots.length === 0 ? (
+                    <div className="p-8 bg-[#FAF5ED] dark:bg-[#2B1F14] rounded-2xl border border-[#EADCC8] dark:border-[#4A3220] text-center space-y-3">
+                      <p className="text-xs text-[#6B584C] dark:text-[#D7C1AC]">
+                        Nenhum horário livre para {dateFormatted}. Selecione outro dia ao lado ou entre na lista de espera deste dia.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setWaitlistServiceId(selectedService?.id || '');
+                          setWaitlistProfessionalId(selectedProfessional?.id || '');
+                          setWaitlistPreferredDate(selectedDate || '');
+                          setWaitlistSuccess(false);
+                          setWaitlistModalOpen(true);
+                        }}
+                        className="px-4 py-2 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                      >
+                        <Clock size={14} />
+                        <span>Entrar na Lista de Espera deste Dia</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 max-h-80 overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                      {availableSlots.map((slot) => {
+                        const isChosen = selectedSlot?.time === slot.time;
+                        return (
+                          <button
+                            key={slot.time}
+                            onClick={() => setSelectedSlot(slot)}
+                            className={`py-2.5 px-3 rounded-xl border font-bold transition-all cursor-pointer flex flex-col items-center justify-center ${
+                              isChosen
+                                ? 'text-white shadow-md'
+                                : 'bg-[#FAF8F5] dark:bg-[#251C16] text-[#2B1D15] dark:text-[#FAF7F2] border-[#E2D9CC] dark:border-[#382A21] hover:border-[#6B3E26]'
+                            }`}
+                            style={{
+                              backgroundColor: isChosen ? primaryColor : undefined,
+                              borderColor: isChosen ? primaryColor : undefined,
+                            }}
+                          >
+                            <span className="text-sm font-extrabold">{slot.time}</span>
+                            {slot.endTime && (
+                              <span
+                                className={`text-[10px] font-normal tracking-tight ${
+                                  isChosen ? 'text-white/90' : 'text-[#796758] dark:text-[#CDB196]'
+                                }`}
+                              >
+                                até {slot.endTime}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {selectedSlot && (
+                    <button
+                      onClick={() => setStep(4)}
+                      className="w-full py-4 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl transition-all mt-4"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <span>Continuar para Identificação & Confirmação</span>
+                      <ArrowRight size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
-          {/* PASSO 4: DADOS DO CLIENTE */}
+          {/* PASSO 4: DADOS DO CLIENTE (2 COLUNAS NO COMPUTADOR) */}
           {step === 4 && (
-            <form onSubmit={handleConfirmBooking} className="space-y-4">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="font-bold text-slate-900 dark:text-white text-base">Seus Dados de Contato</h2>
+            <form onSubmit={handleConfirmBooking} className="space-y-6">
+              <div className="flex items-center justify-between border-b border-[#EFE9DF] dark:border-[#382A21] pb-4">
+                <div>
+                  <h2 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-xl sm:text-2xl">
+                    Seus Dados de Contato
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+                    Preencha seus dados para receber o lembrete e confirmação do seu horário.
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold"
-                  style={{ color: primaryColor }}
+                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-[#796758] dark:text-[#CDB196] cursor-pointer hover:bg-[#FAF8F5]"
                 >
                   <ChevronLeft size={14} /> Voltar
                 </button>
               </div>
 
-              {/* Resumo do Agendamento */}
-              <div
-                className="p-4 rounded-2xl border text-xs space-y-1.5"
-                style={{
-                  backgroundColor: `${primaryColor}0C`,
-                  borderColor: `${primaryColor}30`,
-                }}
-              >
-                <div className="flex items-start justify-between gap-2">
+              {/* Layout em 2 colunas para Computador */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Coluna 1 (Esquerda): Formulário */}
+                <div className="lg:col-span-7 space-y-4">
                   <div>
-                    <p className="font-bold text-slate-900 dark:text-white">{selectedService?.name}</p>
-                    <p className="text-slate-700 dark:text-slate-300 mt-0.5">
-                      Com <strong>{selectedProfessional?.name}</strong> às{' '}
-                      <strong>
-                        {selectedSlot?.time}
-                        {selectedSlot?.endTime ? ` até ${selectedSlot.endTime}` : ''}
-                      </strong>{' '}
-                      do dia {format(new Date(selectedDate + 'T12:00:00'), 'dd/MM/yyyy')}
-                    </p>
+                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2] mb-1.5">
+                      Seu Nome Completo *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Como gostaria de ser chamado(a)?"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                    />
                   </div>
-                </div>
 
-                {appliedCoupon ? (
-                  <div className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-baseline justify-between">
-                    <div className="space-y-0.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2] mb-1.5">
+                      WhatsApp com DDD (para envio da confirmação e lembretes) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ex: 17999998888"
+                      value={clientPhone}
+                      onChange={(e) => setClientPhone(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2] mb-1.5">
+                      E-mail (Opcional)
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="seu@email.com"
+                      value={clientEmail}
+                      onChange={(e) => setClientEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2] mb-1.5">
+                      Observações ou Preferências (Opcional)
+                    </label>
+                    <textarea
+                      rows={2}
+                      placeholder="Alguma observação importante para o profissional?"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Cupom de Desconto */}
+                  <div className="p-4 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl space-y-2">
+                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2]">
+                      Possui Cupom de Desconto?
+                    </label>
+                    {appliedCoupon ? (
+                      <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs">
+                        <div className="flex items-center gap-2">
+                          <Tag className="text-emerald-600 dark:text-emerald-400" size={16} />
+                          <div>
+                            <span className="font-black text-emerald-800 dark:text-emerald-200 tracking-wider">
+                              {appliedCoupon.coupon.code}
+                            </span>
+                            <span className="text-emerald-600 dark:text-emerald-400 ml-2 font-semibold">
+                              {appliedCoupon.coupon.discountType === 'PERCENTAGE'
+                                ? `(${appliedCoupon.coupon.discountValue}% OFF)`
+                                : `(-R$ ${appliedCoupon.discountAmount.toFixed(2)})`}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="text-[#796758] hover:text-red-500 font-bold p-1 cursor-pointer transition-colors"
+                          title="Remover cupom"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ) : (
                       <div className="flex items-center gap-2">
-                        <span className="text-slate-400 dark:text-slate-500 line-through text-xs font-semibold">
-                          R$ {Number(selectedService?.price).toFixed(2)}
-                        </span>
-                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
-                          Cupom {appliedCoupon.coupon.code}: -R$ {appliedCoupon.discountAmount.toFixed(2)}
-                        </span>
+                        <div className="relative flex-1">
+                          <Tag className="absolute left-3.5 top-3 text-[#9C8B7D]" size={15} />
+                          <input
+                            type="text"
+                            placeholder="DIGITE SEU CUPOM"
+                            value={couponCodeInput}
+                            onChange={(e) => {
+                              setCouponCodeInput(e.target.value.toUpperCase());
+                              setCouponError(null);
+                            }}
+                            className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-[#1F1712] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs uppercase font-mono font-bold focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={validatingCoupon || !couponCodeInput.trim()}
+                          className="px-5 py-2.5 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0"
+                        >
+                          {validatingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Aplicar'}
+                        </button>
                       </div>
-                    </div>
-                    <p className="font-black text-base text-emerald-600 dark:text-emerald-400">
-                      R$ {appliedCoupon.finalPrice.toFixed(2)}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="pt-1 flex items-baseline justify-between">
-                    <span className="text-slate-500 dark:text-slate-400 text-xs">Valor Total:</span>
-                    <p className="font-black text-sm" style={{ color: primaryColor }}>
-                      R$ {Number(selectedService?.price).toFixed(2)}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Aviso de Sinal se configurado */}
-              {companySettings.requiresDeposit && (
-                <div className="p-3.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5">
-                  <AlertCircle className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" size={16} />
-                  <div>
-                    <p className="font-bold">Aviso: Reserva mediante sinal via Pix</p>
-                    <p className="text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
-                      Este estabelecimento exige o pagamento de um sinal de{' '}
-                      <strong>{companySettings.depositValue || 'R$ 20,00'}</strong> para confirmar seu horário. Após clicar em confirmar, você terá acesso à chave Pix e ao botão direto de envio do comprovante pelo WhatsApp.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Seu Nome Completo *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Como gostaria de ser chamado(a)?"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:outline-none"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  WhatsApp com DDD (para confirmação e lembretes) *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="11999998888"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:outline-none"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  E-mail (Opcional)
-                </label>
-                <input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:outline-none"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                  Observações (Opcional)
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Alguma preferência ou detalhe especial?"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:outline-none"
-                  style={{ '--tw-ring-color': primaryColor } as any}
-                />
-              </div>
-
-              {/* Cupom de Desconto */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-2">
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Cupom de Desconto
-                </label>
-                {appliedCoupon ? (
-                  <div className="flex items-center justify-between p-2.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs">
-                    <div className="flex items-center gap-2">
-                      <Tag className="text-emerald-600 dark:text-emerald-400" size={15} />
-                      <div>
-                        <span className="font-black text-emerald-800 dark:text-emerald-200 tracking-wider">
-                          {appliedCoupon.coupon.code}
-                        </span>
-                        <span className="text-emerald-600 dark:text-emerald-400 ml-2 font-semibold">
-                          {appliedCoupon.coupon.discountType === 'PERCENTAGE'
-                            ? `(${appliedCoupon.coupon.discountValue}% OFF)`
-                            : `(-R$ ${appliedCoupon.discountAmount.toFixed(2)})`}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveCoupon}
-                      className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 font-bold p-1 cursor-pointer transition-colors"
-                      title="Remover cupom"
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <Tag className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500" size={14} />
-                        <input
-                          type="text"
-                          placeholder="Ex: VERAO10"
-                          value={couponCodeInput}
-                          onChange={(e) => {
-                            setCouponCodeInput(e.target.value.toUpperCase());
-                            setCouponError(null);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleApplyCoupon();
-                            }
-                          }}
-                          className="w-full pl-8 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs uppercase font-mono font-semibold focus:ring-2 focus:outline-none"
-                          style={{ '--tw-ring-color': primaryColor } as any}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleApplyCoupon}
-                        disabled={validatingCoupon || !couponCodeInput.trim()}
-                        className="px-4 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 disabled:opacity-40 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 flex items-center gap-1.5"
-                      >
-                        {validatingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Aplicar'}
-                      </button>
-                    </div>
+                    )}
                     {couponError && (
-                      <p className="text-[11px] text-red-500 dark:text-red-400 mt-1 font-medium">{couponError}</p>
+                      <p className="text-[11px] text-red-500 font-medium">{couponError}</p>
                     )}
                   </div>
-                )}
-              </div>
+                </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-3.5 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-60 transition-all"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {submitting ? (
-                  <Loader2 className="animate-spin" size={16} />
-                ) : (
-                  <>
-                    <CheckCircle2 size={16} />
-                    <span>{companySettings.requiresDeposit ? 'Pré-Reservar Horário com Sinal' : 'Confirmar Agendamento'}</span>
-                  </>
-                )}
-              </button>
+                {/* Coluna 2 (Direita): Resumo e Botão de Confirmação */}
+                <div className="lg:col-span-5 space-y-4">
+                  <div className="p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] bg-[#FAF8F5] dark:bg-[#251C16] text-xs space-y-3 sticky top-4">
+                    <h3 className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] text-sm border-b border-[#E2D9CC] dark:border-[#382A21] pb-2">
+                      Resumo da Sua Reserva
+                    </h3>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-[#796758] dark:text-[#CDB196]">Serviço:</span>
+                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-right">{selectedService?.name}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#796758] dark:text-[#CDB196]">Profissional:</span>
+                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedProfessional?.name}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#796758] dark:text-[#CDB196]">Data e Hora:</span>
+                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-right">
+                          {dateFormatted} às {selectedSlot?.time}
+                          {selectedSlot?.endTime ? ` até ${selectedSlot.endTime}` : ''}
+                        </strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#796758] dark:text-[#CDB196]">Duração estimada:</span>
+                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedService?.durationMinutes} min</strong>
+                      </div>
+                    </div>
+
+                    {appliedCoupon ? (
+                      <div className="pt-3 border-t border-[#E2D9CC] dark:border-[#382A21] flex justify-between items-baseline">
+                        <div className="space-y-0.5">
+                          <span className="text-[#9C8B7D] line-through text-xs font-semibold">
+                            R$ {Number(selectedService?.price).toFixed(2)}
+                          </span>
+                          <span className="text-[11px] block font-bold text-emerald-600">
+                            Cupom {appliedCoupon.coupon.code}: -R$ {appliedCoupon.discountAmount.toFixed(2)}
+                          </span>
+                        </div>
+                        <p className="font-black text-xl text-emerald-600 dark:text-emerald-400">
+                          R$ {appliedCoupon.finalPrice.toFixed(2)}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="pt-3 border-t border-[#E2D9CC] dark:border-[#382A21] flex justify-between items-baseline">
+                        <span className="text-[#2B1D15] dark:text-[#FAF7F2] font-bold text-sm">Total:</span>
+                        <p className="font-black text-xl text-[#2B1D15] dark:text-[#FAF7F2]">
+                          R$ {Number(selectedService?.price).toFixed(2)}
+                        </p>
+                      </div>
+                    )}
+
+                    {companySettings.requiresDeposit && (
+                      <div className="p-3 bg-[#FAF5ED] dark:bg-[#2B1F14] border border-[#EADCC8] dark:border-[#4A3220] rounded-xl text-xs text-[#5A4A3E] dark:text-[#E2CEBC] flex items-start gap-2">
+                        <AlertCircle className="text-[#6B3E26] shrink-0 mt-0.5" size={16} />
+                        <div>
+                          <strong className="block font-bold text-[#6B3E26] dark:text-[#FAF7F2]">Reserva com sinal via Pix</strong>
+                          <span className="text-[11px]">
+                            Valor do sinal: <strong>{companySettings.depositValue || 'R$ 20,00'}</strong>. Chave Pix e orientações na próxima etapa.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className="w-full py-4 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl disabled:opacity-60 transition-all mt-4"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {submitting ? (
+                        <Loader2 className="animate-spin" size={18} />
+                      ) : (
+                        <>
+                          <CheckCircle2 size={18} />
+                          <span>
+                            {companySettings.requiresDeposit ? 'Pré-Reservar Horário com Sinal' : 'Confirmar Agendamento'}
+                          </span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </form>
           )}
 
           {/* PASSO 5: TELA DE SUCESSO / PAGAMENTO DO SINAL PIX */}
           {step === 5 && bookingSuccess && (
-            <div className="text-center py-4 space-y-4">
-              {bookingSuccess.requiresDeposit || bookingSuccess.appointment?.status === 'PENDING' ? (
+            <div className="max-w-2xl mx-auto text-center py-6 space-y-6">
+              {(bookingSuccess.appointment?.status === 'PENDING' ||
+                bookingSuccess.appointment?.status === 'PENDING_PAYMENT' ||
+                (bookingSuccess.requiresDeposit && bookingSuccess.appointment?.status !== 'CONFIRMED')) ? (
                 /* CASO EXIJA SINAL */
-                <div className="space-y-4">
-                  <div className="w-16 h-16 rounded-3xl bg-amber-100 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-inner">
-                    <Clock size={36} />
+                <div className="space-y-6">
+                  <div className="w-20 h-20 rounded-3xl bg-[#F5EFE6] dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] flex items-center justify-center mx-auto shadow-inner border border-[#E2D9CC] dark:border-[#382A21]">
+                    <Clock size={40} />
                   </div>
 
                   <div>
-                    <span className="inline-block text-[11px] font-bold uppercase tracking-wider px-3 py-1 bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 rounded-full mb-2">
-                      Aguardando Confirmação
+                    <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-[#F5EFE6] dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#CDB196] dark:border-[#4A392D] rounded-full mb-2">
+                      Horário Pré-Reservado
                     </span>
-                    <h2 className="text-2xl font-black text-slate-900 dark:text-white">Aguardando Confirmação</h2>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto mt-1">
-                      Seu horário está pré-reservado. Para confirmação da sua vaga, envie o comprovante do sinal via Pix abaixo.
+                    <h2 className="text-2xl sm:text-3xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                      Aguardando Pagamento do Sinal
+                    </h2>
+                    <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] max-w-md mx-auto mt-2 leading-relaxed">
+                      Seu horário foi bloqueado temporariamente! Pague o Pix do sinal abaixo para confirmar sua vaga instantaneamente.
                     </p>
                   </div>
 
-                  {/* Card com Detalhes do Pix */}
-                  <div className="p-5 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-2xl text-left text-xs space-y-3 shadow-xs">
-                    <div className="flex items-center justify-between border-b border-amber-200/70 dark:border-amber-900/40 pb-2.5">
-                      <span className="text-amber-900 dark:text-amber-300 font-bold uppercase tracking-wider text-[11px]">
-                        Dados para Pagamento do Sinal
+                  {/* Card com Detalhes do Pix & QR Code */}
+                  <div className="p-6 bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E5D7C5] dark:border-[#382A21] rounded-3xl text-left text-xs sm:text-sm space-y-5 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-[#E2D9CC] dark:border-[#382A21] pb-3">
+                      <span className="text-[#6B3E26] dark:text-[#E2CEBC] font-bold uppercase tracking-wider text-xs">
+                        Valor do Sinal de Reserva
                       </span>
-                      <span className="text-base font-black text-amber-800 dark:text-amber-300">
+                      <span className="text-2xl font-black text-[#6B3E26] dark:text-[#E2CEBC]">
                         {bookingSuccess.depositInfo?.depositValue || companySettings.depositValue || 'R$ 20,00'}
                       </span>
                     </div>
 
+                    {/* Exibição do QR Code Mercado Pago caso gerado */}
+                    {bookingSuccess.depositInfo?.pixQrCodeBase64 && (
+                      <div className="p-5 bg-white dark:bg-[#1F1712] rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] text-center space-y-3 shadow-xs">
+                        <span className="text-xs font-black uppercase tracking-wider text-[#6B3E26] dark:text-[#E2CEBC] block">
+                          Pague pelo QR Code do seu Banco
+                        </span>
+                        <div className="inline-block p-2 bg-white rounded-2xl border-2 border-[#E2D9CC] dark:border-[#4A392D] shadow-sm">
+                          <img
+                            src={`data:image/png;base64,${bookingSuccess.depositInfo.pixQrCodeBase64}`}
+                            alt="QR Code Pix Mercado Pago"
+                            className="w-48 h-48 mx-auto rounded-xl object-contain"
+                          />
+                        </div>
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                          <span>Aguardando Pix... Confirmação 100% automática</span>
+                        </div>
+                      </div>
+                    )}
+
                     {bookingSuccess.depositInfo?.pixRecipientName && (
                       <div>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Favorecido / Titular:</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
+                        <span className="text-xs text-[#796758] dark:text-[#CDB196] block">Titular / Recebedor:</span>
+                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-sm">
                           {bookingSuccess.depositInfo.pixRecipientName}
-                        </span>
+                        </strong>
                       </div>
                     )}
 
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Chave Pix ({bookingSuccess.depositInfo?.pixKeyType || 'Chave'}):
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs text-[#796758] dark:text-[#CDB196] font-semibold">
+                          Código Pix Copia e Cola:
                         </span>
                         {copiedPix && (
-                          <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                            <Check size={12} /> Copiado!
+                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <Check size={14} /> Código Pix Copiado!
                           </span>
                         )}
                       </div>
@@ -833,78 +1225,80 @@ export const PublicBookingPage: React.FC = () => {
                         <input
                           type="text"
                           readOnly
-                          value={bookingSuccess.depositInfo?.pixKey || ''}
-                          className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700/60 rounded-xl font-mono text-xs font-semibold text-slate-800 dark:text-white select-all"
+                          value={bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola || ''}
+                          className="w-full px-4 py-2.5 bg-white dark:bg-[#1F1712] border-2 border-[#D0C3B2] dark:border-[#4A392D] rounded-xl font-mono text-xs font-bold text-[#2B1D15] dark:text-[#FAF7F2] select-all truncate"
                         />
                         <button
                           type="button"
-                          onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey)}
-                          className="px-3 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer text-xs"
+                          onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola)}
+                          className="px-4 py-2.5 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-sm"
                         >
-                          <Copy size={13} />
-                          <span>Copiar</span>
+                          <Copy size={14} />
+                          <span>Copiar Pix</span>
                         </button>
                       </div>
                     </div>
 
                     {bookingSuccess.depositInfo?.depositInstructions && (
-                      <div className="p-2.5 bg-white/80 dark:bg-slate-800/80 rounded-xl text-[11px] text-slate-600 dark:text-slate-300 border border-amber-100 dark:border-amber-900/30">
+                      <div className="p-3 bg-white/80 dark:bg-[#1F1712] rounded-xl text-xs text-[#5A4A3E] dark:text-[#CDB196] border border-[#E2D9CC] dark:border-[#382A21]">
                         <strong>Orientações:</strong> {bookingSuccess.depositInfo.depositInstructions}
                       </div>
                     )}
                   </div>
 
                   {/* Botão de Enviar Comprovante no WhatsApp */}
-                  <div className="pt-1">
+                  <div className="pt-2">
                     <a
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-200 dark:shadow-none transition-all cursor-pointer"
+                      className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all cursor-pointer"
                     >
-                      <Phone size={16} />
-                      <span>Enviar Comprovante pelo WhatsApp</span>
+                      <Phone size={18} />
+                      <span>{whatsappButtonLabel}</span>
                     </a>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
-                      Ao clicar, o WhatsApp abrirá com mensagem pronta e o resumo do seu agendamento.
+                    <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-2">
+                      Ao clicar, o WhatsApp abrirá com mensagem pré-formatada com todos os dados da sua reserva.
                     </p>
                   </div>
                 </div>
               ) : (
                 /* CASO NÃO EXIJA SINAL (CONFIRMAÇÃO DIRETA) */
-                <div className="space-y-3">
-                  <div className="w-16 h-16 rounded-3xl bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
-                    <CheckCircle2 size={36} />
+                <div className="space-y-4">
+                  <div className="w-20 h-20 rounded-3xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
+                    <CheckCircle2 size={40} />
                   </div>
 
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white">Agendamento Confirmado!</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
-                    Enviamos os detalhes da sua reserva para o seu WhatsApp. Te esperamos com carinho!
+                  <h2 className="text-2xl sm:text-3xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                    Agendamento Confirmado!
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] max-w-md mx-auto">
+                    Seu horário foi agendado com sucesso no <strong>{company?.name}</strong>. Te esperamos com muito carinho!
                   </p>
                 </div>
               )}
 
               {/* Resumo do Agendamento */}
-              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-left text-xs space-y-1.5 my-3 text-slate-700 dark:text-slate-300">
+              <div className="p-5 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl text-left text-xs sm:text-sm space-y-2 text-[#2B1D15] dark:text-[#FAF7F2]">
                 <p>
-                  <strong className="text-slate-900 dark:text-white">Serviço:</strong> {selectedService?.name}
+                  <strong className="text-[#796758] dark:text-[#CDB196]">Serviço:</strong> {selectedService?.name}
                 </p>
                 <p>
-                  <strong className="text-slate-900 dark:text-white">Profissional:</strong> {selectedProfessional?.name}
+                  <strong className="text-[#796758] dark:text-[#CDB196]">Profissional:</strong> {selectedProfessional?.name}
                 </p>
                 <p>
-                  <strong className="text-slate-900 dark:text-white">Horário:</strong> {selectedSlot?.time}
+                  <strong className="text-[#796758] dark:text-[#CDB196]">Horário:</strong> {selectedSlot?.time}
                   {selectedSlot?.endTime ? ` até ${selectedSlot.endTime}` : ''} ({dateFormatted})
                 </p>
                 <p>
-                  <strong className="text-slate-900 dark:text-white">Local:</strong> {company?.name}
+                  <strong className="text-[#796758] dark:text-[#CDB196]">Local:</strong> {company?.name}
                 </p>
               </div>
 
-              <div className="space-y-2 pt-2">
+              <div className="space-y-3 pt-2">
                 <Link
-                  to={`/agendamento/${bookingSuccess.appointment.clientManagementCode}`}
-                  className="block w-full py-3 bg-slate-900 hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold rounded-xl text-xs transition-colors"
+                  to={`/agendamento/${bookingSuccess.appointment?.clientManagementCode}`}
+                  className="block w-full py-4 bg-[#6B3E26] hover:bg-[#56311D] text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md text-center"
                 >
                   Consultar ou Cancelar Agendamento
                 </Link>
@@ -916,7 +1310,7 @@ export const PublicBookingPage: React.FC = () => {
                     setSelectedSlot(null);
                     setBookingSuccess(null);
                   }}
-                  className="block w-full py-2.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-xs font-semibold cursor-pointer"
+                  className="block w-full py-3 text-[#796758] dark:text-[#CDB196] hover:bg-[#FAF8F5] dark:hover:bg-[#251C16] rounded-xl text-xs font-semibold cursor-pointer transition-colors"
                 >
                   Fazer Outro Agendamento
                 </button>
@@ -924,7 +1318,229 @@ export const PublicBookingPage: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Rodapé Oficial Inova Agenda */}
+        <div className="py-4 px-6 border-t border-[#EFE9DF] dark:border-[#382A21] bg-[#FAF8F5] dark:bg-[#18120D] text-center">
+          <p className="text-[11px] text-[#796758] dark:text-[#CDB196]">
+            Plataforma de Agendamentos por <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">Inova Agenda</strong>
+          </p>
+        </div>
       </div>
+
+      {/* Modal Lista de Espera */}
+      {waitlistModalOpen && (
+        <div className="fixed inset-0 z-50 bg-[#120D0A]/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-[#1E1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-3xl w-full max-w-lg p-6 sm:p-8 space-y-5 shadow-2xl relative my-8">
+            <button
+              type="button"
+              onClick={() => setWaitlistModalOpen(false)}
+              className="absolute top-5 right-5 p-2 rounded-xl text-[#796758] hover:text-[#2B1D15] dark:hover:text-white hover:bg-[#FAF8F5] dark:hover:bg-[#2A2018] transition-colors cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+
+            {waitlistSuccess ? (
+              <div className="text-center py-6 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-inner">
+                  <CheckCircle2 size={36} />
+                </div>
+                <h3 className="text-xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                  Você está na Lista de Espera!
+                </h3>
+                <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] leading-relaxed max-w-sm mx-auto">
+                  Registramos seu interesse com sucesso. Assim que um horário compatível surgir na agenda de {company?.name}, entraremos em contato imediatamente pelo WhatsApp: <strong>{waitlistPhone}</strong>.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setWaitlistModalOpen(false);
+                      setWaitlistSuccess(false);
+                    }}
+                    className="w-full py-3 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
+                  >
+                    Entendido, Voltar aos Agendamentos
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleJoinWaitlist} className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="p-2 rounded-xl bg-[#FAF5ED] dark:bg-[#251C16] text-[#6B3E26] dark:text-[#E2CEBC]">
+                      <Clock size={20} />
+                    </span>
+                    <div>
+                      <h3 className="text-lg font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                        Lista de Espera VIP
+                      </h3>
+                      <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+                        Não encontrou vaga? Seja notificado caso surja uma desistência!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {waitlistError && (
+                  <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 rounded-xl text-xs flex items-center gap-2">
+                    <AlertCircle size={14} className="shrink-0" />
+                    <span>{waitlistError}</span>
+                  </div>
+                )}
+
+                <div className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                      Seu Nome Completo *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={waitlistName}
+                      onChange={(e) => setWaitlistName(e.target.value)}
+                      placeholder="Como gostaria de ser chamado(a)?"
+                      className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                        WhatsApp com DDD *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={waitlistPhone}
+                        onChange={(e) => setWaitlistPhone(e.target.value)}
+                        placeholder="(11) 99999-9999"
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                        E-mail (opcional)
+                      </label>
+                      <input
+                        type="email"
+                        value={waitlistEmail}
+                        onChange={(e) => setWaitlistEmail(e.target.value)}
+                        placeholder="seu@email.com"
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                        Serviço Desejado
+                      </label>
+                      <select
+                        value={waitlistServiceId}
+                        onChange={(e) => setWaitlistServiceId(e.target.value)}
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                      >
+                        <option value="">Qualquer serviço</option>
+                        {company?.services?.map((s: any) => (
+                          <option key={s.id} value={s.id}>
+                            {s.name} (R$ {Number(s.price).toFixed(2)})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                        Profissional Preferido
+                      </label>
+                      <select
+                        value={waitlistProfessionalId}
+                        onChange={(e) => setWaitlistProfessionalId(e.target.value)}
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                      >
+                        <option value="">Qualquer profissional</option>
+                        {company?.professionals?.map((p: any) => (
+                          <option key={p.id} value={p.id}>
+                            {p.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                        Data Preferida
+                      </label>
+                      <input
+                        type="date"
+                        value={waitlistPreferredDate}
+                        onChange={(e) => setWaitlistPreferredDate(e.target.value)}
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                        Período de Preferência
+                      </label>
+                      <select
+                        value={waitlistPreferredPeriod}
+                        onChange={(e) => setWaitlistPreferredPeriod(e.target.value as any)}
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                      >
+                        <option value="QUALQUER">Qualquer horário</option>
+                        <option value="MANHA">Manhã (08h às 12h)</option>
+                        <option value="TARDE">Tarde (12h às 18h)</option>
+                        <option value="NOITE">Noite (18h às 22h)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                      Observações / Dias Específicos
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={waitlistNotes}
+                      onChange={(e) => setWaitlistNotes(e.target.value)}
+                      placeholder="Ex: Tenho preferência para sexta-feira à tarde..."
+                      className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26] resize-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setWaitlistModalOpen(false)}
+                    className="px-4 py-3 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-xs font-semibold text-[#796758] dark:text-[#CDB196] hover:bg-[#FAF8F5] dark:hover:bg-[#251C16] transition-colors cursor-pointer"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingWaitlist}
+                    className="flex-1 py-3 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {submittingWaitlist ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Cadastrando...</span>
+                      </>
+                    ) : (
+                      <span>Confirmar Entrada na Lista</span>
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

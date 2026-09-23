@@ -14,6 +14,7 @@ import { AppointmentsService } from './appointments.service';
 import {
   CancelAppointmentClientDto,
   CreatePublicAppointmentDto,
+  RescheduleAppointmentDto,
   UpdateAppointmentStatusDto,
 } from './dto/appointment.dto';
 import { Public } from '../../common/decorators/public.decorator';
@@ -78,6 +79,17 @@ export class AppointmentsController {
     @Body() dto: UpdateAppointmentStatusDto,
   ) {
     return this.appointmentsService.updateAppointmentStatus(req.companyId, id, dto);
+  }
+
+  @ApiBearerAuth('JWT')
+  @Patch('appointments/:id/reschedule')
+  @ApiOperation({ summary: 'Reagendar data e horário do atendimento pelo profissional ou empresa' })
+  rescheduleAppointment(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() dto: RescheduleAppointmentDto,
+  ) {
+    return this.appointmentsService.rescheduleAppointment(req.companyId, id, dto);
   }
 
   @ApiBearerAuth('JWT')

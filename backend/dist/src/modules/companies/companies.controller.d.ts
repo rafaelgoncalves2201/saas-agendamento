@@ -1,5 +1,6 @@
 import { CompaniesService } from './companies.service';
 import { UpdateCompanyDto } from './dto/update-company.dto';
+import { SubscriptionStatus } from '@prisma/client';
 export declare class CompaniesController {
     private readonly companiesService;
     constructor(companiesService: CompaniesService);
@@ -8,11 +9,12 @@ export declare class CompaniesController {
             plan: {
                 id: string;
                 name: string;
+                slug: string;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                slug: string;
                 description: string;
+                sortOrder: number;
                 priceMonthly: import("@prisma/client/runtime/library").Decimal;
                 priceYearly: import("@prisma/client/runtime/library").Decimal;
                 currency: string;
@@ -20,17 +22,17 @@ export declare class CompaniesController {
                 maxAppointmentsPerMonth: number;
                 maxWhatsappMessages: number;
                 features: import("@prisma/client/runtime/library").JsonValue;
-                sortOrder: number;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             companyId: string;
+            status: import(".prisma/client").$Enums.SubscriptionStatus;
+            planId: string;
             provider: string;
             providerCustomerId: string | null;
             providerSubscriptionId: string | null;
-            status: import(".prisma/client").$Enums.SubscriptionStatus;
             billingCycle: import(".prisma/client").$Enums.BillingCycle;
             amount: import("@prisma/client/runtime/library").Decimal;
             nextDueDate: Date | null;
@@ -39,68 +41,79 @@ export declare class CompaniesController {
             cancelAtPeriodEnd: boolean;
             canceledAt: Date | null;
             trialEndsAt: Date | null;
-            planId: string;
         }) | null;
     } & {
         id: string;
-        email: string;
         name: string;
-        phone: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         slug: string;
         document: string | null;
+        email: string;
+        phone: string;
         logoUrl: string | null;
         coverUrl: string | null;
         settings: import("@prisma/client/runtime/library").JsonValue;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        mpAccessToken: string | null;
+        mpRefreshToken: string | null;
+        mpUserId: string | null;
+        mpExpiresIn: number | null;
+        mpTokenType: string | null;
+        mpPublicKey: string | null;
     }>;
     updateMyCompany(req: any, dto: UpdateCompanyDto): Promise<{
         id: string;
-        email: string;
         name: string;
-        phone: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         slug: string;
         document: string | null;
+        email: string;
+        phone: string;
         logoUrl: string | null;
         coverUrl: string | null;
         settings: import("@prisma/client/runtime/library").JsonValue;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        mpAccessToken: string | null;
+        mpRefreshToken: string | null;
+        mpUserId: string | null;
+        mpExpiresIn: number | null;
+        mpTokenType: string | null;
+        mpPublicKey: string | null;
     }>;
     getMembers(req: any): Promise<({
         user: {
             id: string;
-            email: string;
             name: string;
+            email: string;
             phone: string | null;
-            role: import(".prisma/client").$Enums.Role;
             isActive: boolean;
             createdAt: Date;
+            role: import(".prisma/client").$Enums.Role;
         };
     } & {
         id: string;
-        role: import(".prisma/client").$Enums.Role;
         createdAt: Date;
         companyId: string;
         userId: string;
+        role: import(".prisma/client").$Enums.Role;
     })[]>;
     getPublicCompany(slug: string): Promise<{
         id: string;
-        email: string;
         name: string;
-        phone: string;
-        isActive: boolean;
         slug: string;
+        email: string;
+        phone: string;
         logoUrl: string | null;
         coverUrl: string | null;
         settings: import("@prisma/client/runtime/library").JsonValue;
+        isActive: boolean;
         professionals: {
             id: string;
             name: string;
-            phone: string;
             slug: string;
+            phone: string;
             bio: string | null;
             avatarUrl: string | null;
         }[];
@@ -108,11 +121,11 @@ export declare class CompaniesController {
             id: string;
             name: string;
             description: string | null;
-            sortOrder: number;
             durationMinutes: number;
             price: import("@prisma/client/runtime/library").Decimal;
             category: string | null;
             imageUrl: string | null;
+            sortOrder: number;
         }[];
     }>;
     listAllCompanies(): Promise<({
@@ -120,11 +133,12 @@ export declare class CompaniesController {
             plan: {
                 id: string;
                 name: string;
+                slug: string;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                slug: string;
                 description: string;
+                sortOrder: number;
                 priceMonthly: import("@prisma/client/runtime/library").Decimal;
                 priceYearly: import("@prisma/client/runtime/library").Decimal;
                 currency: string;
@@ -132,17 +146,17 @@ export declare class CompaniesController {
                 maxAppointmentsPerMonth: number;
                 maxWhatsappMessages: number;
                 features: import("@prisma/client/runtime/library").JsonValue;
-                sortOrder: number;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             companyId: string;
+            status: import(".prisma/client").$Enums.SubscriptionStatus;
+            planId: string;
             provider: string;
             providerCustomerId: string | null;
             providerSubscriptionId: string | null;
-            status: import(".prisma/client").$Enums.SubscriptionStatus;
             billingCycle: import(".prisma/client").$Enums.BillingCycle;
             amount: import("@prisma/client/runtime/library").Decimal;
             nextDueDate: Date | null;
@@ -151,7 +165,6 @@ export declare class CompaniesController {
             cancelAtPeriodEnd: boolean;
             canceledAt: Date | null;
             trialEndsAt: Date | null;
-            planId: string;
         }) | null;
         _count: {
             members: number;
@@ -161,30 +174,79 @@ export declare class CompaniesController {
         };
     } & {
         id: string;
-        email: string;
         name: string;
-        phone: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         slug: string;
         document: string | null;
+        email: string;
+        phone: string;
         logoUrl: string | null;
         coverUrl: string | null;
         settings: import("@prisma/client/runtime/library").JsonValue;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        mpAccessToken: string | null;
+        mpRefreshToken: string | null;
+        mpUserId: string | null;
+        mpExpiresIn: number | null;
+        mpTokenType: string | null;
+        mpPublicKey: string | null;
     })[]>;
     toggleCompanyStatus(id: string, isActive: boolean): Promise<{
         id: string;
-        email: string;
         name: string;
-        phone: string;
-        isActive: boolean;
-        createdAt: Date;
-        updatedAt: Date;
         slug: string;
         document: string | null;
+        email: string;
+        phone: string;
         logoUrl: string | null;
         coverUrl: string | null;
         settings: import("@prisma/client/runtime/library").JsonValue;
+        isActive: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        mpAccessToken: string | null;
+        mpRefreshToken: string | null;
+        mpUserId: string | null;
+        mpExpiresIn: number | null;
+        mpTokenType: string | null;
+        mpPublicKey: string | null;
+    }>;
+    changeCompanyPlan(id: string, planId: string, status?: SubscriptionStatus, months?: number): Promise<{
+        plan: {
+            id: string;
+            name: string;
+            slug: string;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string;
+            sortOrder: number;
+            priceMonthly: import("@prisma/client/runtime/library").Decimal;
+            priceYearly: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            maxProfessionals: number;
+            maxAppointmentsPerMonth: number;
+            maxWhatsappMessages: number;
+            features: import("@prisma/client/runtime/library").JsonValue;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        status: import(".prisma/client").$Enums.SubscriptionStatus;
+        planId: string;
+        provider: string;
+        providerCustomerId: string | null;
+        providerSubscriptionId: string | null;
+        billingCycle: import(".prisma/client").$Enums.BillingCycle;
+        amount: import("@prisma/client/runtime/library").Decimal;
+        nextDueDate: Date | null;
+        currentPeriodStart: Date;
+        currentPeriodEnd: Date;
+        cancelAtPeriodEnd: boolean;
+        canceledAt: Date | null;
+        trialEndsAt: Date | null;
     }>;
 }

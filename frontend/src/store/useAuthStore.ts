@@ -4,6 +4,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string | null;
   role: 'SUPER_ADMIN' | 'COMPANY_ADMIN' | 'PROFESSIONAL' | 'STAFF';
   companyId?: string | null;
   company?: any;

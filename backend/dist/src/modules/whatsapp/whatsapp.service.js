@@ -134,6 +134,38 @@ let WhatsAppService = WhatsAppService_1 = class WhatsAppService {
             },
         });
     }
+    async sendRescheduleNotification(appointmentId) {
+        const appointment = await this.prisma.appointment.findUnique({
+            where: { id: appointmentId },
+            include: {
+                company: true,
+                professional: true,
+                service: true,
+                client: true,
+            },
+        });
+        if (!appointment)
+            return;
+        const dateFormatted = (0, date_fns_1.format)(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: locale_1.ptBR });
+        const text = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi *reagendado* com sucesso!\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n\nVocê pode consultar seus detalhes a qualquer momento em:\n${process.env.APP_URL || 'http://localhost:5173'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
+        const result = await this.provider.sendMessage({
+            toPhone: appointment.client.phone,
+            text,
+        });
+        await this.prisma.notificationLog.create({
+            data: {
+                companyId: appointment.companyId,
+                appointmentId: appointment.id,
+                channel: 'WHATSAPP',
+                recipientPhone: appointment.client.phone,
+                messageType: 'RESCHEDULE',
+                status: result.success ? client_1.NotificationStatus.SENT : client_1.NotificationStatus.FAILED,
+                providerMessageId: result.providerMessageId || null,
+                errorPayload: result.error || null,
+                sentAt: result.success ? new Date() : null,
+            },
+        });
+    }
 };
 exports.WhatsAppService = WhatsAppService;
 exports.WhatsAppService = WhatsAppService = WhatsAppService_1 = __decorate([

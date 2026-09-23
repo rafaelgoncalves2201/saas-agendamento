@@ -28,6 +28,9 @@ const dashboard_module_1 = require("./modules/dashboard/dashboard.module");
 const products_module_1 = require("./modules/products/products.module");
 const whatsapp_module_1 = require("./modules/whatsapp/whatsapp.module");
 const coupons_module_1 = require("./modules/coupons/coupons.module");
+const waitlist_module_1 = require("./modules/waitlist/waitlist.module");
+const reviews_module_1 = require("./modules/reviews/reviews.module");
+const mercadopago_module_1 = require("./modules/mercadopago/mercadopago.module");
 const jwt_auth_guard_1 = require("./common/guards/jwt-auth.guard");
 const roles_guard_1 = require("./common/guards/roles.guard");
 const subscription_guard_1 = require("./common/guards/subscription.guard");
@@ -59,6 +62,9 @@ exports.AppModule = AppModule = __decorate([
             products_module_1.ProductsModule,
             whatsapp_module_1.WhatsAppModule,
             coupons_module_1.CouponsModule,
+            waitlist_module_1.WaitlistModule,
+            reviews_module_1.ReviewsModule,
+            mercadopago_module_1.MercadoPagoModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [

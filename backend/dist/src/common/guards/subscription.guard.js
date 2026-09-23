@@ -31,6 +31,13 @@ let SubscriptionGuard = class SubscriptionGuard {
             return true;
         }
         const request = context.switchToHttp().getRequest();
+        const url = request.originalUrl || request.url || '';
+        if (url.includes('/subscriptions') ||
+            url.includes('/plans') ||
+            url.includes('/auth') ||
+            url.includes('/webhooks')) {
+            return true;
+        }
         const user = request.user;
         if (!user) {
             return true;
@@ -70,11 +77,22 @@ let SubscriptionGuard = class SubscriptionGuard {
                 throw new common_1.HttpException({
                     statusCode: common_1.HttpStatus.PAYMENT_REQUIRED,
                     error: 'Payment Required',
-                    message: 'Seu período de teste gratuito de 14 dias expirou. Assine um plano para continuar.',
+                    message: 'Seu período de teste gratuito expirou. Assine um plano para continuar.',
                     code: 'TRIAL_EXPIRED',
                 }, common_1.HttpStatus.PAYMENT_REQUIRED);
             }
             return true;
+        }
+        if (subscription.status === client_1.SubscriptionStatus.INCOMPLETE) {
+            if (subscription.trialEndsAt && now <= subscription.trialEndsAt) {
+                return true;
+            }
+            throw new common_1.HttpException({
+                statusCode: common_1.HttpStatus.PAYMENT_REQUIRED,
+                error: 'Payment Required',
+                message: 'Aguardando confirmação do pagamento do seu plano. Realize o pagamento ou clique em Verificar Pagamento.',
+                code: 'PAYMENT_PENDING',
+            }, common_1.HttpStatus.PAYMENT_REQUIRED);
         }
         if (subscription.status === client_1.SubscriptionStatus.PAST_DUE) {
             throw new common_1.HttpException({
@@ -95,7 +113,12 @@ let SubscriptionGuard = class SubscriptionGuard {
                 code: 'SUBSCRIPTION_INACTIVE',
             }, common_1.HttpStatus.PAYMENT_REQUIRED);
         }
-        return true;
+        throw new common_1.HttpException({
+            statusCode: common_1.HttpStatus.PAYMENT_REQUIRED,
+            error: 'Payment Required',
+            message: 'Acesso restrito. Assine um plano para continuar utilizando.',
+            code: 'SUBSCRIPTION_REQUIRED',
+        }, common_1.HttpStatus.PAYMENT_REQUIRED);
     }
 };
 exports.SubscriptionGuard = SubscriptionGuard;

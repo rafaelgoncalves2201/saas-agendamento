@@ -8,8 +8,20 @@ async function bootstrap() {
     const logger = new common_1.Logger('Bootstrap');
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.setGlobalPrefix('api');
+    const allowedOrigins = process.env.APP_URL
+        ? process.env.APP_URL.split(',').map((o) => o.trim())
+        : ['http://localhost:5173'];
     app.enableCors({
-        origin: process.env.APP_URL || 'http://localhost:5173',
+        origin: (origin, callback) => {
+            if (!origin)
+                return callback(null, true);
+            if (allowedOrigins.includes(origin) ||
+                origin.endsWith('.vercel.app') ||
+                process.env.NODE_ENV !== 'production') {
+                return callback(null, true);
+            }
+            return callback(null, true);
+        },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'asaas-access-token'],

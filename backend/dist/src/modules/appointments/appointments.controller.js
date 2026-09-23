@@ -44,6 +44,9 @@ let AppointmentsController = class AppointmentsController {
     updateStatus(req, id, dto) {
         return this.appointmentsService.updateAppointmentStatus(req.companyId, id, dto);
     }
+    rescheduleAppointment(req, id, dto) {
+        return this.appointmentsService.rescheduleAppointment(req.companyId, id, dto);
+    }
     deleteAppointment(req, id) {
         return this.appointmentsService.deleteAppointment(req.companyId, id);
     }
@@ -102,6 +105,17 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, appointment_dto_1.UpdateAppointmentStatusDto]),
     __metadata("design:returntype", void 0)
 ], AppointmentsController.prototype, "updateStatus", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)('JWT'),
+    (0, common_1.Patch)('appointments/:id/reschedule'),
+    (0, swagger_1.ApiOperation)({ summary: 'Reagendar data e horário do atendimento pelo profissional ou empresa' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id')),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, appointment_dto_1.RescheduleAppointmentDto]),
+    __metadata("design:returntype", void 0)
+], AppointmentsController.prototype, "rescheduleAppointment", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)('JWT'),
     (0, common_1.Delete)('appointments/:id'),

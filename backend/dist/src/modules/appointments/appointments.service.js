@@ -15,12 +15,15 @@ const prisma_service_1 = require("../../database/prisma.service");
 const whatsapp_service_1 = require("../whatsapp/whatsapp.service");
 const client_1 = require("@prisma/client");
 const date_fns_1 = require("date-fns");
+const mercadopago_service_1 = require("../mercadopago/mercadopago.service");
 let AppointmentsService = class AppointmentsService {
     prisma;
     whatsAppService;
-    constructor(prisma, whatsAppService) {
+    mercadoPagoService;
+    constructor(prisma, whatsAppService, mercadoPagoService) {
         this.prisma = prisma;
         this.whatsAppService = whatsAppService;
+        this.mercadoPagoService = mercadoPagoService;
     }
     async createPublicAppointment(companySlug, dto) {
         const company = await this.prisma.company.findUnique({
@@ -76,7 +79,7 @@ let AppointmentsService = class AppointmentsService {
         if ((0, date_fns_1.isBefore)(startDateTime, new Date())) {
             throw new common_1.BadRequestException('Não é possível agendar em datas passadas');
         }
-        const appointment = await this.prisma.$transaction(async (tx) => {
+        let appointment = await this.prisma.$transaction(async (tx) => {
             const conflict = await tx.appointment.findFirst({
                 where: {
                     companyId: company.id,
@@ -136,8 +139,10 @@ let AppointmentsService = class AppointmentsService {
                 });
             }
             const companySettings = company.settings || {};
-            const requiresDeposit = Boolean(companySettings.requiresDeposit);
-            const initialStatus = requiresDeposit ? client_1.AppointmentStatus.PENDING : client_1.AppointmentStatus.CONFIRMED;
+            const profRequiresDeposit = professional.requiresDeposit;
+            const companyRequiresDeposit = Boolean(companySettings.requiresDeposit);
+            const requiresDeposit = profRequiresDeposit || companyRequiresDeposit;
+            const hasMercadoPago = Boolean(professional.mpAccessToken || company.mpAccessToken);
             let finalPrice = service.price;
             let discountAmount = 0;
             let validCouponCode = null;
@@ -173,6 +178,30 @@ let AppointmentsService = class AppointmentsService {
                     }
                 }
             }
+            let depositAmount = 0;
+            if (requiresDeposit) {
+                if (profRequiresDeposit && professional.depositValue) {
+                    if (professional.depositType === client_1.DepositType.PERCENTAGE) {
+                        depositAmount =
+                            Math.round(((Number(finalPrice) * Number(professional.depositValue)) / 100) * 100) / 100;
+                    }
+                    else {
+                        depositAmount = Math.min(Number(finalPrice), Number(professional.depositValue));
+                    }
+                }
+                else {
+                    const raw = String(companySettings.depositValue || '20')
+                        .replace('R$', '')
+                        .trim()
+                        .replace(',', '.');
+                    depositAmount = parseFloat(raw) || 20;
+                }
+            }
+            const initialStatus = requiresDeposit
+                ? hasMercadoPago
+                    ? client_1.AppointmentStatus.PENDING_PAYMENT
+                    : client_1.AppointmentStatus.PENDING
+                : client_1.AppointmentStatus.CONFIRMED;
             return tx.appointment.create({
                 data: {
                     companyId: company.id,
@@ -186,15 +215,16 @@ let AppointmentsService = class AppointmentsService {
                     originalPrice: service.price,
                     couponCode: validCouponCode,
                     discountAmount: discountAmount > 0 ? new client_1.Prisma.Decimal(discountAmount) : null,
+                    depositAmount: depositAmount > 0 ? new client_1.Prisma.Decimal(depositAmount) : null,
                     status: initialStatus,
                     notes: dto.notes || null,
                 },
                 include: {
                     company: {
-                        select: { name: true, phone: true, slug: true, logoUrl: true, settings: true },
+                        select: { name: true, phone: true, slug: true, logoUrl: true, settings: true, mpAccessToken: true },
                     },
                     professional: {
-                        select: { name: true, phone: true, avatarUrl: true },
+                        select: { name: true, phone: true, avatarUrl: true, mpAccessToken: true },
                     },
                     service: {
                         select: { name: true, durationMinutes: true, price: true, imageUrl: true },
@@ -204,7 +234,47 @@ let AppointmentsService = class AppointmentsService {
             });
         });
         const companySettings = appointment.company.settings || {};
-        const requiresDeposit = appointment.status === client_1.AppointmentStatus.PENDING;
+        const isPendingPayment = appointment.status === client_1.AppointmentStatus.PENDING_PAYMENT;
+        const isPendingManual = appointment.status === client_1.AppointmentStatus.PENDING;
+        const requiresDeposit = isPendingPayment || isPendingManual;
+        const effectiveMpToken = appointment.professional?.mpAccessToken || appointment.company?.mpAccessToken;
+        if (isPendingPayment && effectiveMpToken) {
+            try {
+                const mpPix = await this.mercadoPagoService.createPixPayment({
+                    professionalAccessToken: effectiveMpToken,
+                    appointmentId: appointment.id,
+                    amount: Number(appointment.depositAmount || 20),
+                    payerEmail: dto.clientEmail || appointment.client.email || 'cliente@inovaagenda.com',
+                    payerName: dto.clientName || appointment.client.name,
+                    serviceName: appointment.service.name,
+                    companyName: appointment.company.name,
+                });
+                appointment = await this.prisma.appointment.update({
+                    where: { id: appointment.id },
+                    data: {
+                        mpPaymentId: mpPix.mpPaymentId,
+                        pixCopiaECola: mpPix.pixCopiaECola,
+                        pixQrCodeBase64: mpPix.pixQrCodeBase64,
+                        pixPaymentUrl: mpPix.pixPaymentUrl,
+                    },
+                    include: {
+                        company: {
+                            select: { name: true, phone: true, slug: true, logoUrl: true, settings: true, mpAccessToken: true },
+                        },
+                        professional: {
+                            select: { name: true, phone: true, avatarUrl: true, mpAccessToken: true },
+                        },
+                        service: {
+                            select: { name: true, durationMinutes: true, price: true, imageUrl: true },
+                        },
+                        client: true,
+                    },
+                });
+            }
+            catch (err) {
+                console.error('Falha ao gerar cobrança Pix no Mercado Pago:', err);
+            }
+        }
         if (appointment.status === client_1.AppointmentStatus.CONFIRMED) {
             this.whatsAppService
                 .sendAppointmentConfirmation(appointment.id)
@@ -212,19 +282,30 @@ let AppointmentsService = class AppointmentsService {
         }
         return {
             success: true,
-            message: requiresDeposit
-                ? 'Agendamento pré-reservado! Por favor, efetue o pagamento do sinal via Pix para confirmação.'
-                : 'Agendamento confirmado com sucesso!',
+            message: isPendingPayment
+                ? 'Agendamento pré-reservado! Efetue o pagamento do Pix para confirmação automática imediata.'
+                : isPendingManual
+                    ? 'Agendamento pré-reservado! Por favor, efetue o pagamento do sinal via Pix para confirmação.'
+                    : 'Agendamento confirmado com sucesso!',
             appointment,
             requiresDeposit,
             depositInfo: requiresDeposit
                 ? {
-                    depositValue: companySettings.depositValue || 'R$ 20,00',
+                    isMercadoPago: Boolean(appointment.pixQrCodeBase64 || appointment.pixCopiaECola),
+                    depositAmount: Number(appointment.depositAmount || 0),
+                    depositValue: `R$ ${Number(appointment.depositAmount || 0).toFixed(2)}`,
+                    pixQrCodeBase64: appointment.pixQrCodeBase64 || null,
+                    pixCopiaECola: appointment.pixCopiaECola || null,
+                    pixPaymentUrl: appointment.pixPaymentUrl || null,
                     pixKey: companySettings.pixKey || '',
                     pixKeyType: companySettings.pixKeyType || 'Chave Pix',
-                    pixRecipientName: companySettings.pixRecipientName || appointment.company.name,
-                    depositInstructions: companySettings.depositInstructions ||
-                        'Envie o comprovante do sinal pelo WhatsApp para que seu horário seja confirmado.',
+                    pixRecipientName: appointment.professional?.name ||
+                        companySettings.pixRecipientName ||
+                        appointment.company.name,
+                    depositInstructions: appointment.pixCopiaECola
+                        ? 'Escaneie o QR Code ou copie a chave Pix abaixo. Assim que o pagamento for concluído, sua vaga será confirmada automaticamente!'
+                        : companySettings.depositInstructions ||
+                            'Envie o comprovante do sinal pelo WhatsApp para que seu horário seja confirmado.',
                     companyPhone: appointment.company.phone,
                 }
                 : null,
@@ -252,6 +333,9 @@ let AppointmentsService = class AppointmentsService {
                 },
                 client: {
                     select: { name: true, phone: true },
+                },
+                review: {
+                    select: { id: true, rating: true, comment: true, createdAt: true },
                 },
             },
         });
@@ -363,11 +447,66 @@ let AppointmentsService = class AppointmentsService {
             where: { id },
         });
     }
+    async rescheduleAppointment(companyId, id, dto) {
+        if (!companyId) {
+            throw new common_1.BadRequestException('Identificador da empresa não informado ou sessão sem empresa vinculada');
+        }
+        const appointment = await this.prisma.appointment.findFirst({
+            where: { id, companyId },
+            include: {
+                service: true,
+                professional: true,
+                client: true,
+            },
+        });
+        if (!appointment) {
+            throw new common_1.NotFoundException('Agendamento não encontrado');
+        }
+        const targetProfId = dto.professionalId || appointment.professionalId;
+        const newStart = new Date(dto.startDateTime);
+        if (isNaN(newStart.getTime())) {
+            throw new common_1.BadRequestException('Data e hora inválida para reagendamento');
+        }
+        const newEnd = (0, date_fns_1.addMinutes)(newStart, appointment.service.durationMinutes);
+        const conflict = await this.prisma.appointment.findFirst({
+            where: {
+                id: { not: id },
+                companyId,
+                professionalId: targetProfId,
+                status: { notIn: [client_1.AppointmentStatus.CANCELLED] },
+                AND: [
+                    { startDateTime: { lt: newEnd } },
+                    { endDateTime: { gt: newStart } },
+                ],
+            },
+        });
+        if (conflict) {
+            throw new common_1.ConflictException('Já existe outro atendimento agendado para este profissional no horário solicitado');
+        }
+        const updated = await this.prisma.appointment.update({
+            where: { id },
+            data: {
+                startDateTime: newStart,
+                endDateTime: newEnd,
+                professionalId: targetProfId,
+            },
+            include: {
+                service: true,
+                professional: true,
+                client: true,
+            },
+        });
+        this.whatsAppService
+            .sendRescheduleNotification(appointment.id)
+            .catch((err) => console.error('Erro ao enviar WhatsApp de reagendamento:', err));
+        return updated;
+    }
 };
 exports.AppointmentsService = AppointmentsService;
 exports.AppointmentsService = AppointmentsService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        whatsapp_service_1.WhatsAppService])
+        whatsapp_service_1.WhatsAppService,
+        mercadopago_service_1.MercadoPagoService])
 ], AppointmentsService);
 //# sourceMappingURL=appointments.service.js.map

@@ -97,6 +97,19 @@ export const SuperAdminPlansPage: React.FC = () => {
                     <Check size={14} className="text-emerald-400" />
                     <span>Até <strong>{p.maxWhatsappMessages}</strong> disparos de WhatsApp</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    {p.features?.inventoryControl || p.slug === 'professional' || p.slug === 'business' ? (
+                      <>
+                        <Check size={14} className="text-emerald-400" />
+                        <span className="text-emerald-300 font-medium">Controle de Estoque & Reposição</span>
+                      </>
+                    ) : (
+                      <>
+                        <X size={14} className="text-slate-500" />
+                        <span className="text-slate-500 line-through">Sem controle de estoque</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 

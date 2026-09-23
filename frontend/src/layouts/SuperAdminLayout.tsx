@@ -5,6 +5,7 @@ import React from 'react';
     BarChart3,
     Building2,
     Layers,
+    Users,
     ArrowLeft,
     LogOut,
     ShieldAlert,
@@ -24,6 +25,7 @@ import React from 'react';
       { label: 'Visão Geral & MRR', path: '/admin', icon: BarChart3 },
       { label: 'Empresas do SaaS', path: '/admin/companies', icon: Building2 },
       { label: 'Planos & Preços', path: '/admin/plans', icon: Layers },
+      { label: 'Usuários do Sistema', path: '/admin/users', icon: Users },
     ];
 
     return (
@@ -36,8 +38,8 @@ import React from 'react';
                 <ShieldAlert size={20} />
               </div>
               <div>
-                <h1 className="font-bold text-sm text-white">Super Admin</h1>
-                <p className="text-xs text-slate-400">Gestão Global SaaS</p>
+                <h1 className="font-bold text-sm text-white">Inova Agenda</h1>
+                <p className="text-xs text-slate-400">Super Admin • Gestão Global</p>
               </div>
             </div>
 

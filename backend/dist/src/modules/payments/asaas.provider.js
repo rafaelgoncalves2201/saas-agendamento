@@ -76,6 +76,11 @@ let AsaasProvider = AsaasProvider_1 = class AsaasProvider {
                 status: 'ACTIVE',
                 paymentUrl: `https://sandbox.asaas.com/i/mock_invoice_${mockPaymentId}`,
                 firstPaymentId: mockPaymentId,
+                pixQrCode: {
+                    encodedImage: '',
+                    payload: '00020126580014BR.GOV.BCB.PIX2536mock_payload',
+                    expirationDate: new Date(Date.now() + 86400000).toISOString(),
+                },
             };
         }
         try {
@@ -87,11 +92,75 @@ let AsaasProvider = AsaasProvider_1 = class AsaasProvider {
                 cycle: input.cycle,
                 description: input.description,
             });
-            return res.data;
+            let firstPayment = null;
+            let pixQrCode = null;
+            try {
+                const paymentsRes = await this.client.get(`/subscriptions/${res.data.id}/payments`);
+                if (paymentsRes.data?.data?.length > 0) {
+                    firstPayment = paymentsRes.data.data[0];
+                    if (input.billingType === 'PIX' && firstPayment?.id) {
+                        try {
+                            const pixRes = await this.client.get(`/payments/${firstPayment.id}/pixQrCode`);
+                            pixQrCode = pixRes.data;
+                        }
+                        catch (pixErr) {
+                            this.logger.warn(`Não foi possível obter Pix QR Code de imediato: ${pixErr.message}`);
+                        }
+                    }
+                }
+            }
+            catch (pErr) {
+                this.logger.warn(`Não foi possível recuperar faturas da assinatura de imediato: ${pErr.message}`);
+            }
+            return {
+                ...res.data,
+                firstPaymentId: firstPayment?.id || null,
+                paymentUrl: firstPayment?.invoiceUrl || res.data.paymentUrl || null,
+                bankSlipUrl: firstPayment?.bankSlipUrl || null,
+                pixQrCode,
+            };
         }
         catch (error) {
             this.logger.error(`Erro ao criar assinatura no Asaas: ${error.response?.data?.message || error.message}`);
             throw new Error(`Falha ao gerar assinatura no Asaas: ${error.response?.data?.message || error.message}`);
+        }
+    }
+    async getSubscriptionPayments(providerSubscriptionId) {
+        if (this.isMock) {
+            return [
+                {
+                    id: `pay_mock_${providerSubscriptionId}`,
+                    status: 'PENDING',
+                    value: 49.9,
+                    billingType: 'PIX',
+                    paymentDate: null,
+                },
+            ];
+        }
+        try {
+            const res = await this.client.get(`/subscriptions/${providerSubscriptionId}/payments`);
+            return res.data?.data || [];
+        }
+        catch (error) {
+            this.logger.error(`Erro ao buscar pagamentos da assinatura no Asaas: ${error.response?.data?.message || error.message}`);
+            throw new Error(`Falha ao consultar pagamentos no Asaas: ${error.response?.data?.message || error.message}`);
+        }
+    }
+    async getPixQrCode(providerPaymentId) {
+        if (this.isMock) {
+            return {
+                encodedImage: '',
+                payload: '00020126580014BR.GOV.BCB.PIX2536mock_payload',
+                expirationDate: new Date(Date.now() + 86400000).toISOString(),
+            };
+        }
+        try {
+            const res = await this.client.get(`/payments/${providerPaymentId}/pixQrCode`);
+            return res.data;
+        }
+        catch (error) {
+            this.logger.error(`Erro ao obter QR Code Pix: ${error.response?.data?.message || error.message}`);
+            return null;
         }
     }
     async cancelSubscription(providerSubscriptionId) {

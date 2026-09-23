@@ -13,8 +13,8 @@ export declare class CouponsService {
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         companyId: string;
+        description: string | null;
         professionalId: string | null;
         code: string;
         discountType: import(".prisma/client").$Enums.DiscountType;
@@ -34,8 +34,8 @@ export declare class CouponsService {
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         companyId: string;
+        description: string | null;
         professionalId: string | null;
         code: string;
         discountType: import(".prisma/client").$Enums.DiscountType;
@@ -55,8 +55,8 @@ export declare class CouponsService {
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         companyId: string;
+        description: string | null;
         professionalId: string | null;
         code: string;
         discountType: import(".prisma/client").$Enums.DiscountType;
@@ -71,8 +71,8 @@ export declare class CouponsService {
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         companyId: string;
+        description: string | null;
         professionalId: string | null;
         code: string;
         discountType: import(".prisma/client").$Enums.DiscountType;
@@ -87,8 +87,8 @@ export declare class CouponsService {
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        description: string | null;
         companyId: string;
+        description: string | null;
         professionalId: string | null;
         code: string;
         discountType: import(".prisma/client").$Enums.DiscountType;

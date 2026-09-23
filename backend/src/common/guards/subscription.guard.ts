@@ -29,6 +29,18 @@ export class SubscriptionGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
+    const url = request.originalUrl || request.url || '';
+
+    // Rotas de autenticação, webhooks, consulta de planos e gestão da assinatura não devem ser bloqueadas
+    if (
+      url.includes('/subscriptions') ||
+      url.includes('/plans') ||
+      url.includes('/auth') ||
+      url.includes('/webhooks')
+    ) {
+      return true;
+    }
+
     const user = request.user;
 
     if (!user) {
@@ -63,7 +75,7 @@ export class SubscriptionGuard implements CanActivate {
 
     const now = new Date();
 
-    // 1. Assinatura ativa ou trialing válido
+    // 1. Assinatura ativa
     if (subscription.status === SubscriptionStatus.ACTIVE) {
       if (now > subscription.currentPeriodEnd) {
         throw new HttpException(
@@ -79,13 +91,14 @@ export class SubscriptionGuard implements CanActivate {
       return true;
     }
 
+    // 2. Período de avaliação gratuita (Trial)
     if (subscription.status === SubscriptionStatus.TRIALING) {
       if (subscription.trialEndsAt && now > subscription.trialEndsAt) {
         throw new HttpException(
           {
             statusCode: HttpStatus.PAYMENT_REQUIRED,
             error: 'Payment Required',
-            message: 'Seu período de teste gratuito de 14 dias expirou. Assine um plano para continuar.',
+            message: 'Seu período de teste gratuito expirou. Assine um plano para continuar.',
             code: 'TRIAL_EXPIRED',
           },
           HttpStatus.PAYMENT_REQUIRED,
@@ -94,6 +107,24 @@ export class SubscriptionGuard implements CanActivate {
       return true;
     }
 
+    // 3. Aguardando confirmação do pagamento inicial
+    if (subscription.status === SubscriptionStatus.INCOMPLETE) {
+      // Se ainda tiver trial válido, permite continuar utilizando
+      if (subscription.trialEndsAt && now <= subscription.trialEndsAt) {
+        return true;
+      }
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.PAYMENT_REQUIRED,
+          error: 'Payment Required',
+          message: 'Aguardando confirmação do pagamento do seu plano. Realize o pagamento ou clique em Verificar Pagamento.',
+          code: 'PAYMENT_PENDING',
+        },
+        HttpStatus.PAYMENT_REQUIRED,
+      );
+    }
+
+    // 4. Pagamento em atraso
     if (subscription.status === SubscriptionStatus.PAST_DUE) {
       throw new HttpException(
         {
@@ -122,7 +153,15 @@ export class SubscriptionGuard implements CanActivate {
       );
     }
 
-    return true;
+    throw new HttpException(
+      {
+        statusCode: HttpStatus.PAYMENT_REQUIRED,
+        error: 'Payment Required',
+        message: 'Acesso restrito. Assine um plano para continuar utilizando.',
+        code: 'SUBSCRIPTION_REQUIRED',
+      },
+      HttpStatus.PAYMENT_REQUIRED,
+    );
   }
 }
 

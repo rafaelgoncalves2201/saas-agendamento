@@ -16,3 +16,7 @@ export declare class UpdateAppointmentStatusDto {
 export declare class CancelAppointmentClientDto {
     reason?: string;
 }
+export declare class RescheduleAppointmentDto {
+    startDateTime: string;
+    professionalId?: string;
+}

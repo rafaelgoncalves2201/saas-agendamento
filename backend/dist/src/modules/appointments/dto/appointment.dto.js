@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CancelAppointmentClientDto = exports.UpdateAppointmentStatusDto = exports.CreatePublicAppointmentDto = void 0;
+exports.RescheduleAppointmentDto = exports.CancelAppointmentClientDto = exports.UpdateAppointmentStatusDto = exports.CreatePublicAppointmentDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
@@ -97,4 +97,20 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CancelAppointmentClientDto.prototype, "reason", void 0);
+class RescheduleAppointmentDto {
+    startDateTime;
+    professionalId;
+}
+exports.RescheduleAppointmentDto = RescheduleAppointmentDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: '2026-09-28T09:30:00.000Z', description: 'Nova data e hora em formato ISO' }),
+    (0, class_validator_1.IsDateString)({}, { message: 'Data/hora de reagendamento inválida' }),
+    __metadata("design:type", String)
+], RescheduleAppointmentDto.prototype, "startDateTime", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'uuid-professional-id', required: false }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], RescheduleAppointmentDto.prototype, "professionalId", void 0);
 //# sourceMappingURL=appointment.dto.js.map

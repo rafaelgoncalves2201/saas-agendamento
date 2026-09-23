@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CompaniesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
+const client_1 = require("@prisma/client");
 let CompaniesService = class CompaniesService {
     prisma;
     constructor(prisma) {
@@ -160,6 +161,51 @@ let CompaniesService = class CompaniesService {
         return this.prisma.company.update({
             where: { id: companyId },
             data: { isActive },
+        });
+    }
+    async changeCompanyPlan(companyId, planId, status, months) {
+        const company = await this.prisma.company.findUnique({
+            where: { id: companyId },
+            include: { subscription: true },
+        });
+        if (!company) {
+            throw new common_1.NotFoundException('Empresa não encontrada');
+        }
+        const plan = await this.prisma.plan.findUnique({
+            where: { id: planId },
+        });
+        if (!plan) {
+            throw new common_1.NotFoundException('Plano não encontrado');
+        }
+        const durationMonths = months && months > 0 ? months : 1;
+        const currentPeriodStart = new Date();
+        const currentPeriodEnd = new Date();
+        currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + durationMonths);
+        const subscriptionStatus = status || client_1.SubscriptionStatus.ACTIVE;
+        return this.prisma.subscription.upsert({
+            where: { companyId },
+            update: {
+                planId: plan.id,
+                status: subscriptionStatus,
+                amount: plan.priceMonthly,
+                currentPeriodStart,
+                currentPeriodEnd,
+                trialEndsAt: subscriptionStatus === client_1.SubscriptionStatus.TRIALING ? currentPeriodEnd : null,
+                cancelAtPeriodEnd: false,
+                canceledAt: null,
+            },
+            create: {
+                companyId,
+                planId: plan.id,
+                status: subscriptionStatus,
+                amount: plan.priceMonthly,
+                currentPeriodStart,
+                currentPeriodEnd,
+                trialEndsAt: subscriptionStatus === client_1.SubscriptionStatus.TRIALING ? currentPeriodEnd : null,
+            },
+            include: {
+                plan: true,
+            },
         });
     }
 };

@@ -114,6 +114,12 @@ let AuthService = class AuthService {
                     phone: dto.companyPhone,
                     document: dto.companyDocument || null,
                     email: dto.ownerEmail,
+                    settings: {
+                        primaryColor: '#6B3E26',
+                        publicTheme: 'light',
+                        requiresDeposit: true,
+                        depositValue: 'R$ 50',
+                    },
                 },
             });
             await tx.companyMember.create({

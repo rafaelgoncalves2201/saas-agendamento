@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { UpdateCompanyDto } from './dto/update-company.dto';
+import { SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
 export class CompaniesService {
@@ -168,6 +169,61 @@ export class CompaniesService {
     return this.prisma.company.update({
       where: { id: companyId },
       data: { isActive },
+    });
+  }
+
+  async changeCompanyPlan(
+    companyId: string,
+    planId: string,
+    status?: SubscriptionStatus,
+    months?: number,
+  ) {
+    const company = await this.prisma.company.findUnique({
+      where: { id: companyId },
+      include: { subscription: true },
+    });
+    if (!company) {
+      throw new NotFoundException('Empresa não encontrada');
+    }
+
+    const plan = await this.prisma.plan.findUnique({
+      where: { id: planId },
+    });
+    if (!plan) {
+      throw new NotFoundException('Plano não encontrado');
+    }
+
+    const durationMonths = months && months > 0 ? months : 1;
+    const currentPeriodStart = new Date();
+    const currentPeriodEnd = new Date();
+    currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + durationMonths);
+
+    const subscriptionStatus = status || SubscriptionStatus.ACTIVE;
+
+    return this.prisma.subscription.upsert({
+      where: { companyId },
+      update: {
+        planId: plan.id,
+        status: subscriptionStatus,
+        amount: plan.priceMonthly,
+        currentPeriodStart,
+        currentPeriodEnd,
+        trialEndsAt: subscriptionStatus === SubscriptionStatus.TRIALING ? currentPeriodEnd : null,
+        cancelAtPeriodEnd: false,
+        canceledAt: null,
+      },
+      create: {
+        companyId,
+        planId: plan.id,
+        status: subscriptionStatus,
+        amount: plan.priceMonthly,
+        currentPeriodStart,
+        currentPeriodEnd,
+        trialEndsAt: subscriptionStatus === SubscriptionStatus.TRIALING ? currentPeriodEnd : null,
+      },
+      include: {
+        plan: true,
+      },
     });
   }
 }

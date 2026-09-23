@@ -68,3 +68,15 @@ export class CancelAppointmentClientDto {
   reason?: string;
 }
 
+export class RescheduleAppointmentDto {
+  @ApiProperty({ example: '2026-09-28T09:30:00.000Z', description: 'Nova data e hora em formato ISO' })
+  @IsDateString({}, { message: 'Data/hora de reagendamento inválida' })
+  startDateTime: string;
+
+  @ApiProperty({ example: 'uuid-professional-id', required: false })
+  @IsOptional()
+  @IsString()
+  professionalId?: string;
+}
+
+

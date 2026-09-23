@@ -20,6 +20,7 @@ const coupon_dto_1 = require("./dto/coupon.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
+const public_decorator_1 = require("../../common/decorators/public.decorator");
 const client_1 = require("@prisma/client");
 let CouponsController = class CouponsController {
     couponsService;
@@ -107,6 +108,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CouponsController.prototype, "toggleCoupon", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Post)('public/companies/:slug/validate-coupon'),
     (0, swagger_1.ApiOperation)({ summary: 'Validar cupom de desconto na página pública de agendamento' }),
     __param(0, (0, common_1.Param)('slug')),

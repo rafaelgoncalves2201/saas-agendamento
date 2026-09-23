@@ -1,5 +1,5 @@
 import { AppointmentsService } from './appointments.service';
-import { CancelAppointmentClientDto, CreatePublicAppointmentDto, UpdateAppointmentStatusDto } from './dto/appointment.dto';
+import { CancelAppointmentClientDto, CreatePublicAppointmentDto, RescheduleAppointmentDto, UpdateAppointmentStatusDto } from './dto/appointment.dto';
 import { AppointmentStatus } from '@prisma/client';
 export declare class AppointmentsController {
     private readonly appointmentsService;
@@ -8,17 +8,19 @@ export declare class AppointmentsController {
         success: boolean;
         message: string;
         appointment: {
+            company: {
+                slug: string;
+                name: string;
+                phone: string;
+                logoUrl: string | null;
+                settings: import("@prisma/client/runtime/library").JsonValue;
+                mpAccessToken: string | null;
+            };
             professional: {
                 name: string;
                 phone: string;
+                mpAccessToken: string | null;
                 avatarUrl: string | null;
-            };
-            company: {
-                name: string;
-                phone: string;
-                slug: string;
-                logoUrl: string | null;
-                settings: import("@prisma/client/runtime/library").JsonValue;
             };
             service: {
                 name: string;
@@ -28,8 +30,8 @@ export declare class AppointmentsController {
             };
             client: {
                 id: string;
-                email: string | null;
                 name: string;
+                email: string | null;
                 phone: string;
                 createdAt: Date;
                 updatedAt: Date;
@@ -43,17 +45,23 @@ export declare class AppointmentsController {
             createdAt: Date;
             updatedAt: Date;
             companyId: string;
-            status: import(".prisma/client").$Enums.AppointmentStatus;
             professionalId: string;
-            durationMinutes: number;
             serviceId: string;
+            clientId: string;
             startDateTime: Date;
             endDateTime: Date;
-            clientId: string;
+            durationMinutes: number;
             priceAtBooking: import("@prisma/client/runtime/library").Decimal;
             originalPrice: import("@prisma/client/runtime/library").Decimal | null;
             couponCode: string | null;
             discountAmount: import("@prisma/client/runtime/library").Decimal | null;
+            depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+            mpPaymentId: string | null;
+            pixCopiaECola: string | null;
+            pixQrCodeBase64: string | null;
+            pixPaymentUrl: string | null;
+            paidAt: Date | null;
+            status: import(".prisma/client").$Enums.AppointmentStatus;
             clientManagementCode: string;
             notes: string | null;
             cancellationReason: string | null;
@@ -61,7 +69,12 @@ export declare class AppointmentsController {
         };
         requiresDeposit: boolean;
         depositInfo: {
-            depositValue: any;
+            isMercadoPago: boolean;
+            depositAmount: number;
+            depositValue: string;
+            pixQrCodeBase64: string | null;
+            pixCopiaECola: string | null;
+            pixPaymentUrl: string | null;
             pixKey: any;
             pixKeyType: any;
             pixRecipientName: any;
@@ -71,17 +84,17 @@ export declare class AppointmentsController {
         clientManagementUrl: string;
     }>;
     getPublicAppointment(code: string): Promise<{
+        company: {
+            slug: string;
+            name: string;
+            phone: string;
+            logoUrl: string | null;
+            settings: import("@prisma/client/runtime/library").JsonValue;
+        };
         professional: {
             name: string;
             phone: string;
             avatarUrl: string | null;
-        };
-        company: {
-            name: string;
-            phone: string;
-            slug: string;
-            logoUrl: string | null;
-            settings: import("@prisma/client/runtime/library").JsonValue;
         };
         service: {
             name: string;
@@ -92,22 +105,34 @@ export declare class AppointmentsController {
             name: string;
             phone: string;
         };
+        review: {
+            id: string;
+            createdAt: Date;
+            rating: number;
+            comment: string | null;
+        } | null;
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
         companyId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         professionalId: string;
-        durationMinutes: number;
         serviceId: string;
+        clientId: string;
         startDateTime: Date;
         endDateTime: Date;
-        clientId: string;
+        durationMinutes: number;
         priceAtBooking: import("@prisma/client/runtime/library").Decimal;
         originalPrice: import("@prisma/client/runtime/library").Decimal | null;
         couponCode: string | null;
         discountAmount: import("@prisma/client/runtime/library").Decimal | null;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        mpPaymentId: string | null;
+        pixCopiaECola: string | null;
+        pixQrCodeBase64: string | null;
+        pixPaymentUrl: string | null;
+        paidAt: Date | null;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientManagementCode: string;
         notes: string | null;
         cancellationReason: string | null;
@@ -118,17 +143,23 @@ export declare class AppointmentsController {
         createdAt: Date;
         updatedAt: Date;
         companyId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         professionalId: string;
-        durationMinutes: number;
         serviceId: string;
+        clientId: string;
         startDateTime: Date;
         endDateTime: Date;
-        clientId: string;
+        durationMinutes: number;
         priceAtBooking: import("@prisma/client/runtime/library").Decimal;
         originalPrice: import("@prisma/client/runtime/library").Decimal | null;
         couponCode: string | null;
         discountAmount: import("@prisma/client/runtime/library").Decimal | null;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        mpPaymentId: string | null;
+        pixCopiaECola: string | null;
+        pixQrCodeBase64: string | null;
+        pixPaymentUrl: string | null;
+        paidAt: Date | null;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientManagementCode: string;
         notes: string | null;
         cancellationReason: string | null;
@@ -137,17 +168,26 @@ export declare class AppointmentsController {
     listAppointments(req: any, professionalId?: string, status?: AppointmentStatus, startDate?: string, endDate?: string): Promise<({
         professional: {
             id: string;
-            email: string | null;
+            slug: string;
             name: string;
+            email: string | null;
             phone: string;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            slug: string;
+            mpAccessToken: string | null;
+            mpRefreshToken: string | null;
+            mpUserId: string | null;
+            mpExpiresIn: number | null;
+            mpTokenType: string | null;
+            mpPublicKey: string | null;
             companyId: string;
             userId: string | null;
             bio: string | null;
             avatarUrl: string | null;
+            requiresDeposit: boolean;
+            depositType: import(".prisma/client").$Enums.DepositType;
+            depositValue: import("@prisma/client/runtime/library").Decimal | null;
         };
         service: {
             id: string;
@@ -155,18 +195,18 @@ export declare class AppointmentsController {
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
-            sortOrder: number;
             companyId: string;
             durationMinutes: number;
+            description: string | null;
             price: import("@prisma/client/runtime/library").Decimal;
             category: string | null;
             imageUrl: string | null;
+            sortOrder: number;
         };
         client: {
             id: string;
-            email: string | null;
             name: string;
+            email: string | null;
             phone: string;
             createdAt: Date;
             updatedAt: Date;
@@ -180,17 +220,23 @@ export declare class AppointmentsController {
         createdAt: Date;
         updatedAt: Date;
         companyId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         professionalId: string;
-        durationMinutes: number;
         serviceId: string;
+        clientId: string;
         startDateTime: Date;
         endDateTime: Date;
-        clientId: string;
+        durationMinutes: number;
         priceAtBooking: import("@prisma/client/runtime/library").Decimal;
         originalPrice: import("@prisma/client/runtime/library").Decimal | null;
         couponCode: string | null;
         discountAmount: import("@prisma/client/runtime/library").Decimal | null;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        mpPaymentId: string | null;
+        pixCopiaECola: string | null;
+        pixQrCodeBase64: string | null;
+        pixPaymentUrl: string | null;
+        paidAt: Date | null;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientManagementCode: string;
         notes: string | null;
         cancellationReason: string | null;
@@ -199,17 +245,26 @@ export declare class AppointmentsController {
     updateStatus(req: any, id: string, dto: UpdateAppointmentStatusDto): Promise<{
         professional: {
             id: string;
-            email: string | null;
+            slug: string;
             name: string;
+            email: string | null;
             phone: string;
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            slug: string;
+            mpAccessToken: string | null;
+            mpRefreshToken: string | null;
+            mpUserId: string | null;
+            mpExpiresIn: number | null;
+            mpTokenType: string | null;
+            mpPublicKey: string | null;
             companyId: string;
             userId: string | null;
             bio: string | null;
             avatarUrl: string | null;
+            requiresDeposit: boolean;
+            depositType: import(".prisma/client").$Enums.DepositType;
+            depositValue: import("@prisma/client/runtime/library").Decimal | null;
         };
         service: {
             id: string;
@@ -217,18 +272,18 @@ export declare class AppointmentsController {
             isActive: boolean;
             createdAt: Date;
             updatedAt: Date;
-            description: string | null;
-            sortOrder: number;
             companyId: string;
             durationMinutes: number;
+            description: string | null;
             price: import("@prisma/client/runtime/library").Decimal;
             category: string | null;
             imageUrl: string | null;
+            sortOrder: number;
         };
         client: {
             id: string;
-            email: string | null;
             name: string;
+            email: string | null;
             phone: string;
             createdAt: Date;
             updatedAt: Date;
@@ -242,17 +297,100 @@ export declare class AppointmentsController {
         createdAt: Date;
         updatedAt: Date;
         companyId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         professionalId: string;
-        durationMinutes: number;
         serviceId: string;
+        clientId: string;
         startDateTime: Date;
         endDateTime: Date;
-        clientId: string;
+        durationMinutes: number;
         priceAtBooking: import("@prisma/client/runtime/library").Decimal;
         originalPrice: import("@prisma/client/runtime/library").Decimal | null;
         couponCode: string | null;
         discountAmount: import("@prisma/client/runtime/library").Decimal | null;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        mpPaymentId: string | null;
+        pixCopiaECola: string | null;
+        pixQrCodeBase64: string | null;
+        pixPaymentUrl: string | null;
+        paidAt: Date | null;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
+        clientManagementCode: string;
+        notes: string | null;
+        cancellationReason: string | null;
+        cancelledAt: Date | null;
+    }>;
+    rescheduleAppointment(req: any, id: string, dto: RescheduleAppointmentDto): Promise<{
+        professional: {
+            id: string;
+            slug: string;
+            name: string;
+            email: string | null;
+            phone: string;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            mpAccessToken: string | null;
+            mpRefreshToken: string | null;
+            mpUserId: string | null;
+            mpExpiresIn: number | null;
+            mpTokenType: string | null;
+            mpPublicKey: string | null;
+            companyId: string;
+            userId: string | null;
+            bio: string | null;
+            avatarUrl: string | null;
+            requiresDeposit: boolean;
+            depositType: import(".prisma/client").$Enums.DepositType;
+            depositValue: import("@prisma/client/runtime/library").Decimal | null;
+        };
+        service: {
+            id: string;
+            name: string;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            durationMinutes: number;
+            description: string | null;
+            price: import("@prisma/client/runtime/library").Decimal;
+            category: string | null;
+            imageUrl: string | null;
+            sortOrder: number;
+        };
+        client: {
+            id: string;
+            name: string;
+            email: string | null;
+            phone: string;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            notes: string | null;
+            totalAppointments: number;
+            lastAppointmentAt: Date | null;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        companyId: string;
+        professionalId: string;
+        serviceId: string;
+        clientId: string;
+        startDateTime: Date;
+        endDateTime: Date;
+        durationMinutes: number;
+        priceAtBooking: import("@prisma/client/runtime/library").Decimal;
+        originalPrice: import("@prisma/client/runtime/library").Decimal | null;
+        couponCode: string | null;
+        discountAmount: import("@prisma/client/runtime/library").Decimal | null;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        mpPaymentId: string | null;
+        pixCopiaECola: string | null;
+        pixQrCodeBase64: string | null;
+        pixPaymentUrl: string | null;
+        paidAt: Date | null;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientManagementCode: string;
         notes: string | null;
         cancellationReason: string | null;
@@ -263,17 +401,23 @@ export declare class AppointmentsController {
         createdAt: Date;
         updatedAt: Date;
         companyId: string;
-        status: import(".prisma/client").$Enums.AppointmentStatus;
         professionalId: string;
-        durationMinutes: number;
         serviceId: string;
+        clientId: string;
         startDateTime: Date;
         endDateTime: Date;
-        clientId: string;
+        durationMinutes: number;
         priceAtBooking: import("@prisma/client/runtime/library").Decimal;
         originalPrice: import("@prisma/client/runtime/library").Decimal | null;
         couponCode: string | null;
         discountAmount: import("@prisma/client/runtime/library").Decimal | null;
+        depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+        mpPaymentId: string | null;
+        pixCopiaECola: string | null;
+        pixQrCodeBase64: string | null;
+        pixPaymentUrl: string | null;
+        paidAt: Date | null;
+        status: import(".prisma/client").$Enums.AppointmentStatus;
         clientManagementCode: string;
         notes: string | null;
         cancellationReason: string | null;

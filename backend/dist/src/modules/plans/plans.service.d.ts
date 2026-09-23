@@ -6,11 +6,12 @@ export declare class PlansService {
     listPublicPlans(): Promise<{
         id: string;
         name: string;
+        slug: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        slug: string;
         description: string;
+        sortOrder: number;
         priceMonthly: import("@prisma/client/runtime/library").Decimal;
         priceYearly: import("@prisma/client/runtime/library").Decimal;
         currency: string;
@@ -18,7 +19,6 @@ export declare class PlansService {
         maxAppointmentsPerMonth: number;
         maxWhatsappMessages: number;
         features: import("@prisma/client/runtime/library").JsonValue;
-        sortOrder: number;
     }[]>;
     listAllPlans(): Promise<({
         _count: {
@@ -27,11 +27,12 @@ export declare class PlansService {
     } & {
         id: string;
         name: string;
+        slug: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        slug: string;
         description: string;
+        sortOrder: number;
         priceMonthly: import("@prisma/client/runtime/library").Decimal;
         priceYearly: import("@prisma/client/runtime/library").Decimal;
         currency: string;
@@ -39,16 +40,16 @@ export declare class PlansService {
         maxAppointmentsPerMonth: number;
         maxWhatsappMessages: number;
         features: import("@prisma/client/runtime/library").JsonValue;
-        sortOrder: number;
     })[]>;
     getPlan(id: string): Promise<{
         id: string;
         name: string;
+        slug: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        slug: string;
         description: string;
+        sortOrder: number;
         priceMonthly: import("@prisma/client/runtime/library").Decimal;
         priceYearly: import("@prisma/client/runtime/library").Decimal;
         currency: string;
@@ -56,16 +57,16 @@ export declare class PlansService {
         maxAppointmentsPerMonth: number;
         maxWhatsappMessages: number;
         features: import("@prisma/client/runtime/library").JsonValue;
-        sortOrder: number;
     }>;
     createPlan(dto: CreatePlanDto): Promise<{
         id: string;
         name: string;
+        slug: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        slug: string;
         description: string;
+        sortOrder: number;
         priceMonthly: import("@prisma/client/runtime/library").Decimal;
         priceYearly: import("@prisma/client/runtime/library").Decimal;
         currency: string;
@@ -73,16 +74,16 @@ export declare class PlansService {
         maxAppointmentsPerMonth: number;
         maxWhatsappMessages: number;
         features: import("@prisma/client/runtime/library").JsonValue;
-        sortOrder: number;
     }>;
     updatePlan(id: string, dto: UpdatePlanDto): Promise<{
         id: string;
         name: string;
+        slug: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        slug: string;
         description: string;
+        sortOrder: number;
         priceMonthly: import("@prisma/client/runtime/library").Decimal;
         priceYearly: import("@prisma/client/runtime/library").Decimal;
         currency: string;
@@ -90,16 +91,16 @@ export declare class PlansService {
         maxAppointmentsPerMonth: number;
         maxWhatsappMessages: number;
         features: import("@prisma/client/runtime/library").JsonValue;
-        sortOrder: number;
     }>;
     deletePlan(id: string): Promise<{
         id: string;
         name: string;
+        slug: string;
         isActive: boolean;
         createdAt: Date;
         updatedAt: Date;
-        slug: string;
         description: string;
+        sortOrder: number;
         priceMonthly: import("@prisma/client/runtime/library").Decimal;
         priceYearly: import("@prisma/client/runtime/library").Decimal;
         currency: string;
@@ -107,6 +108,5 @@ export declare class PlansService {
         maxAppointmentsPerMonth: number;
         maxWhatsappMessages: number;
         features: import("@prisma/client/runtime/library").JsonValue;
-        sortOrder: number;
     }>;
 }

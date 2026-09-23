@@ -15,6 +15,7 @@ import { CreateCouponDto, UpdateCouponDto, ValidateCouponDto } from './dto/coupo
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '@prisma/client';
 
 @ApiTags('Cupons de Desconto')
@@ -77,6 +78,7 @@ export class CouponsController {
   // =========================================================================
   // ENDPOINT PÚBLICO (CHECKOUT DE AGENDAMENTO)
   // =========================================================================
+  @Public()
   @Post('public/companies/:slug/validate-coupon')
   @ApiOperation({ summary: 'Validar cupom de desconto na página pública de agendamento' })
   async validatePublicCoupon(

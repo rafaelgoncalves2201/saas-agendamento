@@ -27,13 +27,22 @@ let DashboardService = class DashboardService {
         const todayStart = (0, date_fns_1.startOfDay)(now);
         const todayEnd = (0, date_fns_1.endOfDay)(now);
         const monthStart = (0, date_fns_1.startOfMonth)(now);
-        const [todayCount, upcomingCount, completedMonthCount, cancelledMonthCount, clientsCount, monthAppointments, company,] = await Promise.all([
+        const fourteenDaysAgoStart = (0, date_fns_1.startOfDay)(new Date(now.getTime() - 13 * 24 * 60 * 60 * 1000));
+        const [todayCount, todayRevenueAppointments, upcomingCount, completedMonthCount, cancelledMonthCount, clientsCount, monthAppointments, company, totalProducts, lowStockProducts, lowStockItems, waitlistCount, past14DaysAppointments,] = await Promise.all([
             this.prisma.appointment.count({
                 where: {
                     companyId,
                     startDateTime: { gte: todayStart, lte: todayEnd },
                     status: { not: client_1.AppointmentStatus.CANCELLED },
                 },
+            }),
+            this.prisma.appointment.findMany({
+                where: {
+                    companyId,
+                    startDateTime: { gte: todayStart, lte: todayEnd },
+                    status: { in: [client_1.AppointmentStatus.CONFIRMED, client_1.AppointmentStatus.COMPLETED] },
+                },
+                select: { priceAtBooking: true },
             }),
             this.prisma.appointment.count({
                 where: {
@@ -75,8 +84,50 @@ let DashboardService = class DashboardService {
                     },
                 },
             }),
+            this.prisma.product.count({
+                where: { companyId, isActive: true },
+            }),
+            this.prisma.product.count({
+                where: { companyId, isActive: true, stock: { lte: 5 } },
+            }),
+            this.prisma.product.findMany({
+                where: { companyId, isActive: true, stock: { lte: 5 } },
+                orderBy: { stock: 'asc' },
+                take: 5,
+                select: { id: true, name: true, stock: true, price: true, category: true },
+            }),
+            this.prisma.waitlistEntry.count({
+                where: { companyId, status: 'PENDING' },
+            }),
+            this.prisma.appointment.findMany({
+                where: {
+                    companyId,
+                    startDateTime: { gte: fourteenDaysAgoStart, lte: todayEnd },
+                    status: { in: [client_1.AppointmentStatus.CONFIRMED, client_1.AppointmentStatus.COMPLETED] },
+                },
+                select: { startDateTime: true, priceAtBooking: true },
+            }),
         ]);
+        const todayRevenue = todayRevenueAppointments.reduce((acc, app) => acc + Number(app.priceAtBooking), 0);
         const estimatedRevenue = monthAppointments.reduce((acc, app) => acc + Number(app.priceAtBooking), 0);
+        const chartData = [];
+        for (let i = 13; i >= 0; i--) {
+            const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+            const dayStart = (0, date_fns_1.startOfDay)(d).getTime();
+            const dayEndVal = (0, date_fns_1.endOfDay)(d).getTime();
+            const dayStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+            const appsInDay = past14DaysAppointments.filter((app) => {
+                const time = new Date(app.startDateTime).getTime();
+                return time >= dayStart && time <= dayEndVal;
+            });
+            const dayRevenue = appsInDay.reduce((acc, a) => acc + Number(a.priceAtBooking), 0);
+            chartData.push({
+                date: d.toISOString().split('T')[0],
+                dayLabel: dayStr,
+                appointments: appsInDay.length,
+                revenue: Math.round(dayRevenue * 100) / 100,
+            });
+        }
         const topServices = await this.prisma.appointment.groupBy({
             by: ['serviceId'],
             where: {
@@ -108,12 +159,20 @@ let DashboardService = class DashboardService {
         return {
             metrics: {
                 todayAppointments: todayCount,
+                todayRevenue,
                 upcomingAppointments: upcomingCount,
                 completedThisMonth: completedMonthCount,
                 cancelledThisMonth: cancelledMonthCount,
                 totalClients: clientsCount,
                 estimatedRevenueThisMonth: estimatedRevenue,
+                waitlistPending: waitlistCount,
             },
+            inventory: {
+                totalProducts,
+                lowStockCount: lowStockProducts,
+                lowStockItems,
+            },
+            chartData,
             topServices: populatedTopServices,
             subscription: {
                 status: company?.subscription?.status || null,

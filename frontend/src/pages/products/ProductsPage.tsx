@@ -1,76 +1,284 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
-import { ShoppingBag, Plus, Trash2, Loader2, X, AlertCircle } from 'lucide-react';
+import {
+  Package,
+  Plus,
+  Trash2,
+  Loader2,
+  X,
+  AlertTriangle,
+  ArrowUpDown,
+  Edit2,
+  Archive,
+  RotateCcw,
+  Clock,
+  Search,
+  CheckCircle2,
+  Boxes,
+  ArrowUpRight,
+  ArrowDownRight,
+  SlidersHorizontal,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DeleteConfirmationModal } from '../../components/DeleteConfirmationModal';
 
+interface ProductItem {
+  id: string;
+  name: string;
+  type: string;
+  unit: string;
+  sku?: string | null;
+  stock: number;
+  minStock: number;
+  cost: number | string;
+  price?: number | string;
+  notes?: string | null;
+  description?: string | null;
+  isArchived: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface StockMovement {
+  id: string;
+  type: 'ENTRY' | 'EXIT' | 'ADJUSTMENT';
+  quantity: number;
+  previousStock: number;
+  newStock: number;
+  reason?: string | null;
+  cost?: number | string | null;
+  createdAt: string;
+  product?: {
+    id: string;
+    name: string;
+    unit: string;
+    type: string;
+  };
+}
+
 export const ProductsPage: React.FC = () => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'stock' | 'history'>('stock');
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [movements, setMovements] = useState<StockMovement[]>([]);
+  const [stats, setStats] = useState({ totalActive: 0, lowStock: 0, totalArchived: 0 });
   const [features, setFeatures] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState('ALL');
+  const [showArchived, setShowArchived] = useState(false);
+
+  // Modals
+  const [itemModalOpen, setItemModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ProductItem | null>(null);
+  const [movementModalOpen, setMovementModalOpen] = useState(false);
+  const [selectedItemForMovement, setSelectedItemForMovement] = useState<ProductItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Deletion state
-  const [productToDelete, setProductToDelete] = useState<any | null>(null);
+  // Deletion
+  const [productToDelete, setProductToDelete] = useState<ProductItem | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // Item Form Data (Matching image media_1790196496721.png)
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    price: 45.0,
-    promotionalPrice: '',
-    category: '',
-    stock: 20,
+    type: 'Insumo atendimento',
+    unit: 'un',
     sku: '',
+    stock: 0,
+    minStock: 0,
+    cost: 0,
+    notes: '',
   });
 
-  const fetchData = () => {
+  // Movement Form Data
+  const [movementData, setMovementData] = useState<{
+    type: 'ENTRY' | 'EXIT' | 'ADJUSTMENT';
+    quantity: number;
+    reason: string;
+  }>({
+    type: 'ENTRY',
+    quantity: 1,
+    reason: '',
+  });
+
+  const fetchData = async () => {
     setLoading(true);
-    Promise.all([
-      api.get('/products'),
-      api.get('/subscriptions/me/features'),
-    ])
-      .then(([prodRes, featRes]) => {
-        setProducts(prodRes.data);
-        setFeatures(featRes.data);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+    try {
+      const [prodRes, statsRes, featRes] = await Promise.all([
+        api.get('/products', {
+          params: {
+            isArchived: showArchived ? 'true' : 'false',
+            search: searchTerm || undefined,
+            type: selectedType !== 'ALL' ? selectedType : undefined,
+          },
+        }),
+        api.get('/products/stats'),
+        api.get('/subscriptions/me/features'),
+      ]);
+
+      setProducts(prodRes.data);
+      setStats(statsRes.data);
+      setFeatures(featRes.data);
+    } catch (err) {
+      console.error('Erro ao carregar dados do estoque:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMovements = async () => {
+    try {
+      const res = await api.get('/products/movements');
+      setMovements(res.data);
+    } catch (err) {
+      console.error('Erro ao buscar histórico de movimentações:', err);
+    }
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [showArchived, selectedType]);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (activeTab === 'history') {
+      fetchMovements();
+    }
+  }, [activeTab]);
+
+  // Open Create Modal
+  const handleOpenCreateModal = () => {
+    setEditingItem(null);
+    setFormData({
+      name: '',
+      type: 'Insumo atendimento',
+      unit: 'un',
+      sku: '',
+      stock: 0,
+      minStock: 0,
+      cost: 0,
+      notes: '',
+    });
+    setItemModalOpen(true);
+  };
+
+  // Open Edit Modal
+  const handleOpenEditModal = (item: ProductItem) => {
+    setEditingItem(item);
+    setFormData({
+      name: item.name,
+      type: item.type || 'Insumo atendimento',
+      unit: item.unit || 'un',
+      sku: item.sku || '',
+      stock: item.stock || 0,
+      minStock: item.minStock || 0,
+      cost: Number(item.cost || 0),
+      notes: item.notes || '',
+    });
+    setItemModalOpen(true);
+  };
+
+  // Open Movement Modal
+  const handleOpenMovementModal = (item: ProductItem) => {
+    setSelectedItemForMovement(item);
+    setMovementData({
+      type: 'ENTRY',
+      quantity: 1,
+      reason: '',
+    });
+    setMovementModalOpen(true);
+  };
+
+  // Submit Create or Edit Item
+  const handleSaveItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name.trim()) {
+      alert('Por favor, informe o nome do item.');
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await api.post('/products', {
-        ...formData,
-        price: Number(formData.price),
-        promotionalPrice: formData.promotionalPrice ? Number(formData.promotionalPrice) : undefined,
-        stock: formData.stock !== undefined ? Number(formData.stock) : undefined,
-      });
-      setModalOpen(false);
-      setFormData({
-        name: '',
-        description: '',
-        price: 45.0,
-        promotionalPrice: '',
-        category: '',
-        stock: 20,
-        sku: '',
-      });
+      if (editingItem) {
+        await api.patch(`/products/${editingItem.id}`, {
+          name: formData.name,
+          type: formData.type,
+          unit: formData.unit,
+          sku: formData.sku || null,
+          stock: Number(formData.stock),
+          minStock: Number(formData.minStock),
+          cost: Number(formData.cost),
+          notes: formData.notes || null,
+        });
+      } else {
+        await api.post('/products', {
+          name: formData.name,
+          type: formData.type,
+          unit: formData.unit,
+          sku: formData.sku || null,
+          stock: Number(formData.stock),
+          minStock: Number(formData.minStock),
+          cost: Number(formData.cost),
+          notes: formData.notes || null,
+        });
+      }
+      setItemModalOpen(false);
       fetchData();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao cadastrar produto');
+      alert(err.response?.data?.message || 'Erro ao salvar item no estoque');
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Submit Movement
+  const handleSaveMovement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedItemForMovement) return;
+
+    if (movementData.quantity <= 0) {
+      alert('A quantidade deve ser maior que zero.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await api.post(`/products/${selectedItemForMovement.id}/movements`, {
+        type: movementData.type,
+        quantity: Number(movementData.quantity),
+        reason: movementData.reason || undefined,
+      });
+      setMovementModalOpen(false);
+      fetchData();
+      if (activeTab === 'history') fetchMovements();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao registrar movimentação');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Toggle Archive
+  const handleToggleArchive = async (item: ProductItem) => {
+    try {
+      await api.patch(`/products/${item.id}/archive`);
+      fetchData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao alterar arquivamento do item.');
+    }
+  };
+
+  // Delete Item
   const handleConfirmDelete = async () => {
     if (!productToDelete) return;
     setDeleting(true);
@@ -79,202 +287,619 @@ export const ProductsPage: React.FC = () => {
       setProductToDelete(null);
       fetchData();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Erro ao excluir produto');
+      alert(err.response?.data?.message || 'Erro ao excluir item do estoque');
     } finally {
       setDeleting(false);
     }
   };
 
-  const isFeatureAllowed = features?.features?.products;
+  const isFeatureAllowed =
+    features?.features?.inventoryControl || features?.features?.products;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Produtos</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Gerencie o catálogo de produtos para venda no seu estabelecimento.
+          <h1 className="text-2xl font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+            Controle de Estoque & Insumos
+          </h1>
+          <p className="text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+            Gerencie os insumos de atendimento, materiais de trabalho e estoque da sua empresa.
           </p>
         </div>
 
         {isFeatureAllowed && (
           <button
-            onClick={() => setModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-sm shadow-indigo-200 transition-all cursor-pointer"
+            onClick={handleOpenCreateModal}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer shrink-0"
           >
             <Plus size={16} />
-            <span>Novo Produto</span>
+            <span>Novo item</span>
           </button>
         )}
       </div>
 
-      {!isFeatureAllowed && (
-        <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle size={20} className="text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <h4 className="text-sm font-bold text-amber-900">Recurso Indisponível no seu Plano</h4>
-              <p className="text-xs text-amber-700 mt-0.5">
-                O catálogo e controle de produtos está disponível a partir do plano <strong>Professional</strong>.
-              </p>
-            </div>
+      {/* Upgrade Banner if not allowed */}
+      {!isFeatureAllowed && !loading && (
+        <div className="p-6 rounded-3xl bg-[#FAF5ED] dark:bg-[#261E18] border border-[#E2D9CC] dark:border-[#3D2C22] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base flex items-center gap-2">
+              <Boxes className="text-[#6B3E26] dark:text-[#CDB196]" size={20} />
+              <span>Controle de Estoque & Insumos não habilitado</span>
+            </h3>
+            <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+              O controle de insumos de atendimento e reposição está disponível nos planos{' '}
+              <strong>Professional</strong> e <strong>Business</strong>.
+            </p>
           </div>
           <Link
             to="/subscription"
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition-colors shrink-0"
+            className="px-5 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl shrink-0 transition-all text-center"
           >
-            Fazer Upgrade Agora
+            Fazer Upgrade do Plano
           </Link>
         </div>
       )}
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="animate-spin text-indigo-600" size={32} />
-        </div>
-      ) : products.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
-          <ShoppingBag size={40} className="mx-auto text-slate-300 mb-3" />
-          <h3 className="font-bold text-slate-700 text-base">Nenhum produto cadastrado</h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-            Cadastre pomadas, shampoos, óleos e outros produtos que você vende para seus clientes.
-          </p>
-          {isFeatureAllowed && (
-            <button
-              onClick={() => setModalOpen(true)}
-              className="mt-4 px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-xl hover:bg-indigo-700 transition-colors cursor-pointer"
-            >
-              Adicionar Primeiro Produto
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {products.map((prod) => (
-            <div
-              key={prod.id}
-              className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                    {prod.category || 'Geral'}
-                  </span>
-                  <button
-                    onClick={() => setProductToDelete(prod)}
-                    className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                    title="Excluir Produto"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-
-                <h3 className="font-bold text-slate-900 text-sm mb-1">{prod.name}</h3>
-                <p className="text-xs text-slate-500 line-clamp-2 mb-3">
-                  {prod.description || 'Sem descrição.'}
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <div>
-                  <span className="text-slate-400 text-[11px]">Estoque: </span>
-                  <strong className="text-slate-700">{prod.stock || 0} un</strong>
-                </div>
-                <div className="font-black text-slate-900 text-sm">
-                  R$ {Number(prod.price).toFixed(2)}
-                </div>
-              </div>
+      {/* KPI Cards (Matches image media_1790196496722.png) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Ativos */}
+        <div className="bg-white dark:bg-[#261E18] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+              ATIVOS
+            </span>
+            <div className="text-3xl font-black text-[#2B1D15] dark:text-[#F8F5EE] mt-1">
+              {stats.totalActive}
             </div>
-          ))}
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-[#FAF5ED] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] flex items-center justify-center text-[#6B3E26] dark:text-[#CDB196]">
+            <Package size={20} />
+          </div>
+        </div>
+
+        {/* Baixo */}
+        <div className="bg-white dark:bg-[#261E18] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+              BAIXO
+            </span>
+            <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1">
+              {stats.lowStock}
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400">
+            <AlertTriangle size={20} />
+          </div>
+        </div>
+
+        {/* Arquivados */}
+        <div className="bg-white dark:bg-[#261E18] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+              ARQUIVADOS
+            </span>
+            <div className="text-3xl font-black text-[#796758] dark:text-[#CDB196] mt-1">
+              {stats.totalArchived}
+            </div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-[#FAF5ED] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] flex items-center justify-center text-[#796758] dark:text-[#CDB196]">
+            <Archive size={20} />
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs Navigation (Estoque | Histórico) */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setActiveTab('stock')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'stock'
+              ? 'bg-[#2B1D15] dark:bg-[#FAF8F5] text-white dark:text-[#2B1D15] shadow-sm'
+              : 'bg-white dark:bg-[#261E18] text-[#796758] dark:text-[#CDB196] border border-[#E2D9CC] dark:border-[#3D2C22] hover:text-[#2B1D15] dark:hover:text-white'
+          }`}
+        >
+          <Package size={15} />
+          <span>Estoque</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+            activeTab === 'history'
+              ? 'bg-[#2B1D15] dark:bg-[#FAF8F5] text-white dark:text-[#2B1D15] shadow-sm'
+              : 'bg-white dark:bg-[#261E18] text-[#796758] dark:text-[#CDB196] border border-[#E2D9CC] dark:border-[#3D2C22] hover:text-[#2B1D15] dark:hover:text-white'
+          }`}
+        >
+          <Clock size={15} />
+          <span>Histórico</span>
+        </button>
+      </div>
+
+      {/* TAB 1: ESTOQUE */}
+      {activeTab === 'stock' && (
+        <div className="space-y-4">
+          {/* Filter Bar (Matches media_1790196496722.png) */}
+          <div className="bg-white dark:bg-[#261E18] p-3 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
+            <div className="relative flex-1">
+              <Search
+                size={16}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#796758] dark:text-[#CDB196]"
+              />
+              <input
+                type="text"
+                placeholder="Buscar por nome ou SKU"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] placeholder-[#796758] dark:placeholder-[#CDB196]/60 focus:outline-none focus:ring-2 focus:ring-[#6B3E26]"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs font-semibold text-[#2B1D15] dark:text-[#F8F5EE] focus:outline-none focus:ring-2 focus:ring-[#6B3E26] cursor-pointer"
+              >
+                <option value="ALL">Todos os tipos</option>
+                <option value="Insumo atendimento">Insumo atendimento</option>
+                <option value="Revenda">Revenda</option>
+                <option value="Uso interno">Uso interno</option>
+                <option value="Equipamento / Ferramenta">Equipamento / Ferramenta</option>
+              </select>
+
+              <button
+                type="button"
+                onClick={() => setShowArchived(!showArchived)}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
+                  showArchived
+                    ? 'bg-[#6B3E26] text-white border-[#6B3E26]'
+                    : 'bg-[#FAF8F5] dark:bg-[#1E1713] text-[#796758] dark:text-[#CDB196] border-[#E2D9CC] dark:border-[#3D2C22] hover:text-[#2B1D15] dark:hover:text-white'
+                }`}
+              >
+                <Archive size={14} />
+                <span>{showArchived ? 'Ver Ativos' : 'Arquivados'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* List of Items */}
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="animate-spin text-[#6B3E26]" size={32} />
+            </div>
+          ) : products.length === 0 ? (
+            <div className="bg-white dark:bg-[#261E18] rounded-3xl p-12 text-center border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs space-y-3">
+              <div className="w-14 h-14 bg-[#FAF5ED] dark:bg-[#1E1713] rounded-2xl flex items-center justify-center mx-auto text-[#6B3E26] dark:text-[#CDB196]">
+                <Package size={28} />
+              </div>
+              <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base">
+                {showArchived
+                  ? 'Nenhum item arquivado'
+                  : 'Nenhum insumo ou produto cadastrado'}
+              </h3>
+              <p className="text-xs text-[#796758] dark:text-[#CDB196] max-w-sm mx-auto">
+                {showArchived
+                  ? 'Você não possui itens arquivados no momento.'
+                  : 'Cadastre os insumos e materiais utilizados nos seus atendimentos para controlar reposição e custos.'}
+              </p>
+              {!showArchived && isFeatureAllowed && (
+                <button
+                  onClick={handleOpenCreateModal}
+                  className="px-5 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                >
+                  <Plus size={15} />
+                  <span>Cadastrar Primeiro Item</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {products.map((item) => {
+                const isLow = item.stock <= item.minStock;
+                const costNumber = Number(item.cost || 0);
+
+                return (
+                  <div
+                    key={item.id}
+                    className={`bg-white dark:bg-[#261E18] rounded-2xl p-4 border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${
+                      isLow
+                        ? 'border-amber-300 dark:border-amber-800/80 bg-amber-50/20 dark:bg-amber-950/10'
+                        : 'border-[#E2D9CC] dark:border-[#3D2C22]'
+                    }`}
+                  >
+                    {/* Left: Icon & Info */}
+                    <div className="flex items-start sm:items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-2xl bg-[#FAF5ED] dark:bg-[#1E1713] border border-[#E5D7C5] dark:border-[#3D2C22] flex items-center justify-center text-[#6B3E26] dark:text-[#E2CEBC] shrink-0">
+                        <Package size={22} />
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-sm">
+                            {item.name}
+                          </h3>
+                          <span className="px-2.5 py-0.5 bg-[#FAF5ED] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-full text-[10px] font-bold text-[#6B3E26] dark:text-[#CDB196]">
+                            {item.type || 'Insumo de atendimento'}
+                          </span>
+                          {isLow && (
+                            <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800 rounded-full text-[10px] font-bold flex items-center gap-1">
+                              <AlertTriangle size={11} />
+                              <span>Estoque Baixo</span>
+                            </span>
+                          )}
+                          {item.isArchived && (
+                            <span className="px-2 py-0.5 bg-[#E2D9CC] dark:bg-[#3D2C22] text-[#796758] dark:text-[#CDB196] rounded-full text-[10px] font-bold">
+                              Arquivado
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-4 text-xs flex-wrap">
+                          <div className="flex items-baseline gap-1">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                              SALDO:
+                            </span>
+                            <span
+                              className={`font-black text-sm ${
+                                isLow
+                                  ? 'text-amber-700 dark:text-amber-400'
+                                  : 'text-[#2B1D15] dark:text-[#F8F5EE]'
+                              }`}
+                            >
+                              {item.stock} {item.unit || 'un'}
+                            </span>
+                          </div>
+
+                          {item.minStock > 0 && (
+                            <span className="text-[#796758] dark:text-[#CDB196]">
+                              Mínimo: <strong>{item.minStock} {item.unit}</strong>
+                            </span>
+                          )}
+
+                          {costNumber > 0 && (
+                            <span className="text-[#796758] dark:text-[#CDB196]">
+                              Custo: <strong>R$ {costNumber.toFixed(2)}</strong>
+                            </span>
+                          )}
+
+                          {item.sku && (
+                            <span className="text-[#796758] dark:text-[#CDB196] font-mono text-[11px]">
+                              SKU: {item.sku}
+                            </span>
+                          )}
+                        </div>
+
+                        {item.notes && (
+                          <p className="text-[11px] text-[#796758] dark:text-[#CDB196] italic">
+                            Nota: {item.notes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-[#E2D9CC] dark:border-[#3D2C22] shrink-0 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenMovementModal(item)}
+                        className="px-3.5 py-1.5 bg-[#FAF5ED] hover:bg-[#F5EFE6] dark:bg-[#201812] dark:hover:bg-[#2C211A] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#E2D9CC] dark:border-[#4A3728] rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                      >
+                        <ArrowUpDown size={13} />
+                        <span>Movimentar</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(item)}
+                        className="px-3 py-1.5 bg-white hover:bg-[#FAF8F5] dark:bg-[#261E18] dark:hover:bg-[#1E1713] text-[#2B1D15] dark:text-[#F8F5EE] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1"
+                      >
+                        <Edit2 size={13} />
+                        <span>Editar</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggleArchive(item)}
+                        title={item.isArchived ? 'Desarquivar item' : 'Arquivar item'}
+                        className="p-2 text-[#796758] hover:text-[#2B1D15] dark:text-[#CDB196] dark:hover:text-white rounded-xl hover:bg-[#FAF8F5] dark:hover:bg-[#1E1713] transition-all cursor-pointer"
+                      >
+                        {item.isArchived ? <RotateCcw size={15} /> : <Archive size={15} />}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setProductToDelete(item)}
+                        title="Excluir item permanentemente"
+                        className="p-2 text-red-500 hover:text-red-700 dark:hover:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 transition-all cursor-pointer"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Modal Novo Produto */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <h3 className="font-bold text-slate-900 text-base">Novo Produto</h3>
-              <button onClick={() => setModalOpen(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+      {/* TAB 2: HISTÓRICO DE MOVIMENTAÇÕES */}
+      {activeTab === 'history' && (
+        <div className="bg-white dark:bg-[#261E18] rounded-3xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs overflow-hidden">
+          <div className="p-4 sm:p-6 border-b border-[#E2D9CC] dark:border-[#3D2C22] flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+                Histórico de Movimentações
+              </h2>
+              <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+                Registro de todas as entradas, saídas e ajustes de saldo realizados no estoque.
+              </p>
+            </div>
+            <button
+              onClick={fetchMovements}
+              className="text-xs font-bold text-[#6B3E26] dark:text-[#CDB196] hover:underline cursor-pointer"
+            >
+              Atualizar
+            </button>
+          </div>
+
+          {movements.length === 0 ? (
+            <div className="p-12 text-center text-xs text-[#796758] dark:text-[#CDB196]">
+              Nenhuma movimentação registrada até o momento.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#FAF8F5] dark:bg-[#1E1713] text-[#796758] dark:text-[#CDB196] uppercase text-[10px] tracking-wider border-b border-[#E2D9CC] dark:border-[#3D2C22]">
+                  <tr>
+                    <th className="py-3 px-4">Data / Hora</th>
+                    <th className="py-3 px-4">Insumo / Item</th>
+                    <th className="py-3 px-4">Tipo</th>
+                    <th className="py-3 px-4 text-center">Quantidade</th>
+                    <th className="py-3 px-4 text-center">Saldo (Antes → Depois)</th>
+                    <th className="py-3 px-4">Motivo / Observação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E2D9CC] dark:divide-[#3D2C22] text-[#2B1D15] dark:text-[#F8F5EE]">
+                  {movements.map((m) => {
+                    const isEntry = m.type === 'ENTRY';
+                    const isExit = m.type === 'EXIT';
+                    const dateFormatted = new Date(m.createdAt).toLocaleString('pt-BR', {
+                      dateStyle: 'short',
+                      timeStyle: 'short',
+                    });
+
+                    return (
+                      <tr key={m.id} className="hover:bg-[#FAF8F5] dark:hover:bg-[#1E1713]/60 transition-colors">
+                        <td className="py-3 px-4 text-[#796758] dark:text-[#CDB196] font-mono text-[11px] whitespace-nowrap">
+                          {dateFormatted}
+                        </td>
+                        <td className="py-3 px-4 font-bold">
+                          {m.product?.name || 'Item do estoque'}
+                          {m.product?.unit ? ` (${m.product.unit})` : ''}
+                        </td>
+                        <td className="py-3 px-4">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                              isEntry
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : isExit
+                                ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
+                                : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300'
+                            }`}
+                          >
+                            {isEntry ? <ArrowUpRight size={11} /> : isExit ? <ArrowDownRight size={11} /> : <SlidersHorizontal size={11} />}
+                            <span>
+                              {isEntry ? 'Entrada' : isExit ? 'Saída' : 'Ajuste'}
+                            </span>
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center font-bold">
+                          <span
+                            className={
+                              isEntry
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : isExit
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-blue-600 dark:text-blue-400'
+                            }
+                          >
+                            {isEntry ? `+${m.quantity}` : isExit ? `-${m.quantity}` : `=${m.quantity}`}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center text-[#796758] dark:text-[#CDB196] font-mono">
+                          {m.previousStock} → <strong className="text-[#2B1D15] dark:text-[#F8F5EE]">{m.newStock}</strong>
+                        </td>
+                        <td className="py-3 px-4 text-[#796758] dark:text-[#CDB196]">
+                          {m.reason || '-'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* MODAL 1: NOVO ITEM / EDITAR ITEM (Matches media_1790196496721.png) */}
+      {itemModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#261E18] rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#E2D9CC] dark:border-[#3D2C22] max-h-[90vh] overflow-y-auto space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2D9CC] dark:border-[#3D2C22]">
+              <h2 className="text-lg font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+                {editingItem ? 'Editar item' : 'Novo item'}
+              </h2>
+              <button
+                onClick={() => setItemModalOpen(false)}
+                className="text-[#796758] hover:text-[#2B1D15] dark:hover:text-white p-1 cursor-pointer"
+              >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Nome do Produto *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Pomada Modeladora Matte 150g"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+            <form onSubmit={handleSaveItem} className="space-y-5">
+              {/* SECTION: IDENTIFICAÇÃO */}
+              <div className="space-y-3">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                  IDENTIFICAÇÃO
+                </span>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Preço de Venda (R$) *</label>
+                  <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                    Nome *
+                  </label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    step="0.5"
-                    min="0"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Ex.: Gel base"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-semibold"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                      Tipo
+                    </label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none cursor-pointer font-medium"
+                    >
+                      <option value="Insumo atendimento">Insumo atendimento</option>
+                      <option value="Revenda">Revenda</option>
+                      <option value="Uso interno">Uso interno</option>
+                      <option value="Equipamento / Ferramenta">Equipamento / Ferramenta</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                      Unidade
+                    </label>
+                    <select
+                      value={formData.unit}
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none cursor-pointer font-medium"
+                    >
+                      <option value="un">un (Unidade)</option>
+                      <option value="ml">ml (Mililitros)</option>
+                      <option value="g">g (Gramas)</option>
+                      <option value="kg">kg (Quilos)</option>
+                      <option value="cx">cx (Caixa)</option>
+                      <option value="pct">pct (Pacote)</option>
+                      <option value="par">par (Pares)</option>
+                      <option value="frasco">frasco</option>
+                      <option value="rolo">rolo</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-semibold mb-1">Estoque Inicial</label>
+                  <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                    SKU opcional
+                  </label>
                   <input
-                    type="number"
-                    min="0"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    type="text"
+                    placeholder="Código interno"
+                    value={formData.sku}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-mono"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Categoria (Opcional)</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Barba, Cuidados Diários..."
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+              {/* SECTION: CONTROLE */}
+              <div className="space-y-3 pt-2 border-t border-[#E2D9CC] dark:border-[#3D2C22]">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                  CONTROLE
+                </span>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                      {editingItem ? 'Saldo atual' : 'Saldo inicial'}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.stock}
+                      onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                      Estoque mínimo
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.minStock}
+                      onChange={(e) => setFormData({ ...formData, minStock: Number(e.target.value) })}
+                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                    Custo
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#796758] dark:text-[#CDB196]">
+                      R$
+                    </span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0,00"
+                      value={formData.cost}
+                      onChange={(e) => setFormData({ ...formData, cost: Number(e.target.value) })}
+                      className="w-full pl-10 pr-4 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-semibold"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-slate-700 font-semibold mb-1">Descrição</label>
+              {/* SECTION: NOTAS */}
+              <div className="space-y-2 pt-2 border-t border-[#E2D9CC] dark:border-[#3D2C22]">
+                <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+                  Notas
+                </label>
                 <textarea
                   rows={2}
-                  placeholder="Instruções de uso e benefícios..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Fornecedor, referência ou observação interna"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              {/* Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E2D9CC] dark:border-[#3D2C22]">
                 <button
                   type="button"
-                  onClick={() => setModalOpen(false)}
-                  className="px-3.5 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-medium cursor-pointer"
+                  onClick={() => setItemModalOpen(false)}
+                  className="px-4 py-2.5 text-xs font-bold text-[#796758] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
                 >
-                  {submitting ? <Loader2 className="animate-spin" size={14} /> : 'Salvar Produto'}
+                  {submitting && <Loader2 size={14} className="animate-spin" />}
+                  <span>{editingItem ? 'Salvar alterações' : 'Salvar item'}</span>
                 </button>
               </div>
             </form>
@@ -282,17 +907,153 @@ export const ProductsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Caixa Personalizada para Exclusão de Produto */}
-      <DeleteConfirmationModal
-        isOpen={!!productToDelete}
-        onClose={() => setProductToDelete(null)}
-        onConfirm={handleConfirmDelete}
-        title="Excluir Produto"
-        description="Tem certeza que deseja excluir este produto do seu catálogo de vendas?"
-        itemName={productToDelete ? `${productToDelete.name} (R$ ${Number(productToDelete.price).toFixed(2)})` : undefined}
-        loading={deleting}
-        confirmButtonText="Sim, Excluir Produto"
-      />
+      {/* MODAL 2: MOVIMENTAR ESTOQUE (Entrada, Saída, Ajuste) */}
+      {movementModalOpen && selectedItemForMovement && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white dark:bg-[#261E18] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E2D9CC] dark:border-[#3D2C22] space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2D9CC] dark:border-[#3D2C22]">
+              <div>
+                <h2 className="text-base font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+                  Movimentar Estoque
+                </h2>
+                <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+                  {selectedItemForMovement.name} (Saldo atual:{' '}
+                  <strong>
+                    {selectedItemForMovement.stock} {selectedItemForMovement.unit}
+                  </strong>
+                  )
+                </p>
+              </div>
+              <button
+                onClick={() => setMovementModalOpen(false)}
+                className="text-[#796758] hover:text-[#2B1D15] dark:hover:text-white p-1 cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMovement} className="space-y-4">
+              {/* Type Selection */}
+              <div>
+                <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-2">
+                  Tipo de Movimentação
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMovementData({ ...movementData, type: 'ENTRY' })}
+                    className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center gap-1 ${
+                      movementData.type === 'ENTRY'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-800 dark:text-emerald-200'
+                        : 'border-[#E2D9CC] dark:border-[#3D2C22] text-[#796758] dark:text-[#CDB196]'
+                    }`}
+                  >
+                    <ArrowUpRight size={16} />
+                    <span>Entrada (+)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMovementData({ ...movementData, type: 'EXIT' })}
+                    className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center gap-1 ${
+                      movementData.type === 'EXIT'
+                        ? 'bg-red-50 dark:bg-red-950/60 border-red-500 text-red-800 dark:text-red-200'
+                        : 'border-[#E2D9CC] dark:border-[#3D2C22] text-[#796758] dark:text-[#CDB196]'
+                    }`}
+                  >
+                    <ArrowDownRight size={16} />
+                    <span>Saída (-)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMovementData({ ...movementData, type: 'ADJUSTMENT' })}
+                    className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center gap-1 ${
+                      movementData.type === 'ADJUSTMENT'
+                        ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-800 dark:text-blue-200'
+                        : 'border-[#E2D9CC] dark:border-[#3D2C22] text-[#796758] dark:text-[#CDB196]'
+                    }`}
+                  >
+                    <SlidersHorizontal size={16} />
+                    <span>Ajuste (=)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quantity */}
+              <div>
+                <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                  {movementData.type === 'ADJUSTMENT'
+                    ? 'Novo Saldo Total'
+                    : 'Quantidade a Movimentar'}
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={movementData.quantity}
+                    onChange={(e) =>
+                      setMovementData({ ...movementData, quantity: Number(e.target.value) })
+                    }
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-sm font-bold text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#796758] dark:text-[#CDB196]">
+                    {selectedItemForMovement.unit}
+                  </span>
+                </div>
+              </div>
+
+              {/* Reason */}
+              <div>
+                <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                  Motivo / Observação
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Uso em atendimento de Lash, Compra NF 1234, etc."
+                  value={movementData.reason}
+                  onChange={(e) =>
+                    setMovementData({ ...movementData, reason: e.target.value })
+                  }
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                />
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E2D9CC] dark:border-[#3D2C22]">
+                <button
+                  type="button"
+                  onClick={() => setMovementModalOpen(false)}
+                  className="px-4 py-2.5 text-xs font-bold text-[#796758] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+                >
+                  {submitting && <Loader2 size={14} className="animate-spin" />}
+                  <span>Confirmar Movimentação</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {productToDelete && (
+        <DeleteConfirmationModal
+          isOpen={true}
+          title="Excluir Item do Estoque"
+          description={`Deseja realmente excluir "${productToDelete.name}"? Todo o histórico de movimentações deste insumo será removido permanentemente.`}
+          onConfirm={handleConfirmDelete}
+          onClose={() => setProductToDelete(null)}
+          loading={deleting}
+        />
+      )}
     </div>
   );
 };

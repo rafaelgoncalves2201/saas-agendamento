@@ -10,16 +10,19 @@ import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import {
   CancelAppointmentClientDto,
   CreatePublicAppointmentDto,
+  RescheduleAppointmentDto,
   UpdateAppointmentStatusDto,
 } from './dto/appointment.dto';
-import { AppointmentStatus, Prisma } from '@prisma/client';
+import { AppointmentStatus, DepositType, Prisma } from '@prisma/client';
 import { addMinutes, differenceInHours, isBefore } from 'date-fns';
+import { MercadoPagoService } from '../mercadopago/mercadopago.service';
 
 @Injectable()
 export class AppointmentsService {
   constructor(
     private prisma: PrismaService,
     private whatsAppService: WhatsAppService,
+    private mercadoPagoService: MercadoPagoService,
   ) {}
 
   // =========================================================================
@@ -99,7 +102,7 @@ export class AppointmentsService {
     }
 
     // 5. TRANSAÇÃO ATÔMICA COM PREVENÇÃO DE CONCORRÊNCIA (DUPLA RESERVA)
-    const appointment = await this.prisma.$transaction(async (tx) => {
+    let appointment = await this.prisma.$transaction(async (tx) => {
       // Bloqueio / Verificação de sobreposição no banco
       const conflict = await tx.appointment.findFirst({
         where: {
@@ -168,10 +171,12 @@ export class AppointmentsService {
         });
       }
 
-      // Verificar se a empresa exige sinal para confirmação
+      // Verificar se o profissional ou a empresa exige sinal para confirmação
       const companySettings = (company.settings as Record<string, any>) || {};
-      const requiresDeposit = Boolean(companySettings.requiresDeposit);
-      const initialStatus = requiresDeposit ? AppointmentStatus.PENDING : AppointmentStatus.CONFIRMED;
+      const profRequiresDeposit = professional.requiresDeposit;
+      const companyRequiresDeposit = Boolean(companySettings.requiresDeposit);
+      const requiresDeposit = profRequiresDeposit || companyRequiresDeposit;
+      const hasMercadoPago = Boolean(professional.mpAccessToken || company.mpAccessToken);
 
       // Processar Cupom de Desconto (se informado)
       let finalPrice = service.price;
@@ -216,6 +221,31 @@ export class AppointmentsService {
         }
       }
 
+      // Calcular valor do sinal
+      let depositAmount = 0;
+      if (requiresDeposit) {
+        if (profRequiresDeposit && professional.depositValue) {
+          if (professional.depositType === DepositType.PERCENTAGE) {
+            depositAmount =
+              Math.round(((Number(finalPrice) * Number(professional.depositValue)) / 100) * 100) / 100;
+          } else {
+            depositAmount = Math.min(Number(finalPrice), Number(professional.depositValue));
+          }
+        } else {
+          const raw = String(companySettings.depositValue || '20')
+            .replace('R$', '')
+            .trim()
+            .replace(',', '.');
+          depositAmount = parseFloat(raw) || 20;
+        }
+      }
+
+      const initialStatus = requiresDeposit
+        ? hasMercadoPago
+          ? AppointmentStatus.PENDING_PAYMENT
+          : AppointmentStatus.PENDING
+        : AppointmentStatus.CONFIRMED;
+
       // Criar o Agendamento com o preço congelado no momento da contratação
       return tx.appointment.create({
         data: {
@@ -230,15 +260,16 @@ export class AppointmentsService {
           originalPrice: service.price,
           couponCode: validCouponCode,
           discountAmount: discountAmount > 0 ? new Prisma.Decimal(discountAmount) : null,
+          depositAmount: depositAmount > 0 ? new Prisma.Decimal(depositAmount) : null,
           status: initialStatus,
           notes: dto.notes || null,
         },
         include: {
           company: {
-            select: { name: true, phone: true, slug: true, logoUrl: true, settings: true },
+            select: { name: true, phone: true, slug: true, logoUrl: true, settings: true, mpAccessToken: true },
           },
           professional: {
-            select: { name: true, phone: true, avatarUrl: true },
+            select: { name: true, phone: true, avatarUrl: true, mpAccessToken: true },
           },
           service: {
             select: { name: true, durationMinutes: true, price: true, imageUrl: true },
@@ -249,7 +280,50 @@ export class AppointmentsService {
     });
 
     const companySettings = (appointment.company.settings as Record<string, any>) || {};
-    const requiresDeposit = appointment.status === AppointmentStatus.PENDING;
+    const isPendingPayment = appointment.status === AppointmentStatus.PENDING_PAYMENT;
+    const isPendingManual = appointment.status === AppointmentStatus.PENDING;
+    const requiresDeposit = isPendingPayment || isPendingManual;
+
+    // Se o profissional ou o estabelecimento (Admin) tiver Mercado Pago conectado, gerar Pix instantâneo
+    const effectiveMpToken = appointment.professional?.mpAccessToken || appointment.company?.mpAccessToken;
+
+    if (isPendingPayment && effectiveMpToken) {
+      try {
+        const mpPix = await this.mercadoPagoService.createPixPayment({
+          professionalAccessToken: effectiveMpToken,
+          appointmentId: appointment.id,
+          amount: Number(appointment.depositAmount || 20),
+          payerEmail: dto.clientEmail || appointment.client.email || 'cliente@inovaagenda.com',
+          payerName: dto.clientName || appointment.client.name,
+          serviceName: appointment.service.name,
+          companyName: appointment.company.name,
+        });
+
+        appointment = await this.prisma.appointment.update({
+          where: { id: appointment.id },
+          data: {
+            mpPaymentId: mpPix.mpPaymentId,
+            pixCopiaECola: mpPix.pixCopiaECola,
+            pixQrCodeBase64: mpPix.pixQrCodeBase64,
+            pixPaymentUrl: mpPix.pixPaymentUrl,
+          },
+          include: {
+            company: {
+              select: { name: true, phone: true, slug: true, logoUrl: true, settings: true, mpAccessToken: true },
+            },
+            professional: {
+              select: { name: true, phone: true, avatarUrl: true, mpAccessToken: true },
+            },
+            service: {
+              select: { name: true, durationMinutes: true, price: true, imageUrl: true },
+            },
+            client: true,
+          },
+        });
+      } catch (err) {
+        console.error('Falha ao gerar cobrança Pix no Mercado Pago:', err);
+      }
+    }
 
     // Disparar notificações assíncronas via WhatsApp apenas se já estiver confirmado
     if (appointment.status === AppointmentStatus.CONFIRMED) {
@@ -260,20 +334,31 @@ export class AppointmentsService {
 
     return {
       success: true,
-      message: requiresDeposit
+      message: isPendingPayment
+        ? 'Agendamento pré-reservado! Efetue o pagamento do Pix para confirmação automática imediata.'
+        : isPendingManual
         ? 'Agendamento pré-reservado! Por favor, efetue o pagamento do sinal via Pix para confirmação.'
         : 'Agendamento confirmado com sucesso!',
       appointment,
       requiresDeposit,
       depositInfo: requiresDeposit
         ? {
-            depositValue: companySettings.depositValue || 'R$ 20,00',
+            isMercadoPago: Boolean(appointment.pixQrCodeBase64 || appointment.pixCopiaECola),
+            depositAmount: Number(appointment.depositAmount || 0),
+            depositValue: `R$ ${Number(appointment.depositAmount || 0).toFixed(2)}`,
+            pixQrCodeBase64: appointment.pixQrCodeBase64 || null,
+            pixCopiaECola: appointment.pixCopiaECola || null,
+            pixPaymentUrl: appointment.pixPaymentUrl || null,
             pixKey: companySettings.pixKey || '',
             pixKeyType: companySettings.pixKeyType || 'Chave Pix',
-            pixRecipientName: companySettings.pixRecipientName || appointment.company.name,
-            depositInstructions:
-              companySettings.depositInstructions ||
-              'Envie o comprovante do sinal pelo WhatsApp para que seu horário seja confirmado.',
+            pixRecipientName:
+              appointment.professional?.name ||
+              companySettings.pixRecipientName ||
+              appointment.company.name,
+            depositInstructions: appointment.pixCopiaECola
+              ? 'Escaneie o QR Code ou copie a chave Pix abaixo. Assim que o pagamento for concluído, sua vaga será confirmada automaticamente!'
+              : companySettings.depositInstructions ||
+                'Envie o comprovante do sinal pelo WhatsApp para que seu horário seja confirmado.',
             companyPhone: appointment.company.phone,
           }
         : null,
@@ -303,6 +388,9 @@ export class AppointmentsService {
         },
         client: {
           select: { name: true, phone: true },
+        },
+        review: {
+          select: { id: true, rating: true, comment: true, createdAt: true },
         },
       },
     });
@@ -455,4 +543,75 @@ export class AppointmentsService {
       where: { id },
     });
   }
+
+  async rescheduleAppointment(
+    companyId: string,
+    id: string,
+    dto: RescheduleAppointmentDto,
+  ) {
+    if (!companyId) {
+      throw new BadRequestException('Identificador da empresa não informado ou sessão sem empresa vinculada');
+    }
+
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id, companyId },
+      include: {
+        service: true,
+        professional: true,
+        client: true,
+      },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException('Agendamento não encontrado');
+    }
+
+    const targetProfId = dto.professionalId || appointment.professionalId;
+    const newStart = new Date(dto.startDateTime);
+    if (isNaN(newStart.getTime())) {
+      throw new BadRequestException('Data e hora inválida para reagendamento');
+    }
+
+    const newEnd = addMinutes(newStart, appointment.service.durationMinutes);
+
+    // Conflitos na agenda do profissional
+    const conflict = await this.prisma.appointment.findFirst({
+      where: {
+        id: { not: id },
+        companyId,
+        professionalId: targetProfId,
+        status: { notIn: [AppointmentStatus.CANCELLED] },
+        AND: [
+          { startDateTime: { lt: newEnd } },
+          { endDateTime: { gt: newStart } },
+        ],
+      },
+    });
+
+    if (conflict) {
+      throw new ConflictException('Já existe outro atendimento agendado para este profissional no horário solicitado');
+    }
+
+    const updated = await this.prisma.appointment.update({
+      where: { id },
+      data: {
+        startDateTime: newStart,
+        endDateTime: newEnd,
+        professionalId: targetProfId,
+      },
+      include: {
+        service: true,
+        professional: true,
+        client: true,
+      },
+    });
+
+    // Disparar notificação de reagendamento para o WhatsApp do cliente
+    this.whatsAppService
+      .sendRescheduleNotification(appointment.id)
+      .catch((err) => console.error('Erro ao enviar WhatsApp de reagendamento:', err));
+
+    return updated;
+  }
 }
+

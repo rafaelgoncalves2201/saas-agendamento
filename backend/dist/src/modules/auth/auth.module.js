@@ -13,6 +13,8 @@ const passport_1 = require("@nestjs/passport");
 const auth_service_1 = require("./auth.service");
 const auth_controller_1 = require("./auth.controller");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
+const admin_users_service_1 = require("./admin-users.service");
+const admin_users_controller_1 = require("./admin-users.controller");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -22,9 +24,9 @@ exports.AuthModule = AuthModule = __decorate([
             passport_1.PassportModule.register({ defaultStrategy: 'jwt' }),
             jwt_1.JwtModule.register({}),
         ],
-        controllers: [auth_controller_1.AuthController],
-        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy],
-        exports: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, passport_1.PassportModule],
+        controllers: [auth_controller_1.AuthController, admin_users_controller_1.AdminUsersController],
+        providers: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, admin_users_service_1.AdminUsersService],
+        exports: [auth_service_1.AuthService, jwt_strategy_1.JwtStrategy, passport_1.PassportModule, admin_users_service_1.AdminUsersService],
     })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

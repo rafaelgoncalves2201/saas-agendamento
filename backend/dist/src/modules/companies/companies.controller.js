@@ -43,6 +43,9 @@ let CompaniesController = class CompaniesController {
     toggleCompanyStatus(id, isActive) {
         return this.companiesService.toggleCompanyStatus(id, isActive);
     }
+    changeCompanyPlan(id, planId, status, months) {
+        return this.companiesService.changeCompanyPlan(id, planId, status, months);
+    }
 };
 exports.CompaniesController = CompaniesController;
 __decorate([
@@ -104,6 +107,19 @@ __decorate([
     __metadata("design:paramtypes", [String, Boolean]),
     __metadata("design:returntype", void 0)
 ], CompaniesController.prototype, "toggleCompanyStatus", null);
+__decorate([
+    (0, swagger_1.ApiBearerAuth)('JWT'),
+    (0, roles_decorator_1.Roles)(client_1.Role.SUPER_ADMIN),
+    (0, common_1.Patch)('admin/companies/:id/plan'),
+    (0, swagger_1.ApiOperation)({ summary: '[Super Admin] Alterar plano e status da assinatura da empresa' }),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('planId')),
+    __param(2, (0, common_1.Body)('status')),
+    __param(3, (0, common_1.Body)('months')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, Number]),
+    __metadata("design:returntype", void 0)
+], CompaniesController.prototype, "changeCompanyPlan", null);
 exports.CompaniesController = CompaniesController = __decorate([
     (0, swagger_1.ApiTags)('Companies'),
     (0, common_1.Controller)(),

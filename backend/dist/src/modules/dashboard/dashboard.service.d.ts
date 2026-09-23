@@ -5,12 +5,26 @@ export declare class DashboardService {
     getCompanyDashboard(companyId: string): Promise<{
         metrics: {
             todayAppointments: number;
+            todayRevenue: number;
             upcomingAppointments: number;
             completedThisMonth: number;
             cancelledThisMonth: number;
             totalClients: number;
             estimatedRevenueThisMonth: number;
+            waitlistPending: number;
         };
+        inventory: {
+            totalProducts: number;
+            lowStockCount: number;
+            lowStockItems: {
+                id: string;
+                name: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                category: string | null;
+                stock: number;
+            }[];
+        };
+        chartData: any[];
         topServices: {
             serviceName: string;
             price: number | import("@prisma/client/runtime/library").Decimal;
@@ -53,12 +67,12 @@ export declare class DashboardService {
             createdAt: Date;
             updatedAt: Date;
             companyId: string;
+            paidAt: Date | null;
             status: import(".prisma/client").$Enums.PaymentStatus;
             amount: import("@prisma/client/runtime/library").Decimal;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             providerPaymentId: string;
             dueDate: Date;
-            paidAt: Date | null;
             invoiceUrl: string | null;
             subscriptionId: string | null;
         })[];

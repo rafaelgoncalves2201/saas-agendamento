@@ -20,17 +20,23 @@ export declare class JwtStrategy extends JwtStrategy_base {
         companyId: string | null;
         company: {
             id: string;
-            email: string;
             name: string;
-            phone: string;
-            isActive: boolean;
-            createdAt: Date;
-            updatedAt: Date;
             slug: string;
             document: string | null;
+            email: string;
+            phone: string;
             logoUrl: string | null;
             coverUrl: string | null;
             settings: import("@prisma/client/runtime/library").JsonValue;
+            isActive: boolean;
+            createdAt: Date;
+            updatedAt: Date;
+            mpAccessToken: string | null;
+            mpRefreshToken: string | null;
+            mpUserId: string | null;
+            mpExpiresIn: number | null;
+            mpTokenType: string | null;
+            mpPublicKey: string | null;
         };
     }>;
 }

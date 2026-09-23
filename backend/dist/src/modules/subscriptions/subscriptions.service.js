@@ -62,6 +62,10 @@ let SubscriptionsService = class SubscriptionsService {
         const currentPeriodEnd = dto.billingCycle === client_1.BillingCycle.YEARLY
             ? (0, date_fns_1.addYears)(currentPeriodStart, 1)
             : (0, date_fns_1.addMonths)(currentPeriodStart, 1);
+        const currentSub = await this.prisma.subscription.findUnique({
+            where: { companyId },
+        });
+        const initialStatus = client_1.SubscriptionStatus.INCOMPLETE;
         const subscription = await this.prisma.subscription.upsert({
             where: { companyId },
             update: {
@@ -69,12 +73,13 @@ let SubscriptionsService = class SubscriptionsService {
                 provider: 'ASAAS',
                 providerCustomerId: customer.id,
                 providerSubscriptionId: asaasSub.id,
-                status: client_1.SubscriptionStatus.ACTIVE,
+                status: initialStatus,
                 billingCycle: dto.billingCycle,
                 amount,
                 nextDueDate: new Date(dueDate),
                 currentPeriodStart,
                 currentPeriodEnd,
+                trialEndsAt: null,
                 cancelAtPeriodEnd: false,
             },
             create: {
@@ -83,12 +88,13 @@ let SubscriptionsService = class SubscriptionsService {
                 provider: 'ASAAS',
                 providerCustomerId: customer.id,
                 providerSubscriptionId: asaasSub.id,
-                status: client_1.SubscriptionStatus.ACTIVE,
+                status: initialStatus,
                 billingCycle: dto.billingCycle,
                 amount,
                 nextDueDate: new Date(dueDate),
                 currentPeriodStart,
                 currentPeriodEnd,
+                trialEndsAt: null,
             },
             include: {
                 plan: true,
@@ -100,19 +106,20 @@ let SubscriptionsService = class SubscriptionsService {
                 subscriptionId: subscription.id,
                 providerPaymentId: asaasSub.firstPaymentId || `pay_${Date.now()}`,
                 amount,
-                status: client_1.PaymentStatus.CONFIRMED,
+                status: client_1.PaymentStatus.PENDING,
                 paymentMethod: dto.paymentMethod,
                 dueDate: new Date(dueDate),
-                paidAt: new Date(),
+                paidAt: null,
                 invoiceUrl: asaasSub.paymentUrl || null,
             },
         });
         return {
             success: true,
-            message: 'Assinatura contratada com sucesso!',
+            message: 'Cobrança gerada com sucesso! Aguardando compensação do pagamento.',
             subscription,
             payment,
             paymentUrl: asaasSub.paymentUrl,
+            pixQrCode: asaasSub.pixQrCode,
         };
     }
     async getMe(companyId) {
@@ -228,6 +235,79 @@ let SubscriptionsService = class SubscriptionsService {
                 canceledAt: new Date(),
             },
         });
+    }
+    async syncSubscription(companyId) {
+        const sub = await this.prisma.subscription.findUnique({
+            where: { companyId },
+            include: { plan: true },
+        });
+        if (!sub || !sub.providerSubscriptionId) {
+            throw new common_1.NotFoundException('Nenhuma assinatura Asaas vinculada a esta empresa');
+        }
+        const payments = await this.asaasProvider.getSubscriptionPayments(sub.providerSubscriptionId);
+        const confirmedPayment = payments.find((p) => p.status === 'RECEIVED' || p.status === 'CONFIRMED');
+        if (confirmedPayment) {
+            const nextPeriodEnd = sub.billingCycle === client_1.BillingCycle.YEARLY
+                ? (0, date_fns_1.addYears)(new Date(), 1)
+                : (0, date_fns_1.addMonths)(new Date(), 1);
+            const updatedSub = await this.prisma.subscription.update({
+                where: { id: sub.id },
+                data: {
+                    status: client_1.SubscriptionStatus.ACTIVE,
+                    currentPeriodStart: new Date(),
+                    currentPeriodEnd: nextPeriodEnd,
+                },
+                include: { plan: true },
+            });
+            await this.prisma.payment.upsert({
+                where: { providerPaymentId: confirmedPayment.id },
+                update: {
+                    status: client_1.PaymentStatus.CONFIRMED,
+                    paidAt: confirmedPayment.clientPaymentDate
+                        ? new Date(confirmedPayment.clientPaymentDate)
+                        : new Date(),
+                },
+                create: {
+                    companyId,
+                    subscriptionId: sub.id,
+                    providerPaymentId: confirmedPayment.id,
+                    amount: confirmedPayment.value,
+                    status: client_1.PaymentStatus.CONFIRMED,
+                    paymentMethod: confirmedPayment.billingType === 'PIX'
+                        ? client_1.PaymentMethod.PIX
+                        : client_1.PaymentMethod.CREDIT_CARD,
+                    dueDate: new Date(confirmedPayment.dueDate),
+                    paidAt: new Date(),
+                    invoiceUrl: confirmedPayment.invoiceUrl || null,
+                },
+            });
+            return {
+                synced: true,
+                active: true,
+                message: 'Pagamento confirmado pelo banco! Seu plano está 100% ativado.',
+                subscription: updatedSub,
+            };
+        }
+        const latestPayment = payments[0] || null;
+        let pixQrCode = null;
+        if (latestPayment && latestPayment.billingType === 'PIX' && latestPayment.id) {
+            pixQrCode = await this.asaasProvider.getPixQrCode(latestPayment.id);
+        }
+        return {
+            synced: true,
+            active: sub.status === client_1.SubscriptionStatus.ACTIVE,
+            message: 'Pagamento ainda não identificado pelo banco. Se realizou via Pix agora, aguarde até 30 segundos e verifique novamente.',
+            subscription: sub,
+            latestPayment: latestPayment
+                ? {
+                    id: latestPayment.id,
+                    status: latestPayment.status,
+                    value: latestPayment.value,
+                    invoiceUrl: latestPayment.invoiceUrl,
+                    pixQrCode,
+                }
+                : null,
+        };
     }
 };
 exports.SubscriptionsService = SubscriptionsService;

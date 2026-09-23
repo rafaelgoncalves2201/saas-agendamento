@@ -5,8 +5,8 @@ export declare class ClientsService {
     constructor(prisma: PrismaService);
     listClients(companyId: string, search?: string): Promise<{
         id: string;
-        email: string | null;
         name: string;
+        email: string | null;
         phone: string;
         createdAt: Date;
         updatedAt: Date;
@@ -19,17 +19,26 @@ export declare class ClientsService {
         appointments: ({
             professional: {
                 id: string;
-                email: string | null;
                 name: string;
+                slug: string;
+                email: string | null;
                 phone: string;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                slug: string;
+                mpAccessToken: string | null;
+                mpRefreshToken: string | null;
+                mpUserId: string | null;
+                mpExpiresIn: number | null;
+                mpTokenType: string | null;
+                mpPublicKey: string | null;
                 companyId: string;
                 userId: string | null;
                 bio: string | null;
                 avatarUrl: string | null;
+                requiresDeposit: boolean;
+                depositType: import(".prisma/client").$Enums.DepositType;
+                depositValue: import("@prisma/client/runtime/library").Decimal | null;
             };
             service: {
                 id: string;
@@ -37,39 +46,45 @@ export declare class ClientsService {
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                description: string | null;
-                sortOrder: number;
                 companyId: string;
+                description: string | null;
                 durationMinutes: number;
                 price: import("@prisma/client/runtime/library").Decimal;
                 category: string | null;
                 imageUrl: string | null;
+                sortOrder: number;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             companyId: string;
-            status: import(".prisma/client").$Enums.AppointmentStatus;
-            professionalId: string;
             durationMinutes: number;
+            professionalId: string;
             serviceId: string;
+            notes: string | null;
+            mpPaymentId: string | null;
+            clientManagementCode: string;
+            clientId: string;
             startDateTime: Date;
             endDateTime: Date;
-            clientId: string;
             priceAtBooking: import("@prisma/client/runtime/library").Decimal;
             originalPrice: import("@prisma/client/runtime/library").Decimal | null;
             couponCode: string | null;
             discountAmount: import("@prisma/client/runtime/library").Decimal | null;
-            clientManagementCode: string;
-            notes: string | null;
+            depositAmount: import("@prisma/client/runtime/library").Decimal | null;
+            pixCopiaECola: string | null;
+            pixQrCodeBase64: string | null;
+            pixPaymentUrl: string | null;
+            paidAt: Date | null;
+            status: import(".prisma/client").$Enums.AppointmentStatus;
             cancellationReason: string | null;
             cancelledAt: Date | null;
         })[];
     } & {
         id: string;
-        email: string | null;
         name: string;
+        email: string | null;
         phone: string;
         createdAt: Date;
         updatedAt: Date;
@@ -80,8 +95,8 @@ export declare class ClientsService {
     }>;
     updateClient(companyId: string, id: string, dto: UpdateClientDto): Promise<{
         id: string;
-        email: string | null;
         name: string;
+        email: string | null;
         phone: string;
         createdAt: Date;
         updatedAt: Date;

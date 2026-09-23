@@ -12,7 +12,7 @@ import { CompaniesService } from './companies.service';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { Role } from '@prisma/client';
+import { Role, SubscriptionStatus } from '@prisma/client';
 
 @ApiTags('Companies')
 @Controller()
@@ -67,6 +67,19 @@ export class CompaniesController {
     @Body('isActive') isActive: boolean,
   ) {
     return this.companiesService.toggleCompanyStatus(id, isActive);
+  }
+
+  @ApiBearerAuth('JWT')
+  @Roles(Role.SUPER_ADMIN)
+  @Patch('admin/companies/:id/plan')
+  @ApiOperation({ summary: '[Super Admin] Alterar plano e status da assinatura da empresa' })
+  changeCompanyPlan(
+    @Param('id') id: string,
+    @Body('planId') planId: string,
+    @Body('status') status?: SubscriptionStatus,
+    @Body('months') months?: number,
+  ) {
+    return this.companiesService.changeCompanyPlan(id, planId, status, months);
   }
 }
 

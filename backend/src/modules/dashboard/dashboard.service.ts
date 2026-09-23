@@ -18,15 +18,22 @@ export class DashboardService {
     const todayStart = startOfDay(now);
     const todayEnd = endOfDay(now);
     const monthStart = startOfMonth(now);
+    const fourteenDaysAgoStart = startOfDay(new Date(now.getTime() - 13 * 24 * 60 * 60 * 1000));
 
     const [
       todayCount,
+      todayRevenueAppointments,
       upcomingCount,
       completedMonthCount,
       cancelledMonthCount,
       clientsCount,
       monthAppointments,
       company,
+      totalProducts,
+      lowStockProducts,
+      lowStockItems,
+      waitlistCount,
+      past14DaysAppointments,
     ] = await Promise.all([
       // Agendamentos de hoje
       this.prisma.appointment.count({
@@ -35,6 +42,15 @@ export class DashboardService {
           startDateTime: { gte: todayStart, lte: todayEnd },
           status: { not: AppointmentStatus.CANCELLED },
         },
+      }),
+      // Receita de hoje (confirmados e concluídos)
+      this.prisma.appointment.findMany({
+        where: {
+          companyId,
+          startDateTime: { gte: todayStart, lte: todayEnd },
+          status: { in: [AppointmentStatus.CONFIRMED, AppointmentStatus.COMPLETED] },
+        },
+        select: { priceAtBooking: true },
       }),
       // Próximos agendamentos
       this.prisma.appointment.count({
@@ -82,12 +98,68 @@ export class DashboardService {
           },
         },
       }),
+      // Total de produtos no estoque
+      this.prisma.product.count({
+        where: { companyId, isActive: true },
+      }),
+      // Produtos com estoque baixo (menor ou igual a 5 unidades)
+      this.prisma.product.count({
+        where: { companyId, isActive: true, stock: { lte: 5 } },
+      }),
+      // Lista de produtos com estoque crítico para reposição
+      this.prisma.product.findMany({
+        where: { companyId, isActive: true, stock: { lte: 5 } },
+        orderBy: { stock: 'asc' },
+        take: 5,
+        select: { id: true, name: true, stock: true, price: true, category: true },
+      }),
+      // Clientes na lista de espera aguardando vaga
+      this.prisma.waitlistEntry.count({
+        where: { companyId, status: 'PENDING' },
+      }),
+      // Histórico dos últimos 14 dias para gráfico
+      this.prisma.appointment.findMany({
+        where: {
+          companyId,
+          startDateTime: { gte: fourteenDaysAgoStart, lte: todayEnd },
+          status: { in: [AppointmentStatus.CONFIRMED, AppointmentStatus.COMPLETED] },
+        },
+        select: { startDateTime: true, priceAtBooking: true },
+      }),
     ]);
+
+    const todayRevenue = todayRevenueAppointments.reduce(
+      (acc, app) => acc + Number(app.priceAtBooking),
+      0,
+    );
 
     const estimatedRevenue = monthAppointments.reduce(
       (acc, app) => acc + Number(app.priceAtBooking),
       0,
     );
+
+    // Montar série dos últimos 14 dias para o gráfico
+    const chartData: any[] = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dayStart = startOfDay(d).getTime();
+      const dayEndVal = endOfDay(d).getTime();
+      const dayStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+      const appsInDay = past14DaysAppointments.filter((app) => {
+        const time = new Date(app.startDateTime).getTime();
+        return time >= dayStart && time <= dayEndVal;
+      });
+
+      const dayRevenue = appsInDay.reduce((acc, a) => acc + Number(a.priceAtBooking), 0);
+
+      chartData.push({
+        date: d.toISOString().split('T')[0],
+        dayLabel: dayStr,
+        appointments: appsInDay.length,
+        revenue: Math.round(dayRevenue * 100) / 100,
+      });
+    }
 
     // Serviços mais agendados
     const topServices = await this.prisma.appointment.groupBy({
@@ -125,12 +197,20 @@ export class DashboardService {
     return {
       metrics: {
         todayAppointments: todayCount,
+        todayRevenue,
         upcomingAppointments: upcomingCount,
         completedThisMonth: completedMonthCount,
         cancelledThisMonth: cancelledMonthCount,
         totalClients: clientsCount,
         estimatedRevenueThisMonth: estimatedRevenue,
+        waitlistPending: waitlistCount,
       },
+      inventory: {
+        totalProducts,
+        lowStockCount: lowStockProducts,
+        lowStockItems,
+      },
+      chartData,
       topServices: populatedTopServices,
       subscription: {
         status: company?.subscription?.status || null,

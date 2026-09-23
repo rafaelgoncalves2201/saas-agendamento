@@ -7,4 +7,5 @@ export declare class WhatsAppService {
     constructor(prisma: PrismaService, provider: WhatsAppProvider);
     sendAppointmentConfirmation(appointmentId: string): Promise<void>;
     sendCancellationNotification(appointmentId: string, reason?: string): Promise<void>;
+    sendRescheduleNotification(appointmentId: string): Promise<void>;
 }

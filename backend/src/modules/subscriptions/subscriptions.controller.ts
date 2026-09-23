@@ -40,6 +40,14 @@ export class SubscriptionsController {
     return this.subscriptionsService.getFeatures(req.companyId);
   }
 
+  @Post('sync')
+  @HttpCode(HttpStatus.OK)
+  @Roles(Role.COMPANY_ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Sincronizar status da assinatura diretamente com o gateway Asaas' })
+  syncSubscription(@Req() req: any) {
+    return this.subscriptionsService.syncSubscription(req.companyId);
+  }
+
   @Post('cancel')
   @HttpCode(HttpStatus.OK)
   @Roles(Role.COMPANY_ADMIN, Role.SUPER_ADMIN)

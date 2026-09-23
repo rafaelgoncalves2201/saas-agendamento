@@ -12,11 +12,12 @@ export declare class SubscriptionsService {
             plan: {
                 id: string;
                 name: string;
+                slug: string;
                 isActive: boolean;
                 createdAt: Date;
                 updatedAt: Date;
-                slug: string;
                 description: string;
+                sortOrder: number;
                 priceMonthly: import("@prisma/client/runtime/library").Decimal;
                 priceYearly: import("@prisma/client/runtime/library").Decimal;
                 currency: string;
@@ -24,17 +25,17 @@ export declare class SubscriptionsService {
                 maxAppointmentsPerMonth: number;
                 maxWhatsappMessages: number;
                 features: import("@prisma/client/runtime/library").JsonValue;
-                sortOrder: number;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             companyId: string;
+            status: import(".prisma/client").$Enums.SubscriptionStatus;
+            planId: string;
             provider: string;
             providerCustomerId: string | null;
             providerSubscriptionId: string | null;
-            status: import(".prisma/client").$Enums.SubscriptionStatus;
             billingCycle: import(".prisma/client").$Enums.BillingCycle;
             amount: import("@prisma/client/runtime/library").Decimal;
             nextDueDate: Date | null;
@@ -43,23 +44,23 @@ export declare class SubscriptionsService {
             cancelAtPeriodEnd: boolean;
             canceledAt: Date | null;
             trialEndsAt: Date | null;
-            planId: string;
         };
         payment: {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             companyId: string;
+            paidAt: Date | null;
             status: import(".prisma/client").$Enums.PaymentStatus;
             amount: import("@prisma/client/runtime/library").Decimal;
             paymentMethod: import(".prisma/client").$Enums.PaymentMethod;
             providerPaymentId: string;
             dueDate: Date;
-            paidAt: Date | null;
             invoiceUrl: string | null;
             subscriptionId: string | null;
         };
         paymentUrl: any;
+        pixQrCode: any;
     }>;
     getMe(companyId: string): Promise<{
         companyId: string;
@@ -115,10 +116,11 @@ export declare class SubscriptionsService {
         createdAt: Date;
         updatedAt: Date;
         companyId: string;
+        status: import(".prisma/client").$Enums.SubscriptionStatus;
+        planId: string;
         provider: string;
         providerCustomerId: string | null;
         providerSubscriptionId: string | null;
-        status: import(".prisma/client").$Enums.SubscriptionStatus;
         billingCycle: import(".prisma/client").$Enums.BillingCycle;
         amount: import("@prisma/client/runtime/library").Decimal;
         nextDueDate: Date | null;
@@ -127,6 +129,96 @@ export declare class SubscriptionsService {
         cancelAtPeriodEnd: boolean;
         canceledAt: Date | null;
         trialEndsAt: Date | null;
-        planId: string;
+    }>;
+    syncSubscription(companyId: string): Promise<{
+        synced: boolean;
+        active: boolean;
+        message: string;
+        subscription: {
+            plan: {
+                id: string;
+                name: string;
+                slug: string;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                description: string;
+                sortOrder: number;
+                priceMonthly: import("@prisma/client/runtime/library").Decimal;
+                priceYearly: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
+                maxProfessionals: number;
+                maxAppointmentsPerMonth: number;
+                maxWhatsappMessages: number;
+                features: import("@prisma/client/runtime/library").JsonValue;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            status: import(".prisma/client").$Enums.SubscriptionStatus;
+            planId: string;
+            provider: string;
+            providerCustomerId: string | null;
+            providerSubscriptionId: string | null;
+            billingCycle: import(".prisma/client").$Enums.BillingCycle;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            nextDueDate: Date | null;
+            currentPeriodStart: Date;
+            currentPeriodEnd: Date;
+            cancelAtPeriodEnd: boolean;
+            canceledAt: Date | null;
+            trialEndsAt: Date | null;
+        };
+        latestPayment?: undefined;
+    } | {
+        synced: boolean;
+        active: boolean;
+        message: string;
+        subscription: {
+            plan: {
+                id: string;
+                name: string;
+                slug: string;
+                isActive: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                description: string;
+                sortOrder: number;
+                priceMonthly: import("@prisma/client/runtime/library").Decimal;
+                priceYearly: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
+                maxProfessionals: number;
+                maxAppointmentsPerMonth: number;
+                maxWhatsappMessages: number;
+                features: import("@prisma/client/runtime/library").JsonValue;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            companyId: string;
+            status: import(".prisma/client").$Enums.SubscriptionStatus;
+            planId: string;
+            provider: string;
+            providerCustomerId: string | null;
+            providerSubscriptionId: string | null;
+            billingCycle: import(".prisma/client").$Enums.BillingCycle;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            nextDueDate: Date | null;
+            currentPeriodStart: Date;
+            currentPeriodEnd: Date;
+            cancelAtPeriodEnd: boolean;
+            canceledAt: Date | null;
+            trialEndsAt: Date | null;
+        };
+        latestPayment: {
+            id: any;
+            status: any;
+            value: any;
+            invoiceUrl: any;
+            pixQrCode: null;
+        } | null;
     }>;
 }

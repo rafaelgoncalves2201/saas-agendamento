@@ -4,66 +4,82 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    /* Fundo Bege & Detalhes Marrom Nobre */
+    --background: 40 33% 95%;      /* #F8F5EE - Bege suave luxo */
+    --foreground: 24 35% 14%;      /* #2B1D15 - Café escuro legível */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 40 35% 99%;            /* #FDFCF9 - Marfim suave */
+    --card-foreground: 24 35% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 40 35% 99%;
+    --popover-foreground: 24 35% 14%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 22 48% 28%;         /* #6B3E26 - Marrom nobre chocolate */
+    --primary-foreground: 40 33% 96%; /* #FAF7F2 - Texto bege/marfim sobre marrom */
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
+    --secondary: 38 25% 90%;       /* #EFE9DF - Bege areia secundário */
+    --secondary-foreground: 24 35% 14%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 38 25% 90%;           /* #EFE9DF */
+    --muted-foreground: 26 16% 41%; /* #796758 - Taupe quente */
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
+    --accent: 38 25% 90%;
+    --accent-foreground: 24 35% 14%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 40 33% 96%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221 83% 53%;
+    --border: 36 24% 85%;          /* #E2D9CC - Borda bege sofisticada */
+    --input: 36 24% 85%;
+    --ring: 22 48% 28%;            /* #6B3E26 */
 
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    /* Modo Escuro: Café Espresso & Caramelo Dourado */
+    --background: 23 27% 6%;       /* #120D0A - Café torrado profundo */
+    --foreground: 37 35% 93%;      /* #F5EFE6 - Marfim quente */
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --card: 24 24% 10%;            /* #1F1712 - Chocolate escuro */
+    --card-foreground: 37 35% 93%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 24 24% 10%;
+    --popover-foreground: 37 35% 93%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222 47% 11.2%;
+    --primary: 26 53% 54%;         /* #C88452 - Caramelo âmbar quente */
+    --primary-foreground: 23 27% 6%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 25 21% 15%;       /* #2D221A */
+    --secondary-foreground: 37 35% 93%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 25 21% 15%;
+    --muted-foreground: 28 14% 60%; /* #9F8E80 */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 25 21% 15%;
+    --accent-foreground: 37 35% 93%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 37 35% 93%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 25 21% 18%;          /* #382A21 */
+    --input: 25 21% 18%;
+    --ring: 26 53% 54%;
   }
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark input[type="time"],
+html.dark input[type="date"],
+html.dark input[type="datetime-local"] {
+  color-scheme: dark;
 }
 
 body {
@@ -73,4 +89,3 @@ body {
   color: hsl(var(--foreground));
   -webkit-font-smoothing: antialiased;
 }
-

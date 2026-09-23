@@ -19,6 +19,9 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ProductsModule } from './modules/products/products.module';
 import { WhatsAppModule } from './modules/whatsapp/whatsapp.module';
 import { CouponsModule } from './modules/coupons/coupons.module';
+import { WaitlistModule } from './modules/waitlist/waitlist.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { MercadoPagoModule } from './modules/mercadopago/mercadopago.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { SubscriptionGuard } from './common/guards/subscription.guard';
@@ -47,6 +50,9 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     ProductsModule,
     WhatsAppModule,
     CouponsModule,
+    WaitlistModule,
+    ReviewsModule,
+    MercadoPagoModule,
   ],
   controllers: [AppController],
   providers: [

@@ -5,12 +5,17 @@ import {
   Clock,
   Users,
   TrendingUp,
-  CheckCircle2,
-  XCircle,
+  DollarSign,
+  Package,
+  AlertTriangle,
   ExternalLink,
   Sparkles,
   Loader2,
-  AlertCircle,
+  ChevronRight,
+  Scissors,
+  Star,
+  UserCheck,
+  CheckCircle2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -18,6 +23,8 @@ export const CompanyDashboardPage: React.FC = () => {
   const [data, setData] = useState<any>(null);
   const [company, setCompany] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [chartMetric, setChartMetric] = useState<'revenue' | 'appointments'>('revenue');
+  const [hoveredBarIndex, setHoveredBarIndex] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -35,22 +42,30 @@ export const CompanyDashboardPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="animate-spin text-indigo-600" size={32} />
+        <Loader2 className="animate-spin text-[#6B3E26]" size={36} />
       </div>
     );
   }
 
   const metrics = data?.metrics || {};
+  const inventory = data?.inventory || { totalProducts: 0, lowStockCount: 0, lowStockItems: [] };
   const topServices = data?.topServices || [];
+  const chartData: any[] = data?.chartData || [];
+
+  // Calcular valor máximo para escala do gráfico
+  const maxChartValue = Math.max(
+    ...chartData.map((d: any) => (chartMetric === 'revenue' ? d.revenue : d.appointments)),
+    chartMetric === 'revenue' ? 100 : 5,
+  );
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto">
+    <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Visão Geral</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Acompanhe o desempenho do seu negócio em tempo real.
+          <h1 className="text-2xl font-bold text-[#2B1D15] dark:text-[#F8F5EE]">Visão Geral</h1>
+          <p className="text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+            Acompanhe o faturamento, agendamentos e estoque do seu negócio em tempo real.
           </p>
         </div>
 
@@ -59,44 +74,44 @@ export const CompanyDashboardPage: React.FC = () => {
             href={`/empresa/${company.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-xl shadow-sm shadow-indigo-200 dark:shadow-none transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl shadow-sm shadow-[#6B3E26]/20 transition-all cursor-pointer"
           >
-            <span>Página de Agendamento</span>
-            <ExternalLink size={16} />
+            <span>Ver Minha Página Pública</span>
+            <ExternalLink size={14} />
           </a>
         )}
       </div>
 
       {/* Subscription Banner */}
       {data?.subscription && (
-        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-100 dark:border-indigo-900/40 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-[#FAF5ED] dark:bg-[#261E18] border border-[#CDB196] dark:border-[#523A2C] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-indigo-600 text-white rounded-xl shadow-md shadow-indigo-200 dark:shadow-none">
+            <div className="p-2.5 bg-[#6B3E26] text-white rounded-xl shadow-xs">
               <Sparkles size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-slate-900 dark:text-slate-100">
-                  Plano {data.subscription.planName}
+                <span className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-sm">
+                  Plano {data.subscription.planName || 'Starter'}
                 </span>
                 <span
-                  className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
+                  className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold ${
                     data.subscription.status === 'ACTIVE'
-                      ? 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                       : data.subscription.status === 'TRIALING'
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-red-100 text-red-700'
+                      ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                      : 'bg-[#FAF5ED] text-[#6B3E26] border border-[#CDB196]'
                   }`}
                 >
                   {data.subscription.status === 'ACTIVE'
                     ? 'Ativo'
                     : data.subscription.status === 'TRIALING'
-                    ? 'Período de Teste'
-                    : 'Atrasado'}
+                    ? 'Período de Testes'
+                    : 'Aguardando Pagamento'}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Vigência até{' '}
+              <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-0.5">
+                Renovação em:{' '}
                 {data.subscription.periodEnd
                   ? new Date(data.subscription.periodEnd).toLocaleDateString('pt-BR')
                   : 'N/A'}
@@ -106,145 +121,362 @@ export const CompanyDashboardPage: React.FC = () => {
 
           <Link
             to="/subscription"
-            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-xs font-semibold rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+            className="inline-flex items-center justify-center px-4 py-2 bg-white dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] text-xs font-bold rounded-xl border border-[#E2D9CC] dark:border-[#523A2C] hover:bg-[#FAF8F5] transition-colors"
           >
-            Gerenciar Plano / Upgrade
+            Gerenciar Assinatura
           </Link>
         </div>
       )}
 
-      {/* Metrics Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
+      {/* Grid de Métricas Principais (5 Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        {/* Receita de Hoje (Destaque Principal) */}
+        <div className="bg-white dark:bg-[#1F1712] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Hoje
+            <p className="text-[11px] font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
+              Receita de Hoje
             </p>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">
-              {metrics.todayAppointments || 0}
+            <h3 className="text-2xl font-black text-[#2B1D15] dark:text-[#F8F5EE] mt-1">
+              R$ {Number(metrics.todayRevenue || 0).toFixed(2)}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Agendamentos hoje</p>
+            <p className="text-[11px] text-[#6B3E26] dark:text-[#CDB196] font-medium mt-0.5">
+              {metrics.todayAppointments || 0} agendamento(s) hoje
+            </p>
           </div>
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-xl">
-            <Clock size={24} />
+          <div className="p-3 bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] rounded-2xl">
+            <DollarSign size={22} />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
+        {/* Faturamento do Mês */}
+        <div className="bg-white dark:bg-[#1F1712] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Próximos
-            </p>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">
-              {metrics.upcomingAppointments || 0}
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Confirmados futuros</p>
-          </div>
-          <div className="p-3 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 rounded-xl">
-            <Calendar size={24} />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <p className="text-[11px] font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
               Receita no Mês
             </p>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">
-              R$ {(metrics.estimatedRevenueThisMonth || 0).toFixed(2)}
+            <h3 className="text-2xl font-black text-[#2B1D15] dark:text-[#F8F5EE] mt-1">
+              R$ {Number(metrics.estimatedRevenueThisMonth || 0).toFixed(2)}
             </h3>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">
-              {metrics.completedThisMonth || 0} atendimentos realizados
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">
+              {metrics.completedThisMonth || 0} concluído(s)
             </p>
           </div>
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-xl">
-            <TrendingUp size={24} />
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 rounded-2xl">
+            <TrendingUp size={22} />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between">
+        {/* Próximos Agendamentos */}
+        <div className="bg-white dark:bg-[#1F1712] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-              Clientes
+            <p className="text-[11px] font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
+              Próximos
             </p>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">
+            <h3 className="text-2xl font-black text-[#2B1D15] dark:text-[#F8F5EE] mt-1">
+              {metrics.upcomingAppointments || 0}
+            </h3>
+            <p className="text-[11px] text-[#796758] dark:text-[#CDB196] mt-0.5">Confirmados na agenda</p>
+          </div>
+          <div className="p-3 bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] rounded-2xl">
+            <Calendar size={22} />
+          </div>
+        </div>
+
+        {/* Estoque de Produtos */}
+        <div className="bg-white dark:bg-[#1F1712] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
+              Estoque
+            </p>
+            <h3 className="text-2xl font-black text-[#2B1D15] dark:text-[#F8F5EE] mt-1">
+              {inventory.totalProducts || 0} <span className="text-xs font-normal text-[#796758]">itens</span>
+            </h3>
+            {inventory.lowStockCount > 0 ? (
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-0.5 flex items-center gap-1">
+                <AlertTriangle size={11} /> {inventory.lowStockCount} item(s) acabando
+              </p>
+            ) : (
+              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">Estoque regular</p>
+            )}
+          </div>
+          <div
+            className={`p-3 rounded-2xl ${
+              inventory.lowStockCount > 0
+                ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
+                : 'bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC]'
+            }`}
+          >
+            <Package size={22} />
+          </div>
+        </div>
+
+        {/* Clientes Cadastrados */}
+        <div className="bg-white dark:bg-[#1F1712] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
+              Clientes (CRM)
+            </p>
+            <h3 className="text-2xl font-black text-[#2B1D15] dark:text-[#F8F5EE] mt-1">
               {metrics.totalClients || 0}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Base cadastrada</p>
+            <p className="text-[11px] text-[#796758] dark:text-[#CDB196] mt-0.5">Base cadastrada</p>
           </div>
-          <div className="p-3 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-xl">
-            <Users size={24} />
+          <div className="p-3 bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] rounded-2xl">
+            <Users size={22} />
           </div>
         </div>
       </div>
 
-      {/* Tables Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Services */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs p-6">
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-4 text-base">
-            Serviços Mais Agendados
-          </h3>
-          {topServices.length === 0 ? (
-            <div className="text-center py-8 text-slate-400 dark:text-slate-500 text-sm">
-              Nenhum serviço agendado ainda.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {topServices.map((srv: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-800"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{srv.serviceName}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">R$ {Number(srv.price).toFixed(2)}</p>
-                  </div>
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300">
-                    {srv.bookingsCount} agendamentos
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+      {/* Gráfico de Desempenho Visual (14 Dias) */}
+      <div className="bg-white dark:bg-[#1F1712] rounded-3xl border border-[#E2D9CC] dark:border-[#382A21] p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-[#E2D9CC] dark:border-[#382A21]">
+          <div>
+            <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base">
+              Desempenho dos Últimos 14 Dias
+            </h3>
+            <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+              Acompanhe a curva diária de faturamento e fluxo de agendamentos.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5 p-1 bg-[#FAF8F5] dark:bg-[#261E18] rounded-xl border border-[#E2D9CC] dark:border-[#3D2C22]">
+            <button
+              onClick={() => setChartMetric('revenue')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                chartMetric === 'revenue'
+                  ? 'bg-[#6B3E26] text-white shadow-xs'
+                  : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white'
+              }`}
+            >
+              Faturamento (R$)
+            </button>
+            <button
+              onClick={() => setChartMetric('appointments')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                chartMetric === 'appointments'
+                  ? 'bg-[#6B3E26] text-white shadow-xs'
+                  : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white'
+              }`}
+            >
+              Agendamentos
+            </button>
+          </div>
         </div>
 
-        {/* Quick Tips & Next Actions */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs p-6 flex flex-col justify-between">
+        {/* Visual Bar Chart */}
+        <div className="pt-4">
+          <div className="h-56 flex items-end justify-between gap-2 sm:gap-3 px-2">
+            {chartData.map((d: any, idx: number) => {
+              const val = chartMetric === 'revenue' ? d.revenue : d.appointments;
+              const heightPct = Math.max(8, Math.round((val / maxChartValue) * 100));
+              const isHovered = hoveredBarIndex === idx;
+
+              return (
+                <div
+                  key={d.date}
+                  className="flex-1 flex flex-col items-center gap-2 group relative cursor-pointer h-full justify-end"
+                  onMouseEnter={() => setHoveredBarIndex(idx)}
+                  onMouseLeave={() => setHoveredBarIndex(null)}
+                >
+                  {/* Tooltip Hover */}
+                  {isHovered && (
+                    <div className="absolute -top-12 z-20 px-3 py-1.5 bg-[#2B1D15] text-[#FAF8F5] text-[11px] font-bold rounded-xl shadow-lg whitespace-nowrap pointer-events-none">
+                      <span className="block text-center">{d.dayLabel}</span>
+                      <span className="block text-amber-300">
+                        {chartMetric === 'revenue' ? `R$ ${d.revenue.toFixed(2)}` : `${d.appointments} agendamento(s)`}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Barra */}
+                  <div
+                    className="w-full max-w-[28px] rounded-t-xl transition-all duration-300"
+                    style={{
+                      height: `${heightPct}%`,
+                      backgroundColor: isHovered ? '#54311E' : val > 0 ? '#6B3E26' : '#EFE9DF',
+                    }}
+                  />
+
+                  {/* Label do dia */}
+                  <span
+                    className={`text-[10px] font-semibold tracking-tighter truncate ${
+                      isHovered ? 'text-[#6B3E26] font-bold' : 'text-[#796758] dark:text-[#CDB196]'
+                    }`}
+                  >
+                    {d.dayLabel}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Grid Inferior: Estoque Crítico, Top Serviços & Ações Rápidas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Card de Controle de Estoque & Reposição */}
+        <div className="bg-white dark:bg-[#1F1712] rounded-3xl border border-[#E2D9CC] dark:border-[#382A21] p-6 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 className="font-semibold text-slate-900 dark:text-slate-100 mb-2 text-base">
-              Configurações Rápidas
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-              Configure seus horários de atendimento, adicione serviços e compartilhe seu link exclusivo nas redes sociais.
-            </p>
-            <div className="space-y-2.5">
-              <Link
-                to="/services"
-                className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 transition-all text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
-                <span>Cadastrar e Editar Serviços</span>
-                <span className="text-indigo-600 dark:text-indigo-400 text-xs font-semibold">Ir &rarr;</span>
-              </Link>
-              <Link
-                to="/availability"
-                className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 transition-all text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
-                <span>Definir Horários & Intervalos</span>
-                <span className="text-indigo-600 dark:text-indigo-400 text-xs font-semibold">Ir &rarr;</span>
-              </Link>
-              <Link
-                to="/coupons"
-                className="flex items-center justify-between p-3 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/30 transition-all text-sm font-medium text-slate-700 dark:text-slate-300"
-              >
-                <span>Gerenciar Cupons de Desconto</span>
-                <span className="text-indigo-600 dark:text-indigo-400 text-xs font-semibold">Ir &rarr;</span>
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2D9CC] dark:border-[#382A21] mb-3">
+              <div className="flex items-center gap-2">
+                <Package size={18} className="text-[#6B3E26]" />
+                <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-sm">
+                  Controle de Estoque
+                </h3>
+              </div>
+              <Link to="/products" className="text-xs font-bold text-[#6B3E26] hover:underline flex items-center gap-0.5">
+                <span>Ver Todos</span>
+                <ChevronRight size={13} />
               </Link>
             </div>
+
+            {inventory.lowStockItems.length === 0 ? (
+              <div className="text-center py-8 space-y-2">
+                <CheckCircle2 size={32} className="mx-auto text-emerald-600" />
+                <p className="text-xs font-semibold text-[#2B1D15] dark:text-[#F8F5EE]">
+                  Estoque 100% Abastecido!
+                </p>
+                <p className="text-[11px] text-[#796758] dark:text-[#CDB196]">
+                  Nenhum produto está com estoque crítico no momento.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                <p className="text-[11px] text-amber-700 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-200 dark:border-amber-800">
+                  Atenção: Itens com 5 ou menos unidades restantes:
+                </p>
+                {inventory.lowStockItems.map((item: any) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] text-xs"
+                  >
+                    <div>
+                      <strong className="block text-[#2B1D15] dark:text-[#FAF7F2]">{item.name}</strong>
+                      <span className="text-[11px] text-[#796758] dark:text-[#CDB196]">
+                        R$ {Number(item.price).toFixed(2)}
+                      </span>
+                    </div>
+                    <span className="px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 font-bold text-[11px]">
+                      {item.stock} un.
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Link
+            to="/products"
+            className="w-full mt-4 py-2 bg-[#FAF8F5] dark:bg-[#251C16] hover:bg-[#FAF5ED] text-[#6B3E26] text-xs font-bold rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-center transition-colors"
+          >
+            Gerenciar Estoque e Produtos
+          </Link>
+        </div>
+
+        {/* Serviços Mais Agendados */}
+        <div className="bg-white dark:bg-[#1F1712] rounded-3xl border border-[#E2D9CC] dark:border-[#382A21] p-6 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2D9CC] dark:border-[#382A21] mb-3">
+              <div className="flex items-center gap-2">
+                <Scissors size={18} className="text-[#6B3E26]" />
+                <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-sm">
+                  Mais Agendados no Mês
+                </h3>
+              </div>
+              <Link to="/services" className="text-xs font-bold text-[#6B3E26] hover:underline flex items-center gap-0.5">
+                <span>Serviços</span>
+                <ChevronRight size={13} />
+              </Link>
+            </div>
+
+            {topServices.length === 0 ? (
+              <div className="text-center py-8 text-[#796758] dark:text-[#CDB196] text-xs">
+                Nenhum serviço agendado neste mês ainda.
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {topServices.map((srv: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] text-xs"
+                  >
+                    <div>
+                      <strong className="block text-[#2B1D15] dark:text-[#FAF7F2] truncate max-w-[160px]">
+                        {srv.serviceName}
+                      </strong>
+                      <span className="text-[11px] text-[#796758] dark:text-[#CDB196]">
+                        R$ {Number(srv.price).toFixed(2)}
+                      </span>
+                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] font-bold text-[11px] border border-[#CDB196] dark:border-[#523A2C]">
+                      {srv.bookingsCount} agendados
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Link
+            to="/services"
+            className="w-full mt-4 py-2 bg-[#FAF8F5] dark:bg-[#251C16] hover:bg-[#FAF5ED] text-[#6B3E26] text-xs font-bold rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-center transition-colors"
+          >
+            Cadastrar / Editar Procedimentos
+          </Link>
+        </div>
+
+        {/* Atalhos Rápidos da Gestão */}
+        <div className="bg-white dark:bg-[#1F1712] rounded-3xl border border-[#E2D9CC] dark:border-[#382A21] p-6 shadow-xs flex flex-col justify-between">
+          <div>
+            <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-sm pb-3 border-b border-[#E2D9CC] dark:border-[#382A21] mb-3">
+              Módulos em Destaque
+            </h3>
+
+            <div className="space-y-2.5">
+              <Link
+                to="/waitlist"
+                className="flex items-center justify-between p-3 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] hover:border-[#6B3E26] hover:bg-[#FAF8F5] transition-all text-xs font-medium text-[#2B1D15] dark:text-[#FAF7F2]"
+              >
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-[#6B3E26]" />
+                  <span>Lista de Espera</span>
+                </div>
+                {metrics.waitlistPending > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-[#6B3E26] text-white text-[10px] font-bold">
+                    {metrics.waitlistPending} aguardando
+                  </span>
+                )}
+              </Link>
+
+              <Link
+                to="/reviews"
+                className="flex items-center justify-between p-3 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] hover:border-[#6B3E26] hover:bg-[#FAF8F5] transition-all text-xs font-medium text-[#2B1D15] dark:text-[#FAF7F2]"
+              >
+                <div className="flex items-center gap-2">
+                  <Star size={16} className="text-amber-500 fill-amber-500" />
+                  <span>Avaliações & Estrelas</span>
+                </div>
+                <span className="text-[#6B3E26] text-[11px] font-bold">Ver Depoimentos &rarr;</span>
+              </Link>
+
+              <Link
+                to="/availability"
+                className="flex items-center justify-between p-3 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] hover:border-[#6B3E26] hover:bg-[#FAF8F5] transition-all text-xs font-medium text-[#2B1D15] dark:text-[#FAF7F2]"
+              >
+                <div className="flex items-center gap-2">
+                  <Calendar size={16} className="text-[#6B3E26]" />
+                  <span>Horários & Intervalos</span>
+                </div>
+                <span className="text-[#6B3E26] text-[11px] font-bold">Ajustar &rarr;</span>
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-4 p-3 bg-[#FAF5ED] dark:bg-[#34241B] rounded-2xl border border-[#CDB196] dark:border-[#523A2C] text-[11px] text-[#6B3E26] dark:text-[#E2CEBC]">
+            💡 <strong>Dica Inova Agenda:</strong> Mantenha o estoque atualizado para evitar oferecer produtos esgotados aos clientes no balcão.
           </div>
         </div>
       </div>
     </div>
   );
 };
-

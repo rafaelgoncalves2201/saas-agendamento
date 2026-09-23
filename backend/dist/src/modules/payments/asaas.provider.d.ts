@@ -19,5 +19,7 @@ export declare class AsaasProvider {
     constructor();
     createOrGetCustomer(input: AsaasCustomerInput): Promise<any>;
     createSubscription(input: AsaasSubscriptionInput): Promise<any>;
+    getSubscriptionPayments(providerSubscriptionId: string): Promise<any>;
+    getPixQrCode(providerPaymentId: string): Promise<any>;
     cancelSubscription(providerSubscriptionId: string): Promise<any>;
 }
