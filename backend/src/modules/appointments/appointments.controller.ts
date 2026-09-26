@@ -38,8 +38,14 @@ export class AppointmentsController {
   @Public()
   @Get('public/appointments/:code')
   @ApiOperation({ summary: 'Consultar detalhes do agendamento através do código seguro' })
-  getPublicAppointment(@Param('code') code: string) {
-    return this.appointmentsService.getAppointmentByManagementCode(code);
+  getPublicAppointment(
+    @Param('code') code: string,
+    @Query('payment_id') paymentId?: string,
+    @Query('collection_id') collectionId?: string,
+    @Query('status') status?: string,
+  ) {
+    const effectivePaymentId = paymentId || collectionId;
+    return this.appointmentsService.getAppointmentByManagementCode(code, effectivePaymentId, status);
   }
 
   @Public()

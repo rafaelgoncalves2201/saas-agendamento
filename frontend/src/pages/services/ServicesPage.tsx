@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
+import { compressImage } from '../../utils/imageCompressor';
 import {
   Scissors,
   Plus,
@@ -481,14 +482,19 @@ export const ServicesPage: React.FC = () => {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setFormData({ ...formData, imageUrl: reader.result as string });
-                          };
-                          reader.readAsDataURL(file);
+                          try {
+                            const compressed = await compressImage(file, 800, 800, 0.85);
+                            setFormData((prev) => ({ ...prev, imageUrl: compressed }));
+                          } catch {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
+                            };
+                            reader.readAsDataURL(file);
+                          }
                         }
                       }}
                     />

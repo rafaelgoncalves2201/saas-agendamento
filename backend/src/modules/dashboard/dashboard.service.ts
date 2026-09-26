@@ -30,8 +30,7 @@ export class DashboardService {
       monthAppointments,
       company,
       totalProducts,
-      lowStockProducts,
-      lowStockItems,
+      allActiveProducts,
       waitlistCount,
       past14DaysAppointments,
     ] = await Promise.all([
@@ -100,18 +99,13 @@ export class DashboardService {
       }),
       // Total de produtos no estoque
       this.prisma.product.count({
-        where: { companyId, isActive: true },
+        where: { companyId, isActive: true, isArchived: false },
       }),
-      // Produtos com estoque baixo (menor ou igual a 5 unidades)
-      this.prisma.product.count({
-        where: { companyId, isActive: true, stock: { lte: 5 } },
-      }),
-      // Lista de produtos com estoque crítico para reposição
+      // Produtos ativos para checagem de estoque baixo baseado no estoque mínimo
       this.prisma.product.findMany({
-        where: { companyId, isActive: true, stock: { lte: 5 } },
+        where: { companyId, isActive: true, isArchived: false },
         orderBy: { stock: 'asc' },
-        take: 5,
-        select: { id: true, name: true, stock: true, price: true, category: true },
+        select: { id: true, name: true, stock: true, minStock: true, unit: true, price: true, category: true },
       }),
       // Clientes na lista de espera aguardando vaga
       this.prisma.waitlistEntry.count({
@@ -127,6 +121,12 @@ export class DashboardService {
         select: { startDateTime: true, priceAtBooking: true },
       }),
     ]);
+
+    const lowStockList = allActiveProducts.filter(
+      (p) => p.stock <= p.minStock || (p.minStock === 0 && p.stock <= 5),
+    );
+    const lowStockProducts = lowStockList.length;
+    const lowStockItems = lowStockList.slice(0, 5);
 
     const todayRevenue = todayRevenueAppointments.reduce(
       (acc, app) => acc + Number(app.priceAtBooking),

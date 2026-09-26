@@ -1,9 +1,11 @@
 import { PrismaService } from '../../database/prisma.service';
 import { CreateProductDto, CreateStockMovementDto, UpdateProductDto } from './dto/product.dto';
 import { Prisma } from '@prisma/client';
+import { WhatsAppService } from '../whatsapp/whatsapp.service';
 export declare class ProductsService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private whatsAppService;
+    constructor(prisma: PrismaService, whatsAppService: WhatsAppService);
     listProducts(companyId: string, filters?: {
         search?: string;
         type?: string;
@@ -199,5 +201,36 @@ export declare class ProductsService {
         cost: Prisma.Decimal;
         promotionalPrice: Prisma.Decimal | null;
         isArchived: boolean;
+    }>;
+    sendRestockAlert(companyId: string, productId: string): Promise<{
+        success: boolean;
+        sentCount: number;
+        message?: undefined;
+        totalProfessionals?: undefined;
+    } | {
+        success: boolean;
+        sentCount: number;
+        message: string;
+        totalProfessionals?: undefined;
+    } | {
+        success: boolean;
+        sentCount: number;
+        totalProfessionals: number;
+        message?: undefined;
+    }>;
+    sendBulkRestockAlert(companyId: string): Promise<{
+        success: boolean;
+        sentCount: number;
+        message?: undefined;
+        totalProfessionals?: undefined;
+    } | {
+        success: boolean;
+        sentCount: number;
+        totalProfessionals: number;
+        message?: undefined;
+    } | {
+        success: boolean;
+        sentCount: number;
+        message: string;
     }>;
 }

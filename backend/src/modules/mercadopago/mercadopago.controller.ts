@@ -21,6 +21,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '@prisma/client';
 import { Response } from 'express';
+import { RequireFeature } from '../../common/decorators/require-feature.decorator';
 
 @ApiTags('Mercado Pago (Sinal & Pix)')
 @Controller()
@@ -31,6 +32,7 @@ export class MercadoPagoController {
   @ApiBearerAuth('JWT')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.COMPANY_ADMIN, Role.PROFESSIONAL, Role.SUPER_ADMIN)
+  @RequireFeature('mercadopago')
   @Get('mercadopago/connect/:professionalId')
   @ApiOperation({ summary: 'Obter URL de autorização OAuth do Mercado Pago para o profissional' })
   getConnectUrl(@Param('professionalId') professionalId: string, @Req() req: any) {
@@ -41,6 +43,7 @@ export class MercadoPagoController {
   @ApiBearerAuth('JWT')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.COMPANY_ADMIN, Role.SUPER_ADMIN)
+  @RequireFeature('mercadopago')
   @Get('mercadopago/company-connect')
   @ApiOperation({ summary: 'Obter URL de autorização OAuth do Mercado Pago para a Empresa/Admin' })
   getCompanyConnectUrl(@Req() req: any) {
@@ -51,6 +54,7 @@ export class MercadoPagoController {
   @ApiBearerAuth('JWT')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.COMPANY_ADMIN, Role.SUPER_ADMIN)
+  @RequireFeature('mercadopago')
   @Post('mercadopago/company-disconnect')
   @ApiOperation({ summary: 'Desconectar conta Mercado Pago do Estabelecimento/Admin' })
   disconnectCompany(@Req() req: any) {
@@ -61,6 +65,7 @@ export class MercadoPagoController {
   @ApiBearerAuth('JWT')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.COMPANY_ADMIN, Role.SUPER_ADMIN)
+  @RequireFeature('mercadopago')
   @Get('mercadopago/company-status')
   @ApiOperation({ summary: 'Verificar status da conta Mercado Pago do Estabelecimento' })
   getCompanyMpStatus(@Req() req: any) {
@@ -84,6 +89,7 @@ export class MercadoPagoController {
   @ApiBearerAuth('JWT')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.COMPANY_ADMIN, Role.PROFESSIONAL, Role.SUPER_ADMIN)
+  @RequireFeature('mercadopago')
   @Post('mercadopago/disconnect/:professionalId')
   @ApiOperation({ summary: 'Desconectar conta Mercado Pago do profissional' })
   disconnect(@Param('professionalId') professionalId: string, @Req() req: any) {
@@ -94,6 +100,7 @@ export class MercadoPagoController {
   @ApiBearerAuth('JWT')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.COMPANY_ADMIN, Role.PROFESSIONAL, Role.SUPER_ADMIN)
+  @RequireFeature('mercadopago')
   @Patch('mercadopago/deposit-settings/:professionalId')
   @ApiOperation({ summary: 'Atualizar configurações de sinal (fixo/percentual) do profissional' })
   updateDepositSettings(

@@ -1,11 +1,13 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 import { SubscriptionStatus } from '@prisma/client';
+import { isPlanFeatureAllowed } from '../../common/config/plans.config';
 
 @Injectable()
 export class CompaniesService {
@@ -48,6 +50,32 @@ export class CompaniesService {
     // Mesclar configurações se fornecidas
     let settings = existing.settings as Record<string, any>;
     if (dto.settings) {
+      const isAttemptingSignalOrPayment =
+        dto.settings.requiresDeposit === true ||
+        dto.settings.paymentModel === 'DEPOSIT_PIX' ||
+        dto.settings.paymentModel === 'MERCADO_PAGO' ||
+        (dto.settings.pixKey && String(dto.settings.pixKey).trim().length > 0);
+
+      if (isAttemptingSignalOrPayment) {
+        const sub = await this.prisma.subscription.findUnique({
+          where: { companyId },
+          include: { plan: true },
+        });
+
+        const planSlug = sub?.plan?.slug;
+        const allowsPixSignal = isPlanFeatureAllowed(planSlug, 'pixSignal');
+        const allowsMercadoPago = isPlanFeatureAllowed(planSlug, 'mercadopago');
+
+        if (
+          (dto.settings.paymentModel === 'MERCADO_PAGO' && !allowsMercadoPago) ||
+          ((dto.settings.paymentModel === 'DEPOSIT_PIX' || dto.settings.requiresDeposit) && !allowsPixSignal)
+        ) {
+          throw new ForbiddenException(
+            'A cobrança de sinal e recebimento de pagamentos via Pix ou Mercado Pago não estão disponíveis no plano Básico. Faça upgrade para o plano Profissional ou Premium.',
+          );
+        }
+      }
+
       settings = {
         ...settings,
         ...dto.settings,
@@ -110,6 +138,9 @@ export class CompaniesService {
             bio: true,
             avatarUrl: true,
             phone: true,
+            requiresDeposit: true,
+            depositType: true,
+            depositValue: true,
           },
         },
         services: {

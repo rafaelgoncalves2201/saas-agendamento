@@ -32,13 +32,12 @@ let TenantInterceptor = class TenantInterceptor {
                 request.companyId = explicitCompanyId;
                 return next.handle();
             }
+            if (user.companyId) {
+                request.companyId = user.companyId;
+                return next.handle();
+            }
             return (0, rxjs_1.from)(this.prisma.company.findFirst({
-                where: {
-                    OR: [
-                        ...(user.companyId ? [{ id: user.companyId, isActive: true }] : []),
-                        { isActive: true },
-                    ],
-                },
+                where: { isActive: true },
                 orderBy: { createdAt: 'desc' },
                 select: { id: true },
             })).pipe((0, operators_1.mergeMap)((activeCompany) => {

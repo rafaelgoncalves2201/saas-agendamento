@@ -18,6 +18,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   SlidersHorizontal,
+  MessageSquare,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { DeleteConfirmationModal } from '../../components/DeleteConfirmationModal';
@@ -81,6 +82,11 @@ export const ProductsPage: React.FC = () => {
   const [productToDelete, setProductToDelete] = useState<ProductItem | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  // WhatsApp Alert States
+  const [alertingProductId, setAlertingProductId] = useState<string | null>(null);
+  const [alertingAll, setAlertingAll] = useState(false);
+  const [alertSuccessMsg, setAlertSuccessMsg] = useState<string | null>(null);
+
   // Item Form Data (Matching image media_1790196496721.png)
   const [formData, setFormData] = useState({
     name: '',
@@ -122,7 +128,13 @@ export const ProductsPage: React.FC = () => {
       setProducts(prodRes.data);
       setStats(statsRes.data);
       setFeatures(featRes.data);
-    } catch (err) {
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        setFeatures((prev: any) => ({
+          ...prev,
+          features: { ...prev?.features, inventory: false, inventoryControl: false },
+        }));
+      }
       console.error('Erro ao carregar dados do estoque:', err);
     } finally {
       setLoading(false);
@@ -293,8 +305,55 @@ export const ProductsPage: React.FC = () => {
     }
   };
 
+  // Disparar alerta individual para os profissionais via WhatsApp
+  const handleSendProductAlert = async (item: ProductItem) => {
+    setAlertingProductId(item.id);
+    try {
+      const res = await api.post(`/products/${item.id}/alert`);
+      const sentCount = res.data?.sentCount ?? 0;
+      setAlertSuccessMsg(
+        `Alerta de reposição de "${item.name}" enviado via WhatsApp com sucesso para os profissionais (${sentCount} enviados)!`,
+      );
+      setTimeout(() => setAlertSuccessMsg(null), 6000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao disparar alerta via WhatsApp');
+    } finally {
+      setAlertingProductId(null);
+    }
+  };
+
+  // Disparar alerta consolidado de todos os itens com estoque baixo
+  const handleSendAllLowStockAlerts = async () => {
+    if (stats.lowStock === 0) {
+      alert('Não há itens com estoque baixo no momento.');
+      return;
+    }
+
+    if (
+      !confirm(
+        `Deseja enviar uma notificação no WhatsApp de todos os profissionais com os ${stats.lowStock} itens em falta?`,
+      )
+    ) {
+      return;
+    }
+
+    setAlertingAll(true);
+    try {
+      const res = await api.post('/products/alert-all');
+      const sentCount = res.data?.sentCount ?? 0;
+      setAlertSuccessMsg(
+        `Relatório consolidado de reposição (${stats.lowStock} itens) enviado via WhatsApp para os profissionais!`,
+      );
+      setTimeout(() => setAlertSuccessMsg(null), 6000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Erro ao enviar alerta via WhatsApp');
+    } finally {
+      setAlertingAll(false);
+    }
+  };
+
   const isFeatureAllowed =
-    features?.features?.inventoryControl || features?.features?.products;
+    Boolean(features?.features?.inventoryControl || features?.features?.inventory || features?.features?.products);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -329,8 +388,8 @@ export const ProductsPage: React.FC = () => {
               <span>Controle de Estoque & Insumos não habilitado</span>
             </h3>
             <p className="text-xs text-[#796758] dark:text-[#CDB196]">
-              O controle de insumos de atendimento e reposição está disponível nos planos{' '}
-              <strong>Professional</strong> e <strong>Business</strong>.
+              O controle de estoque e alertas de reposição está disponível exclusivamente nos planos{' '}
+              <strong>Profissional</strong> (R$ 59,90) e <strong>Premium</strong> (R$ 99,90).
             </p>
           </div>
           <Link
@@ -339,6 +398,22 @@ export const ProductsPage: React.FC = () => {
           >
             Fazer Upgrade do Plano
           </Link>
+        </div>
+      )}
+
+      {/* Alert Success Banner */}
+      {alertSuccessMsg && (
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs font-semibold flex items-center justify-between shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>{alertSuccessMsg}</span>
+          </div>
+          <button
+            onClick={() => setAlertSuccessMsg(null)}
+            className="text-emerald-700 dark:text-emerald-300 hover:opacity-80 p-1 cursor-pointer"
+          >
+            <X size={15} />
+          </button>
         </div>
       )}
 
@@ -360,18 +435,32 @@ export const ProductsPage: React.FC = () => {
         </div>
 
         {/* Baixo */}
-        <div className="bg-white dark:bg-[#261E18] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
-              BAIXO
-            </span>
-            <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1">
-              {stats.lowStock}
+        <div className="bg-white dark:bg-[#261E18] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                BAIXO
+              </span>
+              <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1">
+                {stats.lowStock}
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <AlertTriangle size={20} />
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-600 dark:text-amber-400">
-            <AlertTriangle size={20} />
-          </div>
+          {stats.lowStock > 0 && (
+            <button
+              type="button"
+              onClick={handleSendAllLowStockAlerts}
+              disabled={alertingAll}
+              className="mt-3 pt-2 border-t border-[#E2D9CC] dark:border-[#3D2C22] text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Disparar aviso no WhatsApp dos profissionais para todos os itens em falta"
+            >
+              {alertingAll ? <Loader2 size={12} className="animate-spin text-emerald-600" /> : <MessageSquare size={12} />}
+              <span>Alertar equipe no WhatsApp</span>
+            </button>
+          )}
         </div>
 
         {/* Arquivados */}
@@ -580,7 +669,24 @@ export const ProductsPage: React.FC = () => {
                     </div>
 
                     {/* Right: Actions */}
-                    <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-[#E2D9CC] dark:border-[#3D2C22] shrink-0 justify-end">
+                    <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-[#E2D9CC] dark:border-[#3D2C22] shrink-0 justify-end flex-wrap">
+                      {isLow && (
+                        <button
+                          type="button"
+                          onClick={() => handleSendProductAlert(item)}
+                          disabled={alertingProductId === item.id}
+                          title="Enviar alerta de reposição via WhatsApp para a equipe de profissionais"
+                          className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                        >
+                          {alertingProductId === item.id ? (
+                            <Loader2 size={13} className="animate-spin text-emerald-600" />
+                          ) : (
+                            <MessageSquare size={13} className="text-emerald-600 dark:text-emerald-400" />
+                          )}
+                          <span>Avisar no WhatsApp</span>
+                        </button>
+                      )}
+
                       <button
                         type="button"
                         onClick={() => handleOpenMovementModal(item)}
@@ -1019,6 +1125,35 @@ export const ProductsPage: React.FC = () => {
                   className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
                 />
               </div>
+
+              {/* Dynamic Restock WhatsApp Notice */}
+              {(() => {
+                const qty = Number(movementData.quantity || 0);
+                const currentStock = selectedItemForMovement.stock;
+                let estimated = currentStock;
+                if (movementData.type === 'ENTRY') estimated = currentStock + qty;
+                else if (movementData.type === 'EXIT') estimated = currentStock - qty;
+                else if (movementData.type === 'ADJUSTMENT') estimated = qty;
+
+                const willBeCritical =
+                  movementData.type !== 'ENTRY' &&
+                  ((selectedItemForMovement.minStock > 0 && estimated <= selectedItemForMovement.minStock) ||
+                    (currentStock > 0 && estimated === 0));
+
+                if (!willBeCritical) return null;
+
+                return (
+                  <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
+                    <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="font-bold block">Aviso de Estoque Crítico</span>
+                      <p className="text-[11px] leading-relaxed text-amber-700 dark:text-amber-400">
+                        O novo saldo será de <strong>{estimated} {selectedItemForMovement.unit}</strong> (mínimo: {selectedItemForMovement.minStock} {selectedItemForMovement.unit}). Um alerta de reposição será enviado via WhatsApp para a equipe de profissionais.
+                      </p>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Submit Buttons */}
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E2D9CC] dark:border-[#3D2C22]">

@@ -50,6 +50,10 @@ export const DashboardLayout: React.FC = () => {
     navigate('/login');
   };
 
+  const planSlug = (companyData?.subscription?.plan?.slug || '').toLowerCase();
+  const isBasicPlan = planSlug === 'basic' || planSlug === 'starter';
+  const hasInventory = !isBasicPlan;
+
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Agendamentos', path: '/appointments', icon: Calendar },
@@ -59,7 +63,7 @@ export const DashboardLayout: React.FC = () => {
     { label: 'Profissionais', path: '/professionals', icon: UserCheck },
     { label: 'Disponibilidade', path: '/availability', icon: Calendar },
     { label: 'Clientes (CRM)', path: '/clients', icon: Users },
-    { label: 'Estoque & Insumos', path: '/products', icon: Package },
+    ...(hasInventory ? [{ label: 'Estoque & Insumos', path: '/products', icon: Package }] : []),
     { label: 'Cupons de Desconto', path: '/coupons', icon: Tag },
     { label: 'Minha Assinatura', path: '/subscription', icon: CreditCard },
     { label: 'Personalização', path: '/settings', icon: Settings },

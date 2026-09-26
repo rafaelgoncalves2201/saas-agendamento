@@ -6,4 +6,5 @@ export declare class RegisterCompanyDto {
     ownerName: string;
     ownerEmail: string;
     ownerPassword: string;
+    plan?: string;
 }

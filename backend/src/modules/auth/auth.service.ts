@@ -12,6 +12,7 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Role, SubscriptionStatus } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { addDays } from 'date-fns';
+import { normalizePlanTier, PLAN_CONFIGS } from '../../common/config/plans.config';
 
 @Injectable()
 export class AuthService {
@@ -101,12 +102,29 @@ export class AuthService {
       throw new ConflictException('Este identificador (slug) já está em uso por outra empresa');
     }
 
-    // 3. Buscar plano starter padrão
-    const starterPlan = await this.prisma.plan.findUnique({
-      where: { slug: 'starter' },
+    // 3. Buscar plano escolhido (ou Básico por padrão)
+    const selectedTier = normalizePlanTier(dto.plan || 'BASIC');
+    const planConfig = PLAN_CONFIGS[selectedTier];
+
+    let chosenPlan = await this.prisma.plan.findUnique({
+      where: { slug: planConfig.slug },
     });
-    if (!starterPlan) {
-      throw new BadRequestException('Plano inicial padrão não encontrado no sistema');
+
+    if (!chosenPlan) {
+      chosenPlan = await this.prisma.plan.findFirst({
+        where: {
+          OR: [
+            { slug: planConfig.slug },
+            { name: planConfig.name },
+            { slug: 'basic' },
+            { slug: 'starter' },
+          ],
+        },
+      });
+    }
+
+    if (!chosenPlan) {
+      throw new BadRequestException('Plano selecionado não encontrado no sistema');
     }
 
     // 4. Executar criação em transação segura
@@ -135,8 +153,8 @@ export class AuthService {
           settings: {
             primaryColor: '#6B3E26',
             publicTheme: 'light',
-            requiresDeposit: true,
-            depositValue: 'R$ 50',
+            requiresDeposit: false,
+            depositValue: 'R$ 0',
           },
         },
       });
@@ -150,13 +168,13 @@ export class AuthService {
         },
       });
 
-      // Criar Assinatura Trial (5 dias de teste grátis)
+      // Criar Assinatura Trial (5 dias de teste grátis no plano escolhido)
       await tx.subscription.create({
         data: {
           companyId: company.id,
-          planId: starterPlan.id,
+          planId: chosenPlan.id,
           status: SubscriptionStatus.TRIALING,
-          amount: starterPlan.priceMonthly,
+          amount: chosenPlan.priceMonthly,
           currentPeriodStart: new Date(),
           currentPeriodEnd: addDays(new Date(), 5),
           trialEndsAt: addDays(new Date(), 5),

@@ -154,6 +154,20 @@ let AvailabilityService = class AvailabilityService {
             const dateLocal = new Date(year, month - 1, day, h, m, 0);
             return (0, date_fns_tz_1.fromZonedTime)(dateLocal, timezone);
         };
+        const expirationLimit = new Date(Date.now() - 15 * 60 * 1000);
+        await this.prisma.appointment.updateMany({
+            where: {
+                companyId,
+                status: 'PENDING_PAYMENT',
+                paidAt: null,
+                createdAt: { lt: expirationLimit },
+            },
+            data: {
+                status: 'CANCELLED',
+                cancellationReason: 'Tempo de pagamento do Mercado Pago expirado (15 minutos)',
+                cancelledAt: new Date(),
+            },
+        });
         const dayStartUtc = parseTimeToDate('00:00');
         const dayEndUtc = parseTimeToDate('23:59');
         const blockedTimes = await this.prisma.blockedTime.findMany({

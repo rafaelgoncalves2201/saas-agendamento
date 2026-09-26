@@ -19,6 +19,7 @@ const products_service_1 = require("./products.service");
 const product_dto_1 = require("./dto/product.dto");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 const client_1 = require("@prisma/client");
+const require_feature_decorator_1 = require("../../common/decorators/require-feature.decorator");
 let ProductsController = class ProductsController {
     productsService;
     constructor(productsService) {
@@ -37,6 +38,9 @@ let ProductsController = class ProductsController {
             isArchived: isArchived === 'true',
         });
     }
+    sendBulkRestockAlert(req) {
+        return this.productsService.sendBulkRestockAlert(req.companyId);
+    }
     getProduct(req, id) {
         return this.productsService.getProduct(req.companyId, id);
     }
@@ -51,6 +55,9 @@ let ProductsController = class ProductsController {
     }
     createMovement(req, id, dto) {
         return this.productsService.createMovement(req.companyId, id, dto);
+    }
+    sendRestockAlert(req, id) {
+        return this.productsService.sendRestockAlert(req.companyId, id);
     }
     deleteProduct(req, id) {
         return this.productsService.deleteProduct(req.companyId, id);
@@ -85,6 +92,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, String, String]),
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "listProducts", null);
+__decorate([
+    (0, common_1.Post)('alert-all'),
+    (0, roles_decorator_1.Roles)(client_1.Role.COMPANY_ADMIN, client_1.Role.SUPER_ADMIN, client_1.Role.PROFESSIONAL),
+    (0, swagger_1.ApiOperation)({ summary: 'Enviar alerta consolidado de reposição via WhatsApp para todos os itens em estoque baixo' }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ProductsController.prototype, "sendBulkRestockAlert", null);
 __decorate([
     (0, common_1.Get)(':id'),
     (0, swagger_1.ApiOperation)({ summary: 'Obter detalhes de um item' }),
@@ -137,6 +153,16 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], ProductsController.prototype, "createMovement", null);
 __decorate([
+    (0, common_1.Post)(':id/alert'),
+    (0, roles_decorator_1.Roles)(client_1.Role.COMPANY_ADMIN, client_1.Role.SUPER_ADMIN, client_1.Role.PROFESSIONAL),
+    (0, swagger_1.ApiOperation)({ summary: 'Enviar alerta de reposição via WhatsApp para os profissionais' }),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", void 0)
+], ProductsController.prototype, "sendRestockAlert", null);
+__decorate([
     (0, common_1.Delete)(':id'),
     (0, roles_decorator_1.Roles)(client_1.Role.COMPANY_ADMIN, client_1.Role.SUPER_ADMIN),
     (0, swagger_1.ApiOperation)({ summary: 'Excluir item de estoque' }),
@@ -149,6 +175,7 @@ __decorate([
 exports.ProductsController = ProductsController = __decorate([
     (0, swagger_1.ApiTags)('Estoque & Insumos'),
     (0, swagger_1.ApiBearerAuth)('JWT'),
+    (0, require_feature_decorator_1.RequireFeature)('inventory'),
     (0, common_1.Controller)('products'),
     __metadata("design:paramtypes", [products_service_1.ProductsService])
 ], ProductsController);

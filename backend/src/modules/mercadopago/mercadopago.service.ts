@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -8,20 +9,39 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { UpdateDepositSettingsDto } from './dto/mercadopago.dto';
 import { AppointmentStatus, DepositType, Prisma } from '@prisma/client';
+import { WhatsAppService } from '../whatsapp/whatsapp.service';
+import { isPlanFeatureAllowed } from '../../common/config/plans.config';
 import axios from 'axios';
 
 @Injectable()
 export class MercadoPagoService {
   private readonly logger = new Logger(MercadoPagoService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private whatsAppService: WhatsAppService,
+  ) {}
 
   // 1. Gera URL oficial do OAuth do Mercado Pago (para profissional ou estabelecimento)
-  getAuthorizationUrl(
+  async getAuthorizationUrl(
     targetId: string,
     companyId: string,
     isCompany = false,
-  ): { url: string; authUrl: string } {
+  ): Promise<{ url: string; authUrl: string }> {
+    const company = await this.prisma.company.findUnique({
+      where: { id: companyId },
+      include: { subscription: { include: { plan: true } } },
+    });
+    if (!company) {
+      throw new NotFoundException('Empresa não encontrada');
+    }
+
+    if (!isPlanFeatureAllowed(company.subscription?.plan?.slug, 'mercadopago')) {
+      throw new ForbiddenException(
+        'A integração com o Mercado Pago não está disponível no plano Básico. Faça upgrade para o plano Profissional ou Premium para habilitar este recurso.',
+      );
+    }
+
     const clientId = process.env.MERCADO_PAGO_CLIENT_ID;
     const apiUrl = process.env.API_URL || 'http://localhost:3000';
     const redirectUri =
@@ -40,7 +60,7 @@ export class MercadoPagoService {
     const isMock = !clientId || clientId.includes('PLACEHOLDER');
     const authUrl = isMock
       ? `${apiUrl}/api/mercadopago/callback?code=mock_code_${Date.now()}&state=${state}`
-      : `https://auth.mercadopago.com/authorization?client_id=${clientId}&response_type=code&platform_id=mp&state=${state}&redirect_uri=${encodeURIComponent(
+      : `https://auth.mercadopago.com.br/authorization?client_id=${clientId}&response_type=code&platform_id=mp&state=${state}&redirect_uri=${encodeURIComponent(
           redirectUri,
         )}`;
 
@@ -217,6 +237,18 @@ export class MercadoPagoService {
       throw new NotFoundException('Profissional não encontrado');
     }
 
+    if (dto.requiresDeposit) {
+      const company = await this.prisma.company.findUnique({
+        where: { id: companyId },
+        include: { subscription: { include: { plan: true } } },
+      });
+      if (!isPlanFeatureAllowed(company?.subscription?.plan?.slug, 'pixSignal')) {
+        throw new ForbiddenException(
+          'A configuração de cobrança de sinal não está disponível no plano Básico. Faça upgrade para o plano Profissional ou Premium.',
+        );
+      }
+    }
+
     return this.prisma.professional.update({
       where: { id: professionalId },
       data: {
@@ -280,7 +312,7 @@ export class MercadoPagoService {
         'https://api.mercadopago.com/v1/payments',
         {
           transaction_amount: Number(amount.toFixed(2)),
-          description: `Sinal - ${serviceName} (${companyName})`,
+          description: `${serviceName} - ${companyName} (Pagamento Total)`,
           payment_method_id: 'pix',
           payer: {
             email: payerEmail || 'cliente@inovaagenda.com',
@@ -316,14 +348,110 @@ export class MercadoPagoService {
     }
   }
 
-  // 6. Consultar pagamento diretamente no Mercado Pago
+  // 6. Gerar Link de Checkout do Mercado Pago para Pagamento com Cartão de Crédito / Débito
+  async createCardPaymentPreference(params: {
+    accessToken: string;
+    appointmentId: string;
+    clientManagementCode: string;
+    amount: number;
+    payerEmail?: string;
+    payerName: string;
+    serviceName: string;
+    companyName: string;
+  }): Promise<{
+    preferenceId: string;
+    initPoint: string;
+  }> {
+    const {
+      accessToken,
+      appointmentId,
+      clientManagementCode,
+      amount,
+      payerEmail,
+      payerName,
+      serviceName,
+      companyName,
+    } = params;
+
+    const apiUrl = process.env.API_URL || 'http://localhost:3000';
+    const appUrl = process.env.APP_URL || 'http://localhost:5173';
+    const notificationUrl = `${apiUrl}/api/webhooks/mercadopago`;
+
+    // Modo simulado / token de teste sem credenciais reais
+    if (!accessToken || accessToken.startsWith('TEST_') || accessToken.includes('PLACEHOLDER')) {
+      const mockPrefId = `mock_pref_${Date.now()}`;
+      return {
+        preferenceId: mockPrefId,
+        initPoint: `${appUrl}/agendamento/${clientManagementCode}?status=approved&payment_id=mock_card_${Date.now()}`,
+      };
+    }
+
+    try {
+      const response = await axios.post(
+        'https://api.mercadopago.com/checkout/preferences',
+        {
+          items: [
+            {
+              id: appointmentId,
+              title: `${serviceName} - ${companyName}`,
+              description: `Agendamento: ${serviceName}`,
+              quantity: 1,
+              currency_id: 'BRL',
+              unit_price: Number(amount.toFixed(2)),
+            },
+          ],
+          payer: {
+            name: payerName ? payerName.split(' ')[0] : 'Cliente',
+            surname:
+              payerName && payerName.split(' ').length > 1
+                ? payerName.split(' ').slice(1).join(' ')
+                : 'Cliente',
+            email: payerEmail || 'cliente@inovaagenda.com',
+          },
+          back_urls: {
+            success: `${appUrl}/agendamento/${clientManagementCode}?payment_status=approved`,
+            pending: `${appUrl}/agendamento/${clientManagementCode}?payment_status=pending`,
+            failure: `${appUrl}/agendamento/${clientManagementCode}?payment_status=failure`,
+          },
+          auto_return: 'approved',
+          external_reference: appointmentId,
+          notification_url: notificationUrl,
+          payment_methods: {
+            excluded_payment_types: [
+              { id: 'ticket' }, // Exclui boleto bancário para agendamento online
+            ],
+            installments: 12,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      const prefData = response.data;
+      return {
+        preferenceId: String(prefData.id),
+        initPoint: prefData.init_point || prefData.sandbox_init_point || '',
+      };
+    } catch (err: any) {
+      this.logger.error(
+        'Erro ao gerar preferência de Cartão no Mercado Pago:',
+        err.response?.data || err.message,
+      );
+      throw new InternalServerErrorException(
+        err.response?.data?.message || 'Falha ao gerar link de pagamento com cartão via Mercado Pago',
+      );
+    }
+  }
+
+  // 7. Consultar pagamento diretamente no Mercado Pago
   async getPayment(paymentId: string, professionalAccessToken: string) {
     if (professionalAccessToken.startsWith('TEST_')) {
-      return {
-        id: paymentId,
-        status: 'approved',
-        status_detail: 'accredited',
-      };
+      // No modo de teste simulado, permanece pendente até confirmação real ou manual
+      return { id: paymentId, status: 'pending', status_detail: 'pending_waiting_transfer' };
     }
 
     try {
@@ -375,13 +503,10 @@ export class MercadoPagoService {
     }
 
     const accessToken =
-      appointment.professional?.mpAccessToken || appointment.company?.mpAccessToken;
-    if (!accessToken) {
-      this.logger.warn(
-        `Agendamento ${appointment.id} não possui mpAccessToken de profissional nem de empresa`,
-      );
-      return { status: 'NO_TOKEN' };
-    }
+      appointment.professional?.mpAccessToken ||
+      appointment.company?.mpAccessToken ||
+      process.env.MERCADO_PAGO_ACCESS_TOKEN ||
+      'TEST_DEFAULT_TOKEN';
 
     // Consulta status oficial no Mercado Pago
     const mpPayment = await this.getPayment(String(paymentId), accessToken);
@@ -390,16 +515,129 @@ export class MercadoPagoService {
       await this.prisma.appointment.update({
         where: { id: appointment.id },
         data: {
+          mpPaymentId: String(paymentId),
           status: AppointmentStatus.CONFIRMED,
           paidAt: new Date(),
         },
       });
+
+      this.whatsAppService
+        .sendAppointmentConfirmation(appointment.id)
+        .catch((err) => this.logger.error(`Erro ao disparar WhatsApp do agendamento ${appointment.id}:`, err));
 
       this.logger.log(`✅ Agendamento ${appointment.id} CONFIRMADO com sucesso via Mercado Pago!`);
       return { status: 'CONFIRMED', appointmentId: appointment.id };
     }
 
     return { status: 'PENDING_OR_OTHER', currentStatus: mpPayment?.status };
+  }
+
+  // 8. Consulta e confirmação sob demanda (usado no polling de status em tempo real)
+  async checkAndConfirmPayment(appointmentId: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        professional: true,
+        company: true,
+      },
+    });
+
+    if (!appointment || !appointment.mpPaymentId) {
+      return null;
+    }
+
+    if (appointment.status === AppointmentStatus.CONFIRMED) {
+      return appointment;
+    }
+
+    const accessToken =
+      appointment.professional?.mpAccessToken ||
+      appointment.company?.mpAccessToken ||
+      process.env.MERCADO_PAGO_ACCESS_TOKEN ||
+      'TEST_DEFAULT_TOKEN';
+
+    const mpPayment = await this.getPayment(appointment.mpPaymentId, accessToken);
+
+    if (mpPayment && (mpPayment.status === 'approved' || mpPayment.status_detail === 'accredited')) {
+      const updated = await this.prisma.appointment.update({
+        where: { id: appointment.id },
+        data: {
+          status: AppointmentStatus.CONFIRMED,
+          paidAt: new Date(),
+        },
+        include: {
+          company: {
+            select: { name: true, phone: true, slug: true, logoUrl: true, settings: true },
+          },
+          professional: {
+            select: { name: true, phone: true, avatarUrl: true },
+          },
+          service: {
+            select: { name: true, durationMinutes: true, price: true },
+          },
+          client: true,
+          review: {
+            select: { id: true, rating: true, comment: true, createdAt: true },
+          },
+        },
+      });
+
+      this.whatsAppService
+        .sendAppointmentConfirmation(appointment.id)
+        .catch((err) => this.logger.error(`Erro ao disparar WhatsApp pós verificação:`, err));
+
+      this.logger.log(`✅ Agendamento ${appointment.id} verificado e CONFIRMADO com sucesso!`);
+      return updated;
+    }
+
+    return null;
+  }
+
+  // 9. Reembolso integral automático via Pix no Mercado Pago
+  async refundPayment(
+    paymentId: string,
+    accessToken: string,
+  ): Promise<{ success: boolean; refundId?: string; error?: string }> {
+    if (!paymentId) {
+      return { success: false, error: 'ID do pagamento não informado' };
+    }
+
+    if (!accessToken || accessToken.startsWith('TEST_') || accessToken.includes('PLACEHOLDER')) {
+      this.logger.log(`[SIMULAÇÃO REEMBOLSO] Pagamento simulado ${paymentId} estornado com sucesso.`);
+      return { success: true, refundId: `mock_ref_${Date.now()}` };
+    }
+
+    try {
+      const response = await axios.post(
+        `https://api.mercadopago.com/v1/payments/${paymentId}/refunds`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'X-Idempotency-Key': `refund_${paymentId}_${Date.now()}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      const refundData = response.data;
+      this.logger.log(
+        `💸 Reembolso de pagamento Pix Mercado Pago ${paymentId} realizado com sucesso! ID do Reembolso: ${refundData.id}`,
+      );
+
+      return {
+        success: true,
+        refundId: String(refundData.id),
+      };
+    } catch (err: any) {
+      const errMsg =
+        err.response?.data?.message || err.message || 'Erro ao processar estorno no Mercado Pago';
+      this.logger.error(`❌ Falha ao estornar pagamento MP ${paymentId}: ${errMsg}`, err.response?.data);
+      return {
+        success: false,
+        error: errMsg,
+      };
+    }
   }
 }
 

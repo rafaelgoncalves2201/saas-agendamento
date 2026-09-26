@@ -61,6 +61,14 @@ export declare class SubscriptionsController {
         pixQrCode: any;
     }>;
     getMe(req: any): Promise<{
+        companyId: null;
+        subscription: null;
+        access: {
+            hasActiveSubscription: boolean;
+            isExpired: boolean;
+            canUseSystem: boolean;
+        };
+    } | {
         companyId: string;
         subscription: null;
         access: {
@@ -94,7 +102,7 @@ export declare class SubscriptionsController {
     }>;
     getFeatures(req: any): Promise<{
         plan: string;
-        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        subscriptionStatus: string;
         features: {
             maxProfessionals: number;
             maxAppointments: number;
@@ -103,6 +111,36 @@ export declare class SubscriptionsController {
             customBranding: boolean;
             advancedReports: boolean;
             products: boolean;
+            mercadopago?: undefined;
+            onlinePayment?: undefined;
+            pixSignal?: undefined;
+            inventory?: undefined;
+            inventoryControl?: undefined;
+        };
+        usage: {
+            currentProfessionals: number;
+            currentAppointmentsThisMonth: number;
+        };
+        planName?: undefined;
+        planSlug?: undefined;
+    } | {
+        plan: import("../../common/config/plans.config").PlanTier;
+        planName: string;
+        planSlug: string;
+        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        features: {
+            maxProfessionals: number;
+            maxAppointments: number;
+            maxWhatsappMessages: number;
+            whatsappNotifications: boolean;
+            mercadopago: boolean;
+            onlinePayment: boolean;
+            pixSignal: boolean;
+            inventory: boolean;
+            inventoryControl: boolean;
+            products: boolean;
+            customBranding: boolean;
+            advancedReports: boolean;
         };
         usage: {
             currentProfessionals: number;

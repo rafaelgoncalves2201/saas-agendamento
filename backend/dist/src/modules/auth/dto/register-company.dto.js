@@ -20,6 +20,7 @@ class RegisterCompanyDto {
     ownerName;
     ownerEmail;
     ownerPassword;
+    plan;
 }
 exports.RegisterCompanyDto = RegisterCompanyDto;
 __decorate([
@@ -65,4 +66,10 @@ __decorate([
     (0, class_validator_1.MinLength)(6, { message: 'A senha deve conter pelo menos 6 caracteres' }),
     __metadata("design:type", String)
 ], RegisterCompanyDto.prototype, "ownerPassword", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'BASIC', required: false, description: 'Plano escolhido: BASIC, PROFESSIONAL ou PREMIUM' }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], RegisterCompanyDto.prototype, "plan", void 0);
 //# sourceMappingURL=register-company.dto.js.map

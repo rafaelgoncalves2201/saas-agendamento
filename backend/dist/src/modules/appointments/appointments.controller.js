@@ -27,8 +27,9 @@ let AppointmentsController = class AppointmentsController {
     createPublicAppointment(slug, dto) {
         return this.appointmentsService.createPublicAppointment(slug, dto);
     }
-    getPublicAppointment(code) {
-        return this.appointmentsService.getAppointmentByManagementCode(code);
+    getPublicAppointment(code, paymentId, collectionId, status) {
+        const effectivePaymentId = paymentId || collectionId;
+        return this.appointmentsService.getAppointmentByManagementCode(code, effectivePaymentId, status);
     }
     cancelPublicAppointment(code, dto) {
         return this.appointmentsService.cancelByManagementCode(code, dto);
@@ -67,8 +68,11 @@ __decorate([
     (0, common_1.Get)('public/appointments/:code'),
     (0, swagger_1.ApiOperation)({ summary: 'Consultar detalhes do agendamento através do código seguro' }),
     __param(0, (0, common_1.Param)('code')),
+    __param(1, (0, common_1.Query)('payment_id')),
+    __param(2, (0, common_1.Query)('collection_id')),
+    __param(3, (0, common_1.Query)('status')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], AppointmentsController.prototype, "getPublicAppointment", null);
 __decorate([

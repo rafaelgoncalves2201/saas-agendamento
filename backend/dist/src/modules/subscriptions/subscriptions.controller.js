@@ -25,19 +25,24 @@ let SubscriptionsController = class SubscriptionsController {
         this.subscriptionsService = subscriptionsService;
     }
     checkout(req, dto) {
-        return this.subscriptionsService.checkout(req.companyId, dto);
+        const companyId = req.companyId || req.user?.companyId;
+        return this.subscriptionsService.checkout(companyId, dto);
     }
     getMe(req) {
-        return this.subscriptionsService.getMe(req.companyId);
+        const companyId = req.companyId || req.user?.companyId;
+        return this.subscriptionsService.getMe(companyId);
     }
     getFeatures(req) {
-        return this.subscriptionsService.getFeatures(req.companyId);
+        const companyId = req.companyId || req.user?.companyId;
+        return this.subscriptionsService.getFeatures(companyId);
     }
     syncSubscription(req) {
-        return this.subscriptionsService.syncSubscription(req.companyId);
+        const companyId = req.companyId || req.user?.companyId;
+        return this.subscriptionsService.syncSubscription(companyId);
     }
     cancelSubscription(req) {
-        return this.subscriptionsService.cancelSubscription(req.companyId);
+        const companyId = req.companyId || req.user?.companyId;
+        return this.subscriptionsService.cancelSubscription(companyId);
     }
 };
 exports.SubscriptionsController = SubscriptionsController;

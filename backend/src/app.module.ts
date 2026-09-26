@@ -25,6 +25,7 @@ import { MercadoPagoModule } from './modules/mercadopago/mercadopago.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { SubscriptionGuard } from './common/guards/subscription.guard';
+import { PlanFeatureGuard } from './common/guards/plan-feature.guard';
 import { TenantInterceptor } from './common/interceptors/tenant.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -68,6 +69,10 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
     {
       provide: APP_GUARD,
       useClass: SubscriptionGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PlanFeatureGuard,
     },
     {
       provide: APP_INTERCEPTOR,

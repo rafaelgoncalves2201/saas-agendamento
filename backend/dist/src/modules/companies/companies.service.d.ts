@@ -116,6 +116,9 @@ export declare class CompaniesService {
             phone: string;
             bio: string | null;
             avatarUrl: string | null;
+            requiresDeposit: boolean;
+            depositType: import(".prisma/client").$Enums.DepositType;
+            depositValue: import("@prisma/client/runtime/library").Decimal | null;
         }[];
         services: {
             id: string;

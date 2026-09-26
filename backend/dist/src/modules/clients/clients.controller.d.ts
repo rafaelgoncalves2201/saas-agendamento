@@ -76,6 +76,7 @@ export declare class ClientsController {
             pixCopiaECola: string | null;
             pixQrCodeBase64: string | null;
             pixPaymentUrl: string | null;
+            cardPaymentUrl: string | null;
             paidAt: Date | null;
             status: import(".prisma/client").$Enums.AppointmentStatus;
             cancellationReason: string | null;

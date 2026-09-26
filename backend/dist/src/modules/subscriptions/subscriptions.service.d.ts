@@ -62,7 +62,15 @@ export declare class SubscriptionsService {
         paymentUrl: any;
         pixQrCode: any;
     }>;
-    getMe(companyId: string): Promise<{
+    getMe(companyId?: string): Promise<{
+        companyId: null;
+        subscription: null;
+        access: {
+            hasActiveSubscription: boolean;
+            isExpired: boolean;
+            canUseSystem: boolean;
+        };
+    } | {
         companyId: string;
         subscription: null;
         access: {
@@ -94,9 +102,9 @@ export declare class SubscriptionsService {
             canUseSystem: boolean;
         };
     }>;
-    getFeatures(companyId: string): Promise<{
+    getFeatures(companyId?: string): Promise<{
         plan: string;
-        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        subscriptionStatus: string;
         features: {
             maxProfessionals: number;
             maxAppointments: number;
@@ -105,6 +113,36 @@ export declare class SubscriptionsService {
             customBranding: boolean;
             advancedReports: boolean;
             products: boolean;
+            mercadopago?: undefined;
+            onlinePayment?: undefined;
+            pixSignal?: undefined;
+            inventory?: undefined;
+            inventoryControl?: undefined;
+        };
+        usage: {
+            currentProfessionals: number;
+            currentAppointmentsThisMonth: number;
+        };
+        planName?: undefined;
+        planSlug?: undefined;
+    } | {
+        plan: import("../../common/config/plans.config").PlanTier;
+        planName: string;
+        planSlug: string;
+        subscriptionStatus: import(".prisma/client").$Enums.SubscriptionStatus;
+        features: {
+            maxProfessionals: number;
+            maxAppointments: number;
+            maxWhatsappMessages: number;
+            whatsappNotifications: boolean;
+            mercadopago: boolean;
+            onlinePayment: boolean;
+            pixSignal: boolean;
+            inventory: boolean;
+            inventoryControl: boolean;
+            products: boolean;
+            customBranding: boolean;
+            advancedReports: boolean;
         };
         usage: {
             currentProfessionals: number;

@@ -33,29 +33,10 @@ export class WhatsAppService {
 
     if (!appointment) return;
 
-    // 1. Validar se o plano da empresa tem notificações por WhatsApp habilitadas
-    const features = (appointment.company.subscription?.plan?.features as Record<string, any>) || {};
-    if (!features.whatsappNotifications) {
-      this.logger.log(`WhatsApp desabilitado no plano da empresa ${appointment.company.name}`);
-      return;
-    }
-
-    // 2. Validar limite de mensagens no mês
-    const maxMessages = appointment.company.subscription?.plan?.maxWhatsappMessages || 0;
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const sentCount = await this.prisma.notificationLog.count({
-      where: {
-        companyId: appointment.companyId,
-        channel: 'WHATSAPP',
-        status: 'SENT',
-        createdAt: { gte: startOfMonth },
-      },
-    });
-
-    if (sentCount >= maxMessages) {
-      this.logger.warn(`Limite de mensagens de WhatsApp atingido no mês (${sentCount}/${maxMessages})`);
-      return;
-    }
+    // Todos os planos possuem notificações por WhatsApp ativas e sem limite de envios
+    this.logger.log(
+      `Disparando notificações de WhatsApp para agendamento ${appointmentId} (Empresa: ${appointment.company.name}) - Sem limites de plano`,
+    );
 
     const dateFormatted = format(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
 
@@ -122,7 +103,12 @@ export class WhatsAppService {
 
     const dateFormatted = format(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
 
-    const text = `Olá, *${appointment.client.name}*. Seu agendamento de *${appointment.service.name}* com *${appointment.professional.name}* para *${dateFormatted}* foi *cancelado*.\n\n${reason ? `Motivo: ${reason}\n\n` : ''}Caso queira reagendar um novo horário, acesse:\n${process.env.APP_URL || 'http://localhost:5173'}/empresa/${appointment.company.slug}`;
+    const hasRefund = reason?.includes('Estorno') || appointment.cancellationReason?.includes('Estorno');
+    const refundNotice = hasRefund
+      ? '\n💳 *Reembolso / Estorno:* O valor pago foi estornado integralmente para a mesma forma de pagamento utilizada (Pix ou Cartão de Crédito).\n'
+      : '';
+
+    const text = `Olá, *${appointment.client.name}*. Seu agendamento de *${appointment.service.name}* com *${appointment.professional.name}* para *${dateFormatted}* foi *cancelado*.\n\n${reason ? `Motivo: ${reason}\n` : ''}${refundNotice}\nCaso queira reagendar um novo horário, acesse:\n${process.env.APP_URL || 'http://localhost:5173'}/empresa/${appointment.company.slug}`;
 
     const result = await this.provider.sendMessage({
       toPhone: appointment.client.phone,
@@ -179,6 +165,172 @@ export class WhatsAppService {
         sentAt: result.success ? new Date() : null,
       },
     });
+  }
+
+  /**
+   * Envia alerta individual de reposição de estoque para todos os profissionais ativos da empresa
+   */
+  async sendLowStockAlert(
+    companyId: string,
+    productId: string,
+    currentStock: number,
+    minStock: number,
+    unit: string,
+  ) {
+    const [company, product, professionals] = await Promise.all([
+      this.prisma.company.findUnique({
+        where: { id: companyId },
+        select: { id: true, name: true, phone: true },
+      }),
+      this.prisma.product.findUnique({
+        where: { id: productId },
+        select: { id: true, name: true, sku: true, type: true, stock: true, minStock: true, unit: true },
+      }),
+      this.prisma.professional.findMany({
+        where: { companyId, isActive: true },
+        select: { id: true, name: true, phone: true },
+      }),
+    ]);
+
+    if (!company || !product) {
+      this.logger.warn(
+        `[sendLowStockAlert] Empresa ou produto não encontrado (companyId=${companyId}, productId=${productId})`,
+      );
+      return { success: false, sentCount: 0 };
+    }
+
+    const validProfessionals = professionals.filter(
+      (p) => p.phone && p.phone.replace(/\D/g, '').length >= 10,
+    );
+
+    if (validProfessionals.length === 0) {
+      this.logger.warn(
+        `[sendLowStockAlert] Nenhum profissional ativo com telefone cadastrado para a empresa ${company.name}`,
+      );
+      return { success: false, sentCount: 0, message: 'Nenhum profissional com telefone válido cadastrado.' };
+    }
+
+    const unitStr = unit || product.unit || 'un';
+    const skuNotice = product.sku ? `\n🔢 *SKU:* \`${product.sku}\`` : '';
+
+    let sentCount = 0;
+
+    for (const prof of validProfessionals) {
+      const text =
+        `⚠️ *ALERTA DE REPOSIÇÃO DE ESTOQUE* 📦\n\n` +
+        `Olá, *${prof.name}*!\n` +
+        `O item abaixo atingiu o nível crítico de estoque em *${company.name}*:\n\n` +
+        `🏷️ *Item / Insumo:* ${product.name}\n` +
+        `📉 *Saldo Atual:* *${currentStock} ${unitStr}*\n` +
+        `🛑 *Estoque Mínimo:* ${minStock} ${unitStr}` +
+        skuNotice +
+        `\n\nPor favor, providencie a reposição para evitar a falta do material durante os atendimentos! ✨`;
+
+      try {
+        const result = await this.provider.sendMessage({
+          toPhone: prof.phone,
+          text,
+        });
+
+        await this.prisma.notificationLog.create({
+          data: {
+            companyId,
+            channel: 'WHATSAPP',
+            recipientPhone: prof.phone,
+            messageType: 'LOW_STOCK',
+            status: result.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+            providerMessageId: result.providerMessageId || null,
+            errorPayload: result.error || null,
+            sentAt: result.success ? new Date() : null,
+          },
+        });
+
+        if (result.success) {
+          sentCount++;
+        }
+      } catch (err: any) {
+        this.logger.error(`Erro ao enviar alerta de estoque para ${prof.name} (${prof.phone}):`, err);
+      }
+    }
+
+    this.logger.log(
+      `Alerta de estoque baixo para o produto "${product.name}" enviado para ${sentCount}/${validProfessionals.length} profissionais`,
+    );
+
+    return { success: true, sentCount, totalProfessionals: validProfessionals.length };
+  }
+
+  /**
+   * Envia alerta consolidado de todos os produtos com estoque baixo para os profissionais ativos
+   */
+  async sendBulkLowStockAlert(
+    companyId: string,
+    items: Array<{ id: string; name: string; stock: number; minStock: number; unit: string; sku?: string | null }>,
+  ) {
+    const [company, professionals] = await Promise.all([
+      this.prisma.company.findUnique({
+        where: { id: companyId },
+        select: { id: true, name: true },
+      }),
+      this.prisma.professional.findMany({
+        where: { companyId, isActive: true },
+        select: { id: true, name: true, phone: true },
+      }),
+    ]);
+
+    if (!company) return { success: false, sentCount: 0 };
+
+    const validProfessionals = professionals.filter(
+      (p) => p.phone && p.phone.replace(/\D/g, '').length >= 10,
+    );
+
+    if (validProfessionals.length === 0) {
+      return { success: false, sentCount: 0, message: 'Nenhum profissional ativo com telefone cadastrado.' };
+    }
+
+    const itemsList = items
+      .map(
+        (it, idx) =>
+          `${idx + 1}. *${it.name}*: *${it.stock} ${it.unit || 'un'}* (Mín: ${it.minStock} ${it.unit || 'un'})`,
+      )
+      .join('\n');
+
+    let sentCount = 0;
+
+    for (const prof of validProfessionals) {
+      const text =
+        `⚠️ *AVISO DE REPOSIÇÃO DE ESTOQUE* 📦\n\n` +
+        `Olá, *${prof.name}*!\n` +
+        `Constatamos que os seguintes itens estão com estoque crítico em *${company.name}*:\n\n` +
+        itemsList +
+        `\n\nPor favor, providenciem a reposição para manter os atendimentos sem imprevistos! ✨`;
+
+      try {
+        const result = await this.provider.sendMessage({
+          toPhone: prof.phone,
+          text,
+        });
+
+        await this.prisma.notificationLog.create({
+          data: {
+            companyId,
+            channel: 'WHATSAPP',
+            recipientPhone: prof.phone,
+            messageType: 'BULK_LOW_STOCK',
+            status: result.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+            providerMessageId: result.providerMessageId || null,
+            errorPayload: result.error || null,
+            sentAt: result.success ? new Date() : null,
+          },
+        });
+
+        if (result.success) sentCount++;
+      } catch (err: any) {
+        this.logger.error(`Erro ao enviar alerta consolidado para ${prof.name}:`, err);
+      }
+    }
+
+    return { success: true, sentCount, totalProfessionals: validProfessionals.length };
   }
 }
 

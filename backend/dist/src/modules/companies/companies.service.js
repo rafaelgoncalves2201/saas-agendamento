@@ -13,6 +13,7 @@ exports.CompaniesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
 const client_1 = require("@prisma/client");
+const plans_config_1 = require("../../common/config/plans.config");
 let CompaniesService = class CompaniesService {
     prisma;
     constructor(prisma) {
@@ -49,6 +50,23 @@ let CompaniesService = class CompaniesService {
         }
         let settings = existing.settings;
         if (dto.settings) {
+            const isAttemptingSignalOrPayment = dto.settings.requiresDeposit === true ||
+                dto.settings.paymentModel === 'DEPOSIT_PIX' ||
+                dto.settings.paymentModel === 'MERCADO_PAGO' ||
+                (dto.settings.pixKey && String(dto.settings.pixKey).trim().length > 0);
+            if (isAttemptingSignalOrPayment) {
+                const sub = await this.prisma.subscription.findUnique({
+                    where: { companyId },
+                    include: { plan: true },
+                });
+                const planSlug = sub?.plan?.slug;
+                const allowsPixSignal = (0, plans_config_1.isPlanFeatureAllowed)(planSlug, 'pixSignal');
+                const allowsMercadoPago = (0, plans_config_1.isPlanFeatureAllowed)(planSlug, 'mercadopago');
+                if ((dto.settings.paymentModel === 'MERCADO_PAGO' && !allowsMercadoPago) ||
+                    ((dto.settings.paymentModel === 'DEPOSIT_PIX' || dto.settings.requiresDeposit) && !allowsPixSignal)) {
+                    throw new common_1.ForbiddenException('A cobrança de sinal e recebimento de pagamentos via Pix ou Mercado Pago não estão disponíveis no plano Básico. Faça upgrade para o plano Profissional ou Premium.');
+                }
+            }
             settings = {
                 ...settings,
                 ...dto.settings,
@@ -108,6 +126,9 @@ let CompaniesService = class CompaniesService {
                         bio: true,
                         avatarUrl: true,
                         phone: true,
+                        requiresDeposit: true,
+                        depositType: true,
+                        depositValue: true,
                     },
                 },
                 services: {

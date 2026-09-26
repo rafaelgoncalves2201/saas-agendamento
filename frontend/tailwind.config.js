@@ -48,7 +48,9 @@ export default {
           500: '#796758',  // Texto de apoio quente
           600: '#5A4A3E',  // Texto de leitura confortável
           700: '#42342A',  // Texto forte tom café
+          750: '#342921',  // Divisórias e bordas intermediárias no modo escuro
           800: '#261E18',  // Cards e superfícies no modo escuro (chocolate escuro)
+          850: '#1F1813',  // Superfície intermediária de cards
           900: '#1C1510',  // Containers escuros (café espresso)
           950: '#120D0A',  // Fundo principal no modo escuro (café torrado profundo)
         },

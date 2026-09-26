@@ -113,11 +113,11 @@ export const AppointmentsPage: React.FC = () => {
       setAppointmentToApprove(null);
       showFeedback(
         'success',
-        'Sinal via Pix aprovado com sucesso! O agendamento está confirmado e o cliente foi notificado no WhatsApp.',
+        'Pagamento via Pix aprovado com sucesso! O agendamento está confirmado e o cliente foi notificado no WhatsApp.',
       );
       fetchAppointments();
     } catch (err: any) {
-      showFeedback('error', err.response?.data?.message || 'Erro ao aprovar sinal do agendamento.');
+      showFeedback('error', err.response?.data?.message || 'Erro ao aprovar pagamento do agendamento.');
     } finally {
       setApproving(false);
     }
@@ -180,7 +180,7 @@ export const AppointmentsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Agendamentos</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-            Gerencie, aprove sinais via Pix e atualize os atendimentos da sua equipe.
+            Gerencie, aprove pagamentos via Pix e acompanhe os atendimentos da sua equipe.
           </p>
         </div>
 
@@ -188,7 +188,7 @@ export const AppointmentsPage: React.FC = () => {
         <div className="flex items-center gap-1.5 p-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs overflow-x-auto">
           {[
             { key: 'ALL', label: 'Todos' },
-            { key: 'PENDING', label: 'Aguardando Sinal' },
+            { key: 'PENDING', label: 'Aguardando Pagamento' },
             { key: 'CONFIRMED', label: 'Confirmados' },
             { key: 'COMPLETED', label: 'Concluídos' },
             { key: 'CANCELLED', label: 'Cancelados' },
@@ -255,6 +255,12 @@ export const AppointmentsPage: React.FC = () => {
               minute: '2-digit',
             });
 
+            const isPending = app.status === 'PENDING' || app.status === 'PENDING_PAYMENT';
+            const hasDeposit = app.depositAmount && Number(app.depositAmount) > 0;
+            const depositValNum = Number(app.depositAmount || 0);
+            const totalValNum = Number(app.priceAtBooking || 0);
+            const remainingValNum = Math.max(0, totalValNum - depositValNum);
+
             return (
               <div
                 key={app.id}
@@ -264,8 +270,8 @@ export const AppointmentsPage: React.FC = () => {
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                          app.status === 'PENDING'
+                        className={`text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 ${
+                          isPending
                             ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                             : app.status === 'CONFIRMED'
                             ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-900'
@@ -274,8 +280,11 @@ export const AppointmentsPage: React.FC = () => {
                             : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-100 dark:border-red-900'
                         }`}
                       >
-                        {app.status === 'PENDING'
-                          ? 'Aguardando Sinal'
+                        {isPending && <Clock size={11} className="animate-pulse" />}
+                        {isPending
+                          ? (hasDeposit && !app.pixQrCodeBase64 && !app.cardPaymentUrl
+                              ? 'Aguardando Sinal (Pix)'
+                              : 'Aguardando Pagamento')
                           : app.status === 'CONFIRMED'
                           ? 'Confirmado'
                           : app.status === 'COMPLETED'
@@ -286,7 +295,7 @@ export const AppointmentsPage: React.FC = () => {
 
                     <div className="flex items-center gap-2">
                       <span className="font-black text-slate-900 dark:text-slate-100 text-sm">
-                        R$ {Number(app.priceAtBooking).toFixed(2)}
+                        R$ {totalValNum.toFixed(2)}
                       </span>
                       <button
                         onClick={() => setAppointmentToDelete(app)}
@@ -300,7 +309,7 @@ export const AppointmentsPage: React.FC = () => {
 
                   <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base mb-2">{app.service?.name}</h3>
 
-                  <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 mb-4">
+                  <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 mb-3">
                     <div className="flex items-center gap-2">
                       <Clock size={14} className="text-slate-400" />
                       <span>
@@ -341,16 +350,30 @@ export const AppointmentsPage: React.FC = () => {
                       </p>
                     )}
                   </div>
+
+                  {/* Detalhes Financeiros do Sinal vs Restante no Local */}
+                  {hasDeposit && (
+                    <div className="p-2.5 bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/50 rounded-xl space-y-1 text-[11px] mb-2">
+                      <div className="flex justify-between items-center text-emerald-700 dark:text-emerald-400 font-bold">
+                        <span>Sinal via Pix:</span>
+                        <span>R$ {depositValNum.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                        <span>Restante no Atendimento:</span>
+                        <span className="font-semibold">R$ {remainingValNum.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Actions */}
-                {app.status === 'PENDING' && (
+                {isPending && (
                   <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => {
                           setAppointmentToCancel(app);
-                          setCancellationReason('Sinal Pix não enviado no prazo estipulado');
+                          setCancellationReason('Comprovante de pagamento/sinal não validado');
                         }}
                         className="px-2.5 py-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
                       >
@@ -370,7 +393,7 @@ export const AppointmentsPage: React.FC = () => {
                       className="px-3.5 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shadow-emerald-200 dark:shadow-none cursor-pointer"
                     >
                       <CheckCircle2 size={14} />
-                      <span>Aprovar Sinal</span>
+                      <span>Aprovar Pagamento</span>
                     </button>
                   </div>
                 )}
@@ -411,13 +434,13 @@ export const AppointmentsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Caixa Personalizada para Aprovação do Sinal */}
+      {/* Caixa Personalizada para Aprovação do Pagamento */}
       <ActionConfirmationModal
         isOpen={!!appointmentToApprove}
         onClose={() => setAppointmentToApprove(null)}
         onConfirm={handleConfirmApprove}
-        title="Aprovar Sinal via Pix"
-        description="Você confirma que conferiu o recebimento do Pix referente ao sinal deste agendamento? O horário será confirmado e o cliente receberá a confirmação definitiva no WhatsApp."
+        title="Aprovar Pagamento via Pix"
+        description="Você confirma que conferiu o recebimento do Pix deste agendamento? O horário será confirmado e o cliente receberá a confirmação definitiva no WhatsApp."
         itemName={
           appointmentToApprove
             ? `${appointmentToApprove.service?.name} com ${appointmentToApprove.professional?.name} — Cliente: ${appointmentToApprove.client?.name}`
@@ -448,7 +471,7 @@ export const AppointmentsPage: React.FC = () => {
         showReasonInput={true}
         reasonValue={cancellationReason}
         onReasonChange={setCancellationReason}
-        reasonPlaceholder="Ex: Sinal não enviado, imprevisto do cliente..."
+        reasonPlaceholder="Ex: Pagamento não efetuado, imprevisto do cliente..."
       />
 
       {/* Caixa Personalizada para Conclusão de Agendamento */}

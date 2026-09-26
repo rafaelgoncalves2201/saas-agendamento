@@ -1,40 +1,81 @@
 # 🗓️ Inova Agenda - SaaS de Agendamento Online Multi-tenant
 
-Plataforma completa de agendamentos online, gestão de clientes (CRM), cobrança recorrente via **Asaas** e mensagens automáticas via **WhatsApp**, projetada para salões de beleza, clínicas de estética, barbearias, spas e profissionais autônomos.
+Plataforma completa de agendamentos online, gestão de clientes (CRM), controle de estoque de insumos, faturamento recorrente via **Asaas**, pagamentos dos clientes via **Mercado Pago** / **Pix Direto de Sinal** e notificações automáticas via **WhatsApp**.
+
+Projetada com arquitetura escalável multi-tenant para salões de beleza, barbearias, clínicas de estética, esmalterias, spas e profissionais autônomos.
 
 ---
 
-## 🚀 Principais Funcionalidades
+## 💎 Nova Estrutura Definitiva de Planos
+
+O sistema possui uma matriz de recursos centralizada no backend (`backend/src/common/config/plans.config.ts`) com bloqueios em tempo real via `PlanFeatureGuard`:
+
+| Recurso / Limite | **BÁSICO** (R$ 29,90/mês) | **PROFISSIONAL** (R$ 59,90/mês) | **PREMIUM** (R$ 99,90/mês) |
+| :--- | :---: | :---: | :---: |
+| **Profissionais Prestadores** | **Máximo de 1 profissional** | **Até 5 profissionais** | **Até 15 profissionais** |
+| **Agendamentos Mensais** | **50 agendamentos/mês** | **100 agendamentos/mês** | **Ilimitado** |
+| **Disparos WhatsApp (Agendamento)** | **Ilimitado** (Incluso) | **Ilimitado** (Incluso) | **Ilimitado** (Incluso) |
+| **Página Pública & Link Próprio** | ✅ Incluso | ✅ Incluso | ✅ Incluso |
+| **Cadastro de Clientes e Serviços** | ✅ Incluso | ✅ Incluso | ✅ Incluso |
+| **Mercado Pago (Cartão até 12x / Pix)** | ❌ Não permitido | ✅ Incluso | ✅ Incluso |
+| **Sinal de Reserva via Chave Pix** | ❌ Não permitido | ✅ Incluso | ✅ Incluso |
+| **Gestão de Estoque & Insumos** | ❌ Não permitido | ✅ Incluso | ✅ Incluso |
+| **Alertas de Reposição por WhatsApp** | ❌ Não aplicável | ✅ Incluso | ✅ Incluso |
+
+### 🔒 Segurança e Aplicação de Limites no Backend
+* **Agendamentos**: O backend contabiliza apenas os agendamentos do ciclo vigente. Ao atingir o limite (50 no Básico, 100 no Profissional), o próximo agendamento é bloqueado e não salvo no banco, retornando mensagem orientando o upgrade.
+* **Profissionais**: O backend valida o número de profissionais ativos da empresa. Tentativas de cadastrar além da cota do plano são rejeitadas com erro 403 e instruções de upgrade.
+* **Controle de Acesso por Decorators**: Rotas restritas utilizam `@RequireFeature('mercadopago')` e `@RequireFeature('inventory')`. Usuários do plano Básico são bloqueados antes de atingir os controllers ou services.
+* **Integridade de Preço**: O frontend envia apenas o identificador do plano (`BASIC`, `PROFESSIONAL`, `PREMIUM`). O valor cobrado é lido estritamente do banco de dados, impedindo qualquer manipulação de preço no cliente.
+
+---
+
+## 🚀 Funcionalidades da Plataforma
 
 ### 🏢 Multi-tenant e Gestão de Empresas
-- Cada estabelecimento possui seu próprio link público personalizado (`/empresa/nome-da-empresa`).
-- Painel administrativo isolado por empresa com métricas de faturamento, atendimentos diários e mensais.
-- Controle de acesso por permissões: `SUPER_ADMIN`, `COMPANY_ADMIN`, `PROFESSIONAL` e `STAFF`.
+- Cada estabelecimento possui seu próprio link público (`/empresa/seu-slug`).
+- Painel administrativo isolado por empresa com métricas diárias, semanais e mensais.
+- Controle de acesso por papéis: `SUPER_ADMIN`, `COMPANY_ADMIN`, `PROFESSIONAL` e `STAFF`.
+- Seleção de plano diretamente na tela de cadastro (`/register`) com 5 dias de teste grátis.
 
 ### 📅 Agendamentos e Horários
-- Fluxo de agendamento público intuitivo em 5 passos com seleção de profissional, serviço, data e horários disponíveis.
-- **Validação de Intervalos e Conflitos**: Suporte a procedimentos com durações personalizadas e bloqueio automático de choque de horários.
-- **Cobrança de Sinal via Pix**: O profissional pode exigir sinal para reserva de horário, com cópia da chave Pix e envio de comprovante via WhatsApp.
-- **Reagendamento pelo Profissional**: Modal para alteração rápida de data, horário ou profissional com recálculo automático e notificação ao cliente.
+- Fluxo de agendamento público intuitivo e mobile-first em passos guiados.
+- **Validação de Intervalos e Choques**: Cálculo automático de slots livres considerando duração do serviço e pausas de almoço.
+- **Confirmação, Remarcação e Cancelamento**: Gestão completa de status tanto pelo painel quanto pelo cliente.
 
-### 💳 Assinaturas e Pagamentos (Asaas)
-- Integração nativa em produção com a API v3 do **Asaas**.
-- Contratação de planos recorrentes (`Starter`, `Professional`, `Business`) via Pix, Boleto e Cartão de Crédito.
-- Webhook automatizado para ativação, renovação e suspensão de planos.
+### 💵 Formas Flexíveis de Recebimento dos Agendamentos
+1. **Sinal na Chave Pix Direta (Sem Taxas intermediárias)**:
+   - O cliente transfere o valor do sinal (ex: R$ 30, R$ 50 ou 30%) diretamente para a chave Pix bancária do estabelecimento (E-mail, Telefone, CPF, CNPJ ou Aleatória).
+   - O cliente envia o comprovante via botão de WhatsApp, e o restante é acertado no balcão no término do serviço.
+2. **Mercado Pago (100% Automático)**:
+   - Integração OAuth oficial para o estabelecimento conectar sua conta.
+   - Recebimento online antecipado via Pix com QR Code dinâmico ou Cartão de Crédito parcelado em até 12x com baixa automática.
+3. **Agendamento Livre (Pagar no Local)**:
+   - O agendamento é reservado sem cobrança antecipada, ideal para serviços rápidos ou planos Básico.
 
-### 💬 Notificações por WhatsApp
-- Suporte nativo a provedores via QR Code: **Evolution API** e **Z-API**.
-- Disparos automáticos de confirmação de horário, lembretes e avisos de reagendamento.
+### 📦 Controle de Estoque & Reposição de Insumos (Planos Pro & Premium)
+- Cadastro de insumos de atendimento e produtos para revenda com SKU, unidade de medida, custo e preço.
+- Controle de estoque mínimo com cálculo de alertas de escassez.
+- Histórico auditável de movimentações (Entradas, Saídas e Ajustes manuais com justificativa).
+- **Disparo de Alertas de Reposição por WhatsApp**: Envio em 1 clique da lista de itens com estoque baixo para os profissionais responsáveis providenciarem compras.
+
+### 💬 Mensageria e Conexão WhatsApp
+- Módulo com socket local / Baileys: conexão direta via leitura de QR Code no painel.
+- Disparos automáticos de:
+  - Confirmação de agendamento.
+  - Lembrete de horário antes do procedimento.
+  - Notificação de reagendamento ou cancelamento.
+  - Alerta de reposição de estoque crítico.
+
+### 💳 Cobrança Recorrente de Assinaturas (Asaas)
+- Integração oficial com a API v3 do **Asaas** para gestão de assinaturas do SaaS.
+- Pagamentos via Pix Copia e Cola / QR Code dinâmico e Cartão de Crédito.
+- Webhooks automatizados para sincronização instantânea de status (`ACTIVE`, `INCOMPLETE`, `PAST_DUE`, `TRIALING`).
 
 ### 🎨 Personalização Visual e Temas
-- **Identidade Visual Bege & Marrom**: Paleta refinada com fundo bege suave (`#F8F5EE`), superfícies marfim (`#FDFCF9`) e marrom nobre (`#6B3E26`).
-- **Modo Escuro**: Tema sofisticado em café espresso (`#120D0A`) com cards chocolate escuro e contraste nítido.
-- **Simulador de Celular em Tempo Real**: Pré-visualização instantânea da página pública e da tela de confirmação de sinal diretamente no painel.
-
-### 🏷️ Módulos Adicionais
-- **CRM de Clientes**: Histórico de visitas, total de atendimentos e anotações internas.
-- **Catálogo de Serviços e Produtos**: Cadastro com fotos, duração, preços e categorias.
-- **Cupons de Desconto**: Descontos percentuais ou em reais, limites de uso, validade e vinculação por profissional.
+- **Paleta Neutra & Elegante**: Tons bege suave (`#FAF8F5`), chocolate quente (`#6B3E26`) e superfícies marfim.
+- **Modo Escuro Completo**: Tema em café espresso (`#120D0A`) de alto contraste.
+- Simulador de celular em tempo real para testar como o cliente final verá a página de agendamento e as instruções de pagamento.
 
 ---
 
@@ -42,56 +83,71 @@ Plataforma completa de agendamentos online, gestão de clientes (CRM), cobrança
 
 ### Backend
 - **Framework**: [NestJS 11](https://nestjs.com/) (Node.js & TypeScript)
-- **ORM & Banco de Dados**: [Prisma ORM](https://www.prisma.io/) com **PostgreSQL** (compatível com Neon Serverless)
+- **Banco de Dados & ORM**: [Prisma ORM](https://www.prisma.io/) com **PostgreSQL**
 - **Autenticação**: Passport.js, JWT (Access Token 15m + Refresh Token 7d) e criptografia Argon2
+- **Segurança**: Guards globais (`JwtAuthGuard`, `RolesGuard`, `PlanFeatureGuard`)
 - **Documentação de API**: Swagger / OpenAPI integrada em `/api/docs`
-- **Validação de Dados**: Class-Validator e Class-Transformer
-- **Pagamentos**: Asaas SDK / REST API v3
+- **Gateways**: Asaas SDK v3 (Assinaturas SaaS) e Mercado Pago SDK (Pagamento de clientes)
 
 ### Frontend
 - **Framework**: [React 19](https://react.dev/) com [Vite](https://vitejs.dev/) e TypeScript
-- **Estilização**: [Tailwind CSS](https://tailwindcss.com/) com design system customizado
+- **Estilização**: [Tailwind CSS](https://tailwindcss.com/)
 - **Ícones**: [Lucide React](https://lucide.dev/)
 - **Gerenciamento de Estado**: Zustand
 - **Roteamento**: React Router DOM v7
-- **Manipulação de Datas**: date-fns e date-fns-tz
+- **Manipulação de Datas**: date-fns
 
 ---
 
-## 📁 Estrutura do Repositório
+## 📁 Estrutura do Projeto
 
 ```text
-SaaS - Agendamento/
-├── backend/                  # API NestJS
-│   ├── prisma/               # Schema e seeds do banco de dados
+saas-agendamento/
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma            # Modelagem do banco de dados PostgreSQL
+│   │   └── seed.ts                  # Seed oficial dos planos (Básico, Profissional, Premium) e Admin
 │   ├── src/
-│   │   ├── modules/          # Módulos (auth, appointments, companies, payments, etc.)
-│   │   ├── common/           # Guards, interceptors, filters e decorators
-│   │   └── main.ts           # Inicialização e configuração de CORS
-│   ├── .env.example          # Modelo de variáveis de ambiente do backend
+│   │   ├── common/
+│   │   │   ├── config/              # plans.config.ts (Matriz definitiva de limites e permissões)
+│   │   │   ├── decorators/          # @RequireFeature, @Public, @Roles
+│   │   │   ├── guards/              # PlanFeatureGuard, JwtAuthGuard, RolesGuard
+│   │   │   └── interceptors/        # TenantInterceptor
+│   │   ├── modules/
+│   │   │   ├── appointments/        # Agendamentos e trava de limite mensal
+│   │   │   ├── auth/                # Registro com seleção de plano e login
+│   │   │   ├── companies/           # Personalização e regras de sinal/Pix
+│   │   │   ├── mercadopago/         # OAuth e pagamentos protegidos por plano
+│   │   │   ├── products/            # Gestão de estoque protegida por plano
+│   │   │   ├── professionals/       # Trava estrita de limite de profissionais
+│   │   │   ├── subscriptions/       # Checkout Asaas e consulta de recursos
+│   │   │   └── whatsapp/            # Socket Baileys e envio de mensagens
+│   │   └── main.ts
 │   └── package.json
-├── frontend/                 # Aplicação React SPA
+├── frontend/
 │   ├── src/
-│   │   ├── layouts/          # Layout do dashboard e navegação
-│   │   ├── pages/            # Telas da aplicação (admin, empresa, booking público)
-│   │   ├── contexts/         # Contexto de temas (Claro / Escuro / Sistema)
-│   │   └── services/         # Cliente Axios e interceptores de API
-│   ├── vercel.json           # Regras de reescrita para rotas SPA na Vercel
-│   ├── .env.example          # Modelo de variáveis de ambiente do frontend
+│   │   ├── layouts/                 # DashboardLayout com navegação dinâmica por plano
+│   │   ├── pages/
+│   │   │   ├── auth/                # RegisterCompanyPage (Seleção dos 3 planos) e Login
+│   │   │   ├── appointments/        # Listagem e gestão de agendamentos
+│   │   │   ├── products/            # Estoque com banner de upgrade
+│   │   │   ├── settings/            # Personalização, sinal Pix e Mercado Pago
+│   │   │   └── subscription/        # Gestão de assinatura Asaas e tabela de planos
+│   │   └── services/api.ts          # Cliente Axios configurado
 │   └── package.json
 └── README.md
 ```
 
 ---
 
-## 💻 Como Rodar o Projeto Localmente
+## 💻 Como Executar o Projeto Localmente
 
 ### Pré-requisitos
 - Node.js 20+ instalado
-- PostgreSQL rodando localmente ou conta no [Neon](https://neon.tech)
+- PostgreSQL ativo localmente ou via [Neon Serverless](https://neon.tech)
 - Git
 
-### 1. Clonar e Configurar o Backend
+### 1. Backend
 
 ```bash
 cd backend
@@ -99,28 +155,23 @@ cd backend
 # Instalar dependências
 npm install
 
-# Copiar arquivo de ambiente
+# Configurar variáveis de ambiente
 cp .env.example .env
-```
+# Preencha a DATABASE_URL no .env
 
-Edite o arquivo `.env` inserindo sua conexão com o banco de dados PostgreSQL.
-
-```bash
-# Gerar cliente do Prisma e sincronizar tabelas
+# Sincronizar o banco de dados
 npx prisma db push
 
-# Popular banco com o Super Admin e os planos oficiais
+# Popular os 3 planos e o usuário Super Admin
 npx prisma db seed
 
-# Iniciar servidor em desenvolvimento
+# Iniciar em modo desenvolvimento
 npm run start:dev
 ```
-A API estará disponível em: `http://localhost:3000/api`  
-Documentação Swagger: `http://localhost:3000/api/docs`
+- API Base: `http://localhost:3000/api`
+- Documentação Swagger: `http://localhost:3000/api/docs`
 
-### 2. Configurar e Rodar o Frontend
-
-Em outro terminal:
+### 2. Frontend
 
 ```bash
 cd frontend
@@ -131,46 +182,31 @@ npm install
 # Iniciar servidor Vite
 npm run dev
 ```
-Acesse o aplicativo em: `http://localhost:5173`
+- Interface SPA: `http://localhost:5173`
 
 ---
 
-## 🔐 Acesso Inicial do Super Admin
+## 🔐 Acesso Super Admin Inicial
 
-Após executar o comando de seed (`npx prisma db seed`), você pode acessar a área administrativa com as credenciais padrão:
+Após executar o seed do banco de dados (`npx prisma db seed`), utilize as credenciais administrativas para gerenciar o SaaS:
 
 - **E-mail**: `rgcarmo545@gmail.com`
 - **Senha**: `99622_Rp`
 
 ---
 
-## 🌐 Guia de Deploy em Produção
+## 🧪 Testes Automatizados
 
-### 1. Banco de Dados no [Neon](https://neon.tech)
-1. Crie um projeto no Neon (Região `US East`).
-2. Copie a `DATABASE_URL` fornecida (formato: `postgresql://...sslmode=require`).
-3. No terminal do backend, execute `npx prisma db push` e `npx prisma db seed` apontando para o Neon.
-
-### 2. Backend no [Render](https://render.com)
-1. Crie um novo **Web Service** conectado ao seu repositório no GitHub.
-2. Defina:
-   - **Root Directory**: `backend`
-   - **Build Command**: `npm install && npx prisma generate && npm run build`
-   - **Start Command**: `npm run start:prod`
-3. Configure as variáveis de ambiente no Render (`DATABASE_URL`, `ASAAS_API_KEY`, `JWT_ACCESS_SECRET`, etc.).
-
-### 3. Frontend na [Vercel](https://vercel.com)
-1. Crie um novo projeto importando o mesmo repositório do GitHub.
-2. Defina:
-   - **Root Directory**: `frontend`
-   - **Framework Preset**: `Vite`
-3. Adicione a variável de ambiente:
-   - `VITE_API_URL`: `https://sua-api-no-render.onrender.com/api`
-4. Conclua o deploy. As rotas internas já estão configuradas no `vercel.json`.
+O sistema conta com validações automatizadas de ponta a ponta para conferência de limites:
+* Verificação dos 3 planos canônicos no banco (`basic`, `professional`, `premium`).
+* Bloqueio do 2º profissional no plano Básico.
+* Bloqueio do acesso a estoque (`/products`) no plano Básico.
+* Bloqueio de conexão Mercado Pago e sinal Pix no plano Básico.
+* Criação de até 5 profissionais no plano Profissional e bloqueio do 6º.
+* Acesso a até 15 profissionais e agendamentos ilimitados no plano Premium.
 
 ---
 
 ## 📄 Licença
 
-Este projeto é de propriedade privada e desenvolvido para operação comercial de software como serviço (SaaS).
-
+Este projeto é de propriedade privada e desenvolvido para operação comercial como Software as a Service (SaaS). Todos os direitos reservados.

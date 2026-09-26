@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { CreateProfessionalDto, UpdateProfessionalDto } from './dto/professional.dto';
+import { PlanTier, getPlanConfig } from '../../common/config/plans.config';
 
 @Injectable()
 export class ProfessionalsService {
@@ -75,15 +76,28 @@ export class ProfessionalsService {
       throw new NotFoundException('Empresa não encontrada');
     }
 
-    const maxAllowed = company.subscription?.plan?.maxProfessionals || 1;
+    const planSlug = company.subscription?.plan?.slug;
+    const planConfig = getPlanConfig(planSlug);
+    const maxAllowed = planConfig.maxProfessionals;
+
     const currentCount = await this.prisma.professional.count({
       where: { companyId, isActive: true },
     });
 
     if (currentCount >= maxAllowed) {
-      throw new ForbiddenException(
-        `Limite de profissionais atingido para o plano ${company.subscription?.plan?.name || 'atual'} (máximo ${maxAllowed}). Faça upgrade para adicionar mais profissionais.`,
-      );
+      if (planConfig.tier === PlanTier.BASIC) {
+        throw new ForbiddenException(
+          'Você atingiu o limite de 1 profissional do plano Básico. Faça upgrade para o plano Profissional para cadastrar até 5 profissionais.',
+        );
+      } else if (planConfig.tier === PlanTier.PROFESSIONAL) {
+        throw new ForbiddenException(
+          'Você atingiu o limite de 5 profissionais do plano Profissional. Faça upgrade para o plano Premium para cadastrar até 15 profissionais.',
+        );
+      } else {
+        throw new ForbiddenException(
+          'Você atingiu o limite máximo de 15 profissionais do plano Premium.',
+        );
+      }
     }
 
     // 2. Validar unicidade do slug na empresa

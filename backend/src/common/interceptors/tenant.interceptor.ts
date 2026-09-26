@@ -31,14 +31,14 @@ export class TenantInterceptor implements NestInterceptor {
         return next.handle();
       }
 
+      if (user.companyId) {
+        request.companyId = user.companyId;
+        return next.handle();
+      }
+
       return from(
         this.prisma.company.findFirst({
-          where: {
-            OR: [
-              ...(user.companyId ? [{ id: user.companyId, isActive: true }] : []),
-              { isActive: true },
-            ],
-          },
+          where: { isActive: true },
           orderBy: { createdAt: 'desc' },
           select: { id: true },
         }),

@@ -32,94 +32,130 @@ async function main() {
 
   console.log(`✅ Super Admin configurado com sucesso: ${superAdmin.email}`);
 
-  // 2. Planos Iniciais do SaaS
+  // 2. Planos Oficiais do SaaS: Básico (R$ 29,90), Profissional (R$ 59,90), Premium (R$ 99,90)
   const plans = [
     {
-      slug: 'starter',
-      name: 'Starter',
-      description: 'Ideal para profissionais autônomos que estão começando (50 agendamentos/mês, sem controle de estoque).',
-      priceMonthly: 0.10,
-      priceYearly: 0.10,
+      slug: 'basic',
+      legacySlug: 'starter',
+      name: 'Básico',
+      description: 'Ideal para profissionais autônomos. 1 profissional, até 50 agendamentos/mês e WhatsApp incluso.',
+      priceMonthly: 29.90,
+      priceYearly: 299.00,
       maxProfessionals: 1,
       maxAppointmentsPerMonth: 50,
-      maxWhatsappMessages: 0,
+      maxWhatsappMessages: 999999,
       sortOrder: 1,
       features: {
-        whatsappNotifications: false,
+        scheduling: true,
+        publicBookingPage: true,
+        whatsappNotifications: true,
+        whatsappAppointmentMessages: true,
+        mercadopago: false,
+        onlinePayment: false,
+        pixSignal: false,
+        inventory: false,
+        inventoryControl: false,
+        products: false,
         customBranding: false,
         advancedReports: false,
-        products: false,
-        inventoryControl: false,
       },
     },
     {
       slug: 'professional',
-      name: 'Professional',
-      description: 'Para profissionais com maior volume (100 agendamentos/mês por profissional, com Controle de Estoque & Alertas de Reposição).',
-      priceMonthly: 0.10,
-      priceYearly: 0.10,
+      legacySlug: 'professional',
+      name: 'Profissional',
+      description: 'Para estúdios e profissionais que desejam receber pagamentos online e gerenciar estoque.',
+      priceMonthly: 59.90,
+      priceYearly: 599.00,
       maxProfessionals: 5,
-      maxAppointmentsPerMonth: 500,
-      maxWhatsappMessages: 500,
+      maxAppointmentsPerMonth: 100,
+      maxWhatsappMessages: 999999,
       sortOrder: 2,
       features: {
+        scheduling: true,
+        publicBookingPage: true,
         whatsappNotifications: true,
+        whatsappAppointmentMessages: true,
+        mercadopago: true,
+        onlinePayment: true,
+        pixSignal: true,
+        inventory: true,
+        inventoryControl: true,
+        products: true,
         customBranding: true,
         advancedReports: false,
-        products: true,
-        inventoryControl: true,
       },
     },
     {
-      slug: 'business',
-      name: 'Business',
-      description: 'Para empresas com equipe (200 agendamentos/mês por profissional, Gestão Avançada de Estoque e Relatórios).',
-      priceMonthly: 0.10,
-      priceYearly: 0.10,
+      slug: 'premium',
+      legacySlug: 'business',
+      name: 'Premium',
+      description: 'Para equipes e clínicas com alto fluxo de clientes, sem limite de agendamentos e com todos os recursos.',
+      priceMonthly: 99.90,
+      priceYearly: 999.00,
       maxProfessionals: 15,
-      maxAppointmentsPerMonth: 3000,
-      maxWhatsappMessages: 2000,
+      maxAppointmentsPerMonth: 999999,
+      maxWhatsappMessages: 999999,
       sortOrder: 3,
       features: {
+        scheduling: true,
+        publicBookingPage: true,
         whatsappNotifications: true,
+        whatsappAppointmentMessages: true,
+        mercadopago: true,
+        onlinePayment: true,
+        pixSignal: true,
+        inventory: true,
+        inventoryControl: true,
+        products: true,
         customBranding: true,
         advancedReports: true,
-        products: true,
-        inventoryControl: true,
       },
     },
   ];
 
   for (const planData of plans) {
-    const plan = await prisma.plan.upsert({
-      where: { slug: planData.slug },
-      update: {
-        name: planData.name,
-        description: planData.description,
-        priceMonthly: planData.priceMonthly,
-        priceYearly: planData.priceYearly,
-        maxProfessionals: planData.maxProfessionals,
-        maxAppointmentsPerMonth: planData.maxAppointmentsPerMonth,
-        maxWhatsappMessages: planData.maxWhatsappMessages,
-        features: planData.features,
-        sortOrder: planData.sortOrder,
-        isActive: true,
-      },
-      create: {
-        slug: planData.slug,
-        name: planData.name,
-        description: planData.description,
-        priceMonthly: planData.priceMonthly,
-        priceYearly: planData.priceYearly,
-        maxProfessionals: planData.maxProfessionals,
-        maxAppointmentsPerMonth: planData.maxAppointmentsPerMonth,
-        maxWhatsappMessages: planData.maxWhatsappMessages,
-        features: planData.features,
-        sortOrder: planData.sortOrder,
-        isActive: true,
-      },
-    });
-    console.log(`✅ Plano criado/atualizado: ${plan.name} (R$ ${plan.priceMonthly}/mês)`);
+    let existingPlan = await prisma.plan.findUnique({ where: { slug: planData.slug } });
+    if (!existingPlan && planData.legacySlug) {
+      existingPlan = await prisma.plan.findUnique({ where: { slug: planData.legacySlug } });
+    }
+
+    if (existingPlan) {
+      const updated = await prisma.plan.update({
+        where: { id: existingPlan.id },
+        data: {
+          slug: planData.slug,
+          name: planData.name,
+          description: planData.description,
+          priceMonthly: planData.priceMonthly,
+          priceYearly: planData.priceYearly,
+          maxProfessionals: planData.maxProfessionals,
+          maxAppointmentsPerMonth: planData.maxAppointmentsPerMonth,
+          maxWhatsappMessages: planData.maxWhatsappMessages,
+          features: planData.features,
+          sortOrder: planData.sortOrder,
+          isActive: true,
+        },
+      });
+      console.log(`✅ Plano atualizado: ${updated.name} (${updated.slug}) - R$ ${updated.priceMonthly}/mês`);
+    } else {
+      const created = await prisma.plan.create({
+        data: {
+          slug: planData.slug,
+          name: planData.name,
+          description: planData.description,
+          priceMonthly: planData.priceMonthly,
+          priceYearly: planData.priceYearly,
+          maxProfessionals: planData.maxProfessionals,
+          maxAppointmentsPerMonth: planData.maxAppointmentsPerMonth,
+          maxWhatsappMessages: planData.maxWhatsappMessages,
+          features: planData.features,
+          sortOrder: planData.sortOrder,
+          isActive: true,
+        },
+      });
+      console.log(`✅ Plano criado: ${created.name} (${created.slug}) - R$ ${created.priceMonthly}/mês`);
+    }
   }
 
   // 3. Vincular Super Admin à primeira empresa ativa caso exista

@@ -343,7 +343,7 @@ export const CompanyDashboardPage: React.FC = () => {
             ) : (
               <div className="space-y-2.5">
                 <p className="text-[11px] text-amber-700 dark:text-amber-300 font-semibold bg-amber-50 dark:bg-amber-950/40 p-2 rounded-xl border border-amber-200 dark:border-amber-800">
-                  Atenção: Itens com 5 ou menos unidades restantes:
+                  Atenção: Itens em nível crítico de estoque para reposição:
                 </p>
                 {inventory.lowStockItems.map((item: any) => (
                   <div
@@ -353,11 +353,11 @@ export const CompanyDashboardPage: React.FC = () => {
                     <div>
                       <strong className="block text-[#2B1D15] dark:text-[#FAF7F2]">{item.name}</strong>
                       <span className="text-[11px] text-[#796758] dark:text-[#CDB196]">
-                        R$ {Number(item.price).toFixed(2)}
+                        {item.minStock > 0 ? `Estoque mínimo: ${item.minStock} ${item.unit || 'un'}` : `R$ ${Number(item.price).toFixed(2)}`}
                       </span>
                     </div>
-                    <span className="px-2 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 font-bold text-[11px]">
-                      {item.stock} un.
+                    <span className="px-2.5 py-1 rounded-lg bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 font-bold text-[11px]">
+                      {item.stock} {item.unit || 'un'}
                     </span>
                   </div>
                 ))}

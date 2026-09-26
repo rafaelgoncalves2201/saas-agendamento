@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProfessionalsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
+const plans_config_1 = require("../../common/config/plans.config");
 let ProfessionalsService = class ProfessionalsService {
     prisma;
     constructor(prisma) {
@@ -73,12 +74,22 @@ let ProfessionalsService = class ProfessionalsService {
         if (!company) {
             throw new common_1.NotFoundException('Empresa não encontrada');
         }
-        const maxAllowed = company.subscription?.plan?.maxProfessionals || 1;
+        const planSlug = company.subscription?.plan?.slug;
+        const planConfig = (0, plans_config_1.getPlanConfig)(planSlug);
+        const maxAllowed = planConfig.maxProfessionals;
         const currentCount = await this.prisma.professional.count({
             where: { companyId, isActive: true },
         });
         if (currentCount >= maxAllowed) {
-            throw new common_1.ForbiddenException(`Limite de profissionais atingido para o plano ${company.subscription?.plan?.name || 'atual'} (máximo ${maxAllowed}). Faça upgrade para adicionar mais profissionais.`);
+            if (planConfig.tier === plans_config_1.PlanTier.BASIC) {
+                throw new common_1.ForbiddenException('Você atingiu o limite de 1 profissional do plano Básico. Faça upgrade para o plano Profissional para cadastrar até 5 profissionais.');
+            }
+            else if (planConfig.tier === plans_config_1.PlanTier.PROFESSIONAL) {
+                throw new common_1.ForbiddenException('Você atingiu o limite de 5 profissionais do plano Profissional. Faça upgrade para o plano Premium para cadastrar até 15 profissionais.');
+            }
+            else {
+                throw new common_1.ForbiddenException('Você atingiu o limite máximo de 15 profissionais do plano Premium.');
+            }
         }
         const cleanSlug = dto.slug.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-');
         const existingSlug = await this.prisma.professional.findUnique({

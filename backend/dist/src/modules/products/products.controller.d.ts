@@ -49,6 +49,21 @@ export declare class ProductsController {
         promotionalPrice: import("@prisma/client/runtime/library").Decimal | null;
         isArchived: boolean;
     }[]>;
+    sendBulkRestockAlert(req: any): Promise<{
+        success: boolean;
+        sentCount: number;
+        message?: undefined;
+        totalProfessionals?: undefined;
+    } | {
+        success: boolean;
+        sentCount: number;
+        totalProfessionals: number;
+        message?: undefined;
+    } | {
+        success: boolean;
+        sentCount: number;
+        message: string;
+    }>;
     getProduct(req: any, id: string): Promise<{
         id: string;
         name: string;
@@ -172,6 +187,22 @@ export declare class ProductsController {
             newStock: number;
             productId: string;
         };
+    }>;
+    sendRestockAlert(req: any, id: string): Promise<{
+        success: boolean;
+        sentCount: number;
+        message?: undefined;
+        totalProfessionals?: undefined;
+    } | {
+        success: boolean;
+        sentCount: number;
+        message: string;
+        totalProfessionals?: undefined;
+    } | {
+        success: boolean;
+        sentCount: number;
+        totalProfessionals: number;
+        message?: undefined;
     }>;
     deleteProduct(req: any, id: string): Promise<{
         id: string;

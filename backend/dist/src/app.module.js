@@ -34,6 +34,7 @@ const mercadopago_module_1 = require("./modules/mercadopago/mercadopago.module")
 const jwt_auth_guard_1 = require("./common/guards/jwt-auth.guard");
 const roles_guard_1 = require("./common/guards/roles.guard");
 const subscription_guard_1 = require("./common/guards/subscription.guard");
+const plan_feature_guard_1 = require("./common/guards/plan-feature.guard");
 const tenant_interceptor_1 = require("./common/interceptors/tenant.interceptor");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 let AppModule = class AppModule {
@@ -80,6 +81,10 @@ exports.AppModule = AppModule = __decorate([
             {
                 provide: core_1.APP_GUARD,
                 useClass: subscription_guard_1.SubscriptionGuard,
+            },
+            {
+                provide: core_1.APP_GUARD,
+                useClass: plan_feature_guard_1.PlanFeatureGuard,
             },
             {
                 provide: core_1.APP_INTERCEPTOR,

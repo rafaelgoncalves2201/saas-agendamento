@@ -262,16 +262,12 @@ export const SubscriptionPage: React.FC = () => {
             <div className="bg-[#FAF8F5] dark:bg-[#1E1713] p-4 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22]">
               <div className="flex items-center justify-between text-xs font-semibold mb-2">
                 <span className="text-[#796758] dark:text-[#CDB196]">Disparos de WhatsApp</span>
-                <span className="text-[#6B3E26] dark:text-[#E2CEBC] font-bold">
-                  {currentFeatures.whatsappNotifications
-                    ? `Até ${currentFeatures.maxWhatsappMessages}/mês`
-                    : 'Não Incluso'}
+                <span className="text-emerald-700 dark:text-emerald-400 font-extrabold uppercase text-[10px] tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/40">
+                  Ilimitado
                 </span>
               </div>
               <p className="text-[11px] text-[#796758] dark:text-[#CDB196]">
-                {currentFeatures.whatsappNotifications
-                  ? 'Confirmações e lembretes automáticos ativos'
-                  : 'Faça upgrade para ativar notificações automáticas'}
+                Confirmações e lembretes automáticos inclusos sem limite de envio.
               </p>
             </div>
           </div>
@@ -347,18 +343,18 @@ export const SubscriptionPage: React.FC = () => {
                   </div>
 
                   {/* Badge de Destaque de Acesso ao Estoque */}
-                  {p.features?.inventoryControl || p.slug === 'professional' || p.slug === 'business' ? (
+                  {p.features?.inventoryControl || p.features?.inventory || p.slug === 'professional' || p.slug === 'premium' ? (
                     <div className="mb-4 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 text-xs">
                       <Check size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span className="font-bold text-emerald-800 dark:text-emerald-300">
-                        Acesso ao Estoque: <strong>INCLUSO</strong> ✅
+                        Mercado Pago, Sinal Pix & Estoque: <strong>INCLUSOS</strong> ✅
                       </span>
                     </div>
                   ) : (
                     <div className="mb-4 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center gap-2 text-xs">
                       <X size={16} className="text-amber-600 dark:text-amber-400 shrink-0" />
                       <span className="font-bold text-amber-800 dark:text-amber-300">
-                        Controle de Estoque: <strong>NÃO INCLUSO</strong> ❌
+                        Plano Básico Essencial ⚡
                       </span>
                     </div>
                   )}
@@ -366,55 +362,80 @@ export const SubscriptionPage: React.FC = () => {
                   <div className="space-y-3 text-xs text-[#2B1D15] dark:text-[#F8F5EE]">
                     <div className="flex items-center gap-2">
                       <Check size={16} className="text-[#6B3E26] dark:text-[#CDB196] shrink-0" />
-                      <span>Até <strong>{p.maxProfessionals}</strong> profissional(is) prestador(es)</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check size={16} className="text-[#6B3E26] dark:text-[#CDB196] shrink-0" />
-                      <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
-                        Conta de Administrador inclusa (não consome vaga)
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check size={16} className="text-[#6B3E26] dark:text-[#CDB196] shrink-0" />
                       <span>
-                        <strong>
-                          {p.slug === 'business'
-                            ? '200'
-                            : p.slug === 'professional'
-                            ? '100'
-                            : '50'}
-                        </strong>{' '}
-                        agendamentos/mês por profissional (até {p.maxAppointmentsPerMonth} total)
+                        {p.slug === 'premium'
+                          ? 'Até 15 profissionais prestadores'
+                          : p.slug === 'professional'
+                          ? 'Até 5 profissionais prestadores'
+                          : '1 profissional prestador'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check size={16} className="text-[#6B3E26] dark:text-[#CDB196] shrink-0" />
-                      <span>
-                        {p.maxWhatsappMessages > 0
-                          ? `Até ${p.maxWhatsappMessages} msgs WhatsApp`
-                          : 'Notificações WhatsApp desativadas'}
+                      <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                        {p.slug === 'premium'
+                          ? 'Agendamentos SEM LIMITE mensal'
+                          : p.slug === 'professional'
+                          ? 'Até 100 agendamentos por mês'
+                          : 'Até 50 agendamentos por mês'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {p.features?.inventoryControl || p.slug === 'professional' || p.slug === 'business' ? (
+                      <Check size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span className="font-medium text-slate-800 dark:text-slate-200">
+                        WhatsApp agendamentos (confirmação, cancelamento, lembretes)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check size={16} className="text-[#6B3E26] dark:text-[#CDB196] shrink-0" />
+                      <span>Página pública de agendamento & Link próprio</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {p.features?.mercadopago || p.slug === 'professional' || p.slug === 'premium' ? (
+                        <>
+                          <Check size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span className="font-medium">Mercado Pago & Pagamentos online</span>
+                        </>
+                      ) : (
+                        <>
+                          <X size={16} className="text-amber-700 dark:text-amber-500 shrink-0" />
+                          <span className="text-[#9C8B7D] dark:text-[#796758] line-through">
+                            Sem Mercado Pago / Pagamento online
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {p.features?.pixSignal || p.slug === 'professional' || p.slug === 'premium' ? (
+                        <>
+                          <Check size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span className="font-medium">Recebimento de sinal na sua chave Pix</span>
+                        </>
+                      ) : (
+                        <>
+                          <X size={16} className="text-amber-700 dark:text-amber-500 shrink-0" />
+                          <span className="text-[#9C8B7D] dark:text-[#796758] line-through">
+                            Sem Pix para sinal
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {p.features?.inventory || p.features?.inventoryControl || p.slug === 'professional' || p.slug === 'premium' ? (
                         <>
                           <Check size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span className="font-bold text-emerald-800 dark:text-emerald-300">
-                            Gestão de Estoque & Alertas de Reposição
+                            Controle de Estoque & Alertas de Reposição
                           </span>
                         </>
                       ) : (
                         <>
                           <X size={16} className="text-amber-700 dark:text-amber-500 shrink-0" />
                           <span className="text-[#9C8B7D] dark:text-[#796758] line-through">
-                            Sem controle de estoque (Apenas Pro e Business)
+                            Sem controle de estoque (Apenas Pro e Premium)
                           </span>
                         </>
                       )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Check size={16} className="text-[#6B3E26] dark:text-[#CDB196] shrink-0" />
-                      <span>Página pública mobile-first</span>
                     </div>
                   </div>
                 </div>

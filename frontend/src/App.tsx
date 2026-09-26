@@ -71,6 +71,7 @@ export function App() {
           element={<PublicBookingPage />}
         />
         <Route path="/agendamento/:code" element={<AppointmentTrackingPage />} />
+        <Route path="/tracking/:code" element={<AppointmentTrackingPage />} />
 
         {/* Rotas Protegidas do Tenant (Painel da Empresa) */}
         <Route

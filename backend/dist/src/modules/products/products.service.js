@@ -13,10 +13,13 @@ exports.ProductsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../../database/prisma.service");
 const client_1 = require("@prisma/client");
+const whatsapp_service_1 = require("../whatsapp/whatsapp.service");
 let ProductsService = class ProductsService {
     prisma;
-    constructor(prisma) {
+    whatsAppService;
+    constructor(prisma, whatsAppService) {
         this.prisma = prisma;
+        this.whatsAppService = whatsAppService;
     }
     async listProducts(companyId, filters) {
         const isArchived = filters?.isArchived === true;
@@ -175,7 +178,7 @@ let ProductsService = class ProductsService {
         else if (dto.type === client_1.StockMovementType.ADJUSTMENT) {
             newStock = qty;
         }
-        return this.prisma.$transaction(async (tx) => {
+        const result = await this.prisma.$transaction(async (tx) => {
             const updatedProduct = await tx.product.update({
                 where: { id: productId },
                 data: { stock: newStock },
@@ -197,6 +200,16 @@ let ProductsService = class ProductsService {
                 movement,
             };
         });
+        const reachedMinStock = product.minStock > 0 && newStock <= product.minStock;
+        const reachedZero = previousStock > 0 && newStock === 0;
+        if (dto.type !== client_1.StockMovementType.ENTRY && (reachedMinStock || reachedZero)) {
+            this.whatsAppService
+                .sendLowStockAlert(companyId, productId, newStock, product.minStock, product.unit)
+                .catch((err) => {
+                console.error('[ProductsService] Erro ao disparar alerta de estoque baixo via WhatsApp:', err?.message || err);
+            });
+        }
+        return result;
     }
     async listMovements(companyId, productId) {
         return this.prisma.stockMovement.findMany({
@@ -224,10 +237,37 @@ let ProductsService = class ProductsService {
             where: { id },
         });
     }
+    async sendRestockAlert(companyId, productId) {
+        const product = await this.getProduct(companyId, productId);
+        return this.whatsAppService.sendLowStockAlert(companyId, productId, product.stock, product.minStock, product.unit);
+    }
+    async sendBulkRestockAlert(companyId) {
+        const lowStockProducts = await this.prisma.product.findMany({
+            where: {
+                companyId,
+                isArchived: false,
+                isActive: true,
+            },
+            select: {
+                id: true,
+                name: true,
+                stock: true,
+                minStock: true,
+                unit: true,
+                sku: true,
+            },
+        });
+        const criticalItems = lowStockProducts.filter((p) => p.stock <= p.minStock);
+        if (criticalItems.length === 0) {
+            return { success: true, sentCount: 0, message: 'Nenhum item com estoque baixo no momento.' };
+        }
+        return this.whatsAppService.sendBulkLowStockAlert(companyId, criticalItems);
+    }
 };
 exports.ProductsService = ProductsService;
 exports.ProductsService = ProductsService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        whatsapp_service_1.WhatsAppService])
 ], ProductsService);
 //# sourceMappingURL=products.service.js.map

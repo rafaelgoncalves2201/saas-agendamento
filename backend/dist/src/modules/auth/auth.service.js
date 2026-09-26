@@ -16,6 +16,7 @@ const prisma_service_1 = require("../../database/prisma.service");
 const client_1 = require("@prisma/client");
 const argon2 = require("argon2");
 const date_fns_1 = require("date-fns");
+const plans_config_1 = require("../../common/config/plans.config");
 let AuthService = class AuthService {
     prisma;
     jwtService;
@@ -90,11 +91,25 @@ let AuthService = class AuthService {
         if (existingCompany) {
             throw new common_1.ConflictException('Este identificador (slug) já está em uso por outra empresa');
         }
-        const starterPlan = await this.prisma.plan.findUnique({
-            where: { slug: 'starter' },
+        const selectedTier = (0, plans_config_1.normalizePlanTier)(dto.plan || 'BASIC');
+        const planConfig = plans_config_1.PLAN_CONFIGS[selectedTier];
+        let chosenPlan = await this.prisma.plan.findUnique({
+            where: { slug: planConfig.slug },
         });
-        if (!starterPlan) {
-            throw new common_1.BadRequestException('Plano inicial padrão não encontrado no sistema');
+        if (!chosenPlan) {
+            chosenPlan = await this.prisma.plan.findFirst({
+                where: {
+                    OR: [
+                        { slug: planConfig.slug },
+                        { name: planConfig.name },
+                        { slug: 'basic' },
+                        { slug: 'starter' },
+                    ],
+                },
+            });
+        }
+        if (!chosenPlan) {
+            throw new common_1.BadRequestException('Plano selecionado não encontrado no sistema');
         }
         const result = await this.prisma.$transaction(async (tx) => {
             const passwordHash = await argon2.hash(dto.ownerPassword);
@@ -117,8 +132,8 @@ let AuthService = class AuthService {
                     settings: {
                         primaryColor: '#6B3E26',
                         publicTheme: 'light',
-                        requiresDeposit: true,
-                        depositValue: 'R$ 50',
+                        requiresDeposit: false,
+                        depositValue: 'R$ 0',
                     },
                 },
             });
@@ -132,9 +147,9 @@ let AuthService = class AuthService {
             await tx.subscription.create({
                 data: {
                     companyId: company.id,
-                    planId: starterPlan.id,
+                    planId: chosenPlan.id,
                     status: client_1.SubscriptionStatus.TRIALING,
-                    amount: starterPlan.priceMonthly,
+                    amount: chosenPlan.priceMonthly,
                     currentPeriodStart: new Date(),
                     currentPeriodEnd: (0, date_fns_1.addDays)(new Date(), 5),
                     trialEndsAt: (0, date_fns_1.addDays)(new Date(), 5),

@@ -95,7 +95,11 @@ export const SuperAdminPlansPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Check size={14} className="text-emerald-400" />
-                    <span>Até <strong>{p.maxWhatsappMessages}</strong> disparos de WhatsApp</span>
+                    <span>
+                      {p.maxWhatsappMessages >= 999999
+                        ? <strong>Disparos de WhatsApp Ilimitados</strong>
+                        : <>Até <strong>{p.maxWhatsappMessages}</strong> disparos de WhatsApp</>}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {p.features?.inventoryControl || p.slug === 'professional' || p.slug === 'business' ? (

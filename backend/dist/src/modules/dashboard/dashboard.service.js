@@ -28,7 +28,7 @@ let DashboardService = class DashboardService {
         const todayEnd = (0, date_fns_1.endOfDay)(now);
         const monthStart = (0, date_fns_1.startOfMonth)(now);
         const fourteenDaysAgoStart = (0, date_fns_1.startOfDay)(new Date(now.getTime() - 13 * 24 * 60 * 60 * 1000));
-        const [todayCount, todayRevenueAppointments, upcomingCount, completedMonthCount, cancelledMonthCount, clientsCount, monthAppointments, company, totalProducts, lowStockProducts, lowStockItems, waitlistCount, past14DaysAppointments,] = await Promise.all([
+        const [todayCount, todayRevenueAppointments, upcomingCount, completedMonthCount, cancelledMonthCount, clientsCount, monthAppointments, company, totalProducts, allActiveProducts, waitlistCount, past14DaysAppointments,] = await Promise.all([
             this.prisma.appointment.count({
                 where: {
                     companyId,
@@ -85,16 +85,12 @@ let DashboardService = class DashboardService {
                 },
             }),
             this.prisma.product.count({
-                where: { companyId, isActive: true },
-            }),
-            this.prisma.product.count({
-                where: { companyId, isActive: true, stock: { lte: 5 } },
+                where: { companyId, isActive: true, isArchived: false },
             }),
             this.prisma.product.findMany({
-                where: { companyId, isActive: true, stock: { lte: 5 } },
+                where: { companyId, isActive: true, isArchived: false },
                 orderBy: { stock: 'asc' },
-                take: 5,
-                select: { id: true, name: true, stock: true, price: true, category: true },
+                select: { id: true, name: true, stock: true, minStock: true, unit: true, price: true, category: true },
             }),
             this.prisma.waitlistEntry.count({
                 where: { companyId, status: 'PENDING' },
@@ -108,6 +104,9 @@ let DashboardService = class DashboardService {
                 select: { startDateTime: true, priceAtBooking: true },
             }),
         ]);
+        const lowStockList = allActiveProducts.filter((p) => p.stock <= p.minStock || (p.minStock === 0 && p.stock <= 5));
+        const lowStockProducts = lowStockList.length;
+        const lowStockItems = lowStockList.slice(0, 5);
         const todayRevenue = todayRevenueAppointments.reduce((acc, app) => acc + Number(app.priceAtBooking), 0);
         const estimatedRevenue = monthAppointments.reduce((acc, app) => acc + Number(app.priceAtBooking), 0);
         const chartData = [];

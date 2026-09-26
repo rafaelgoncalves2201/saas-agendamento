@@ -19,6 +19,8 @@ import {
   Tag,
   X,
   Star,
+  CreditCard,
+  ExternalLink,
 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -78,6 +80,7 @@ export const PublicBookingPage: React.FC = () => {
   const [bookingSuccess, setBookingSuccess] = useState<any | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [copiedPix, setCopiedPix] = useState(false);
+  const [bookingPaymentMethod, setBookingPaymentMethod] = useState<'pix' | 'card'>('pix');
 
   // Avaliações Públicas
   const [publicReviews, setPublicReviews] = useState<{
@@ -309,23 +312,62 @@ export const PublicBookingPage: React.FC = () => {
   const companySettings = company?.settings || {};
   const nextDays = Array.from({ length: 7 }).map((_, i) => addDays(new Date(), i + 1));
 
+  // Modelo de pagamento configurado pela empresa
+  const activePaymentModel: 'MERCADO_PAGO' | 'DEPOSIT_PIX' | 'NONE' =
+    companySettings.paymentModel || (companySettings.requireDeposit ? 'DEPOSIT_PIX' : 'MERCADO_PAGO');
+
+  // Preço do serviço com ou sem cupom
+  const currentServicePrice = appliedCoupon ? appliedCoupon.finalPrice : Number(selectedService?.price || 0);
+
+  // Cálculo prévio do sinal para o Passo 4 (Resumo)
+  let step4DepositVal = currentServicePrice;
+  const hasProfCustomDeposit = Boolean(
+    selectedProfessional?.requiresDeposit &&
+    selectedProfessional?.depositValue !== null &&
+    selectedProfessional?.depositValue !== undefined
+  );
+  const rawDepositConfig = (
+    hasProfCustomDeposit
+      ? String(selectedProfessional.depositValue)
+      : (companySettings.depositValue || '')
+  ).toString().trim();
+  const isPercentage = hasProfCustomDeposit
+    ? (selectedProfessional?.depositType === 'PERCENTAGE' || rawDepositConfig.includes('%'))
+    : rawDepositConfig.includes('%');
+
+  if (isPercentage) {
+    const pct = parseFloat(rawDepositConfig.replace('%', '').replace(',', '.'));
+    if (!isNaN(pct) && pct > 0) {
+      step4DepositVal = Math.round(((currentServicePrice * pct) / 100) * 100) / 100;
+    }
+  } else if (rawDepositConfig) {
+    const fixed = parseFloat(rawDepositConfig.replace(/[^\d.,]/g, '').replace(',', '.'));
+    if (!isNaN(fixed) && fixed > 0) {
+      step4DepositVal = Math.min(fixed, currentServicePrice);
+    }
+  }
+  const step4RemainingVal = Math.max(0, currentServicePrice - step4DepositVal);
+
   // WhatsApp link preparation for Step 5
   const companyPhoneRaw = (bookingSuccess?.depositInfo?.companyPhone || company?.phone || '').replace(/\D/g, '');
   const cleanPhone = companyPhoneRaw.startsWith('55') ? companyPhoneRaw : `55${companyPhoneRaw}`;
-  const depositVal = bookingSuccess?.depositInfo?.depositValue || companySettings.depositValue || 'R$ 50';
+  const totalValFormatted = bookingSuccess?.depositInfo?.depositValue || (`R$ ${currentServicePrice.toFixed(2)}`);
   const dateFormatted = format(new Date(selectedDate + 'T12:00:00'), 'dd/MM/yyyy');
   const timeLabel = selectedSlot?.endTime
     ? `${selectedSlot.time} até ${selectedSlot.endTime}`
     : selectedSlot?.time;
 
+  const isDepositPixSuccess = bookingSuccess?.depositInfo?.paymentModel === 'DEPOSIT_PIX';
   const whatsappMessage = encodeURIComponent(
-    `Olá! Acabei de fazer um agendamento no *${company?.name}*:\n\n` +
+    `Olá! Realizei o agendamento no *${company?.name}*:\n\n` +
       `*Serviço:* ${selectedService?.name}\n` +
       `*Profissional:* ${selectedProfessional?.name}\n` +
       `*Horário:* ${timeLabel} de ${dateFormatted}\n` +
       `*Cliente:* ${clientName}\n` +
       (bookingSuccess?.requiresDeposit
-        ? `*Sinal via Pix:* ${depositVal}\n\nEstou enviando o comprovante do sinal via Pix para confirmação da minha vaga!`
+        ? (isDepositPixSuccess
+            ? `*Valor do Sinal via Pix:* ${bookingSuccess?.depositInfo?.depositValue}\n*Restante no Atendimento:* ${bookingSuccess?.depositInfo?.remainingValue}\n*Total:* R$ ${Number(bookingSuccess?.appointment?.priceAtBooking || currentServicePrice).toFixed(2)}\n\nEstou enviando o comprovante do sinal via Pix para confirmar minha reserva!`
+            : `*Valor Total via Pix:* ${totalValFormatted}\n\nEstou enviando o comprovante do pagamento via Pix para confirmação da minha vaga!`)
         : `\nGostaria de confirmar que meu agendamento foi realizado com sucesso!`),
   );
 
@@ -1111,17 +1153,52 @@ export const PublicBookingPage: React.FC = () => {
                       </div>
                     )}
 
-                    {companySettings.requiresDeposit && (
-                      <div className="p-3 bg-[#FAF5ED] dark:bg-[#2B1F14] border border-[#EADCC8] dark:border-[#4A3220] rounded-xl text-xs text-[#5A4A3E] dark:text-[#E2CEBC] flex items-start gap-2">
-                        <AlertCircle className="text-[#6B3E26] shrink-0 mt-0.5" size={16} />
-                        <div>
-                          <strong className="block font-bold text-[#6B3E26] dark:text-[#FAF7F2]">Reserva com sinal via Pix</strong>
-                          <span className="text-[11px]">
-                            Valor do sinal: <strong>{companySettings.depositValue || 'R$ 20,00'}</strong>. Chave Pix e orientações na próxima etapa.
-                          </span>
+                    {activePaymentModel === 'DEPOSIT_PIX' && (
+                      <div className="p-3 bg-[#F5EFE6] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl space-y-1.5 text-xs">
+                        <div className="flex justify-between items-center text-emerald-700 dark:text-emerald-400 font-bold">
+                          <span>Sinal via Pix (agora):</span>
+                          <span className="text-sm font-black">R$ {step4DepositVal.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[#796758] dark:text-[#CDB196]">
+                          <span>Restante no atendimento:</span>
+                          <span className="font-semibold">R$ {step4RemainingVal.toFixed(2)}</span>
                         </div>
                       </div>
                     )}
+
+                    <div className="p-3.5 bg-amber-50/90 dark:bg-[#2B1F14] border border-amber-200/80 dark:border-[#4A3220] rounded-xl text-xs text-[#5A4A3E] dark:text-[#E2CEBC] flex items-start gap-2.5">
+                      <AlertCircle className="text-[#6B3E26] shrink-0 mt-0.5" size={16} />
+                      <div>
+                        {activePaymentModel === 'NONE' ? (
+                          <>
+                            <strong className="block font-bold text-[#6B3E26] dark:text-[#FAF7F2]">
+                              Agendamento com Pagamento no Local
+                            </strong>
+                            <span className="text-[11px] leading-relaxed block mt-0.5">
+                              Sua vaga será reservada de imediato sem custo agora. O valor total de R$ {currentServicePrice.toFixed(2)} será pago presencialmente no dia do atendimento.
+                            </span>
+                          </>
+                        ) : activePaymentModel === 'DEPOSIT_PIX' ? (
+                          <>
+                            <strong className="block font-bold text-[#6B3E26] dark:text-[#FAF7F2]">
+                              Reserva com Sinal via Pix de R$ {step4DepositVal.toFixed(2)}
+                            </strong>
+                            <span className="text-[11px] leading-relaxed block mt-0.5">
+                              Para assegurar seu horário, transfira o sinal via Pix e envie o comprovante no WhatsApp. O restante (R$ {step4RemainingVal.toFixed(2)}) será pago presencialmente no atendimento.
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <strong className="block font-bold text-[#6B3E26] dark:text-[#FAF7F2]">
+                              Pagamento Total via Pix ou Cartão (Até 12x)
+                            </strong>
+                            <span className="text-[11px] leading-relaxed block mt-0.5">
+                              Para garantir sua vaga com segurança, o agendamento é confirmado instantaneamente após o pagamento integral via Mercado Pago.
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
 
                     <button
                       type="submit"
@@ -1135,7 +1212,11 @@ export const PublicBookingPage: React.FC = () => {
                         <>
                           <CheckCircle2 size={18} />
                           <span>
-                            {companySettings.requiresDeposit ? 'Pré-Reservar Horário com Sinal' : 'Confirmar Agendamento'}
+                            {activePaymentModel === 'NONE'
+                              ? `Confirmar Agendamento (R$ ${currentServicePrice.toFixed(2)})`
+                              : activePaymentModel === 'DEPOSIT_PIX'
+                              ? `Pagar Sinal e Agendar (R$ ${step4DepositVal.toFixed(2)})`
+                              : `Pagar e Agendar (R$ ${currentServicePrice.toFixed(2)})`}
                           </span>
                         </>
                       )}
@@ -1146,122 +1227,338 @@ export const PublicBookingPage: React.FC = () => {
             </form>
           )}
 
-          {/* PASSO 5: TELA DE SUCESSO / PAGAMENTO DO SINAL PIX */}
+          {/* PASSO 5: TELA DE SUCESSO / PAGAMENTO TOTAL PIX */}
           {step === 5 && bookingSuccess && (
             <div className="max-w-2xl mx-auto text-center py-6 space-y-6">
               {(bookingSuccess.appointment?.status === 'PENDING' ||
                 bookingSuccess.appointment?.status === 'PENDING_PAYMENT' ||
                 (bookingSuccess.requiresDeposit && bookingSuccess.appointment?.status !== 'CONFIRMED')) ? (
-                /* CASO EXIJA SINAL */
-                <div className="space-y-6">
-                  <div className="w-20 h-20 rounded-3xl bg-[#F5EFE6] dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] flex items-center justify-center mx-auto shadow-inner border border-[#E2D9CC] dark:border-[#382A21]">
-                    <Clock size={40} />
-                  </div>
-
-                  <div>
-                    <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-[#F5EFE6] dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#CDB196] dark:border-[#4A392D] rounded-full mb-2">
-                      Horário Pré-Reservado
-                    </span>
-                    <h2 className="text-2xl sm:text-3xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
-                      Aguardando Pagamento do Sinal
-                    </h2>
-                    <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] max-w-md mx-auto mt-2 leading-relaxed">
-                      Seu horário foi bloqueado temporariamente! Pague o Pix do sinal abaixo para confirmar sua vaga instantaneamente.
-                    </p>
-                  </div>
-
-                  {/* Card com Detalhes do Pix & QR Code */}
-                  <div className="p-6 bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E5D7C5] dark:border-[#382A21] rounded-3xl text-left text-xs sm:text-sm space-y-5 shadow-sm">
-                    <div className="flex items-center justify-between border-b border-[#E2D9CC] dark:border-[#382A21] pb-3">
-                      <span className="text-[#6B3E26] dark:text-[#E2CEBC] font-bold uppercase tracking-wider text-xs">
-                        Valor do Sinal de Reserva
-                      </span>
-                      <span className="text-2xl font-black text-[#6B3E26] dark:text-[#E2CEBC]">
-                        {bookingSuccess.depositInfo?.depositValue || companySettings.depositValue || 'R$ 20,00'}
-                      </span>
+                /* CASO AGUARDANDO PAGAMENTO */
+                bookingSuccess.depositInfo?.paymentModel === 'DEPOSIT_PIX' || !bookingSuccess.depositInfo?.isMercadoPago ? (
+                  /* VISÃO 1: SINAL VIA CHAVE PIX DE PREFERÊNCIA */
+                  <div className="space-y-6">
+                    <div className="w-20 h-20 rounded-3xl bg-amber-50 dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] flex items-center justify-center mx-auto shadow-inner border border-amber-200/80 dark:border-[#382A21]">
+                      <Clock size={40} className="animate-pulse" />
                     </div>
-
-                    {/* Exibição do QR Code Mercado Pago caso gerado */}
-                    {bookingSuccess.depositInfo?.pixQrCodeBase64 && (
-                      <div className="p-5 bg-white dark:bg-[#1F1712] rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] text-center space-y-3 shadow-xs">
-                        <span className="text-xs font-black uppercase tracking-wider text-[#6B3E26] dark:text-[#E2CEBC] block">
-                          Pague pelo QR Code do seu Banco
-                        </span>
-                        <div className="inline-block p-2 bg-white rounded-2xl border-2 border-[#E2D9CC] dark:border-[#4A392D] shadow-sm">
-                          <img
-                            src={`data:image/png;base64,${bookingSuccess.depositInfo.pixQrCodeBase64}`}
-                            alt="QR Code Pix Mercado Pago"
-                            className="w-48 h-48 mx-auto rounded-xl object-contain"
-                          />
-                        </div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span>Aguardando Pix... Confirmação 100% automática</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {bookingSuccess.depositInfo?.pixRecipientName && (
-                      <div>
-                        <span className="text-xs text-[#796758] dark:text-[#CDB196] block">Titular / Recebedor:</span>
-                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-sm">
-                          {bookingSuccess.depositInfo.pixRecipientName}
-                        </strong>
-                      </div>
-                    )}
 
                     <div>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs text-[#796758] dark:text-[#CDB196] font-semibold">
-                          Código Pix Copia e Cola:
+                      <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-amber-100/80 dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#CDB196] dark:border-[#4A392D] rounded-full mb-2">
+                        Pré-Reserva Garantida (Aguardando Sinal)
+                      </span>
+                      <h2 className="text-2xl sm:text-3xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                        Pague o Sinal via Pix para Confirmar
+                      </h2>
+                      <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] max-w-md mx-auto mt-2 leading-relaxed">
+                        Transfira o sinal via Pix e envie o comprovante no WhatsApp do estabelecimento. O restante será pago presencialmente no atendimento!
+                      </p>
+                    </div>
+
+                    {/* Divisão Financeira Transparente */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-400/80 dark:border-emerald-700 rounded-2xl text-center shadow-xs">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300 block">
+                          Sinal via Pix (Agora)
                         </span>
-                        {copiedPix && (
-                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                            <Check size={14} /> Código Pix Copiado!
-                          </span>
-                        )}
+                        <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1">
+                          {bookingSuccess.depositInfo?.depositValue}
+                        </p>
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block mt-0.5">
+                          Garante sua vaga
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          readOnly
-                          value={bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola || ''}
-                          className="w-full px-4 py-2.5 bg-white dark:bg-[#1F1712] border-2 border-[#D0C3B2] dark:border-[#4A392D] rounded-xl font-mono text-xs font-bold text-[#2B1D15] dark:text-[#FAF7F2] select-all truncate"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola)}
-                          className="px-4 py-2.5 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-sm"
-                        >
-                          <Copy size={14} />
-                          <span>Copiar Pix</span>
-                        </button>
+
+                      <div className="p-4 bg-white dark:bg-[#1F1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl text-center shadow-xs">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196] block">
+                          Restante no Atendimento
+                        </span>
+                        <p className="text-2xl font-black text-[#2B1D15] dark:text-[#FAF7F2] mt-1">
+                          {bookingSuccess.depositInfo?.remainingValue}
+                        </p>
+                        <span className="text-[10px] text-[#796758] dark:text-[#CDB196] block mt-0.5">
+                          Pague no local
+                        </span>
+                      </div>
+
+                      <div className="p-4 bg-white dark:bg-[#1F1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl text-center shadow-xs">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196] block">
+                          Valor Total
+                        </span>
+                        <p className="text-2xl font-black text-[#2B1D15] dark:text-[#FAF7F2] mt-1">
+                          R$ {Number(bookingSuccess.appointment?.priceAtBooking || currentServicePrice).toFixed(2)}
+                        </p>
+                        <span className="text-[10px] text-[#796758] dark:text-[#CDB196] block mt-0.5">
+                          Serviço completo
+                        </span>
                       </div>
                     </div>
 
-                    {bookingSuccess.depositInfo?.depositInstructions && (
-                      <div className="p-3 bg-white/80 dark:bg-[#1F1712] rounded-xl text-xs text-[#5A4A3E] dark:text-[#CDB196] border border-[#E2D9CC] dark:border-[#382A21]">
-                        <strong>Orientações:</strong> {bookingSuccess.depositInfo.depositInstructions}
+                    {/* Detalhes da Chave Pix */}
+                    <div className="p-6 bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E5D7C5] dark:border-[#382A21] rounded-3xl text-left text-xs sm:text-sm space-y-4 shadow-sm">
+                      <div className="flex items-center justify-between border-b border-[#E2D9CC] dark:border-[#382A21] pb-3">
+                        <div>
+                          <span className="text-xs font-black uppercase tracking-wider text-[#6B3E26] dark:text-[#E2CEBC] block">
+                            Dados para Transferência do Sinal
+                          </span>
+                          <span className="text-[11px] text-[#796758] dark:text-[#CDB196]">
+                            Tipo: {bookingSuccess.depositInfo?.pixKeyType || 'Chave Pix'}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] uppercase font-bold text-[#796758] dark:text-[#CDB196] block">Valor a Transferir</span>
+                          <span className="text-lg font-black text-emerald-700 dark:text-emerald-400">
+                            {bookingSuccess.depositInfo?.depositValue}
+                          </span>
+                        </div>
                       </div>
-                    )}
-                  </div>
 
-                  {/* Botão de Enviar Comprovante no WhatsApp */}
-                  <div className="pt-2">
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all cursor-pointer"
-                    >
-                      <Phone size={18} />
-                      <span>{whatsappButtonLabel}</span>
-                    </a>
-                    <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-2">
-                      Ao clicar, o WhatsApp abrirá com mensagem pré-formatada com todos os dados da sua reserva.
-                    </p>
+                      {bookingSuccess.depositInfo?.pixRecipientName && (
+                        <div className="p-3 bg-white dark:bg-[#1F1712] rounded-xl border border-[#E2D9CC] dark:border-[#382A21]">
+                          <span className="text-[11px] text-[#796758] dark:text-[#CDB196] block font-medium">Titular / Favorecido:</span>
+                          <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-sm block mt-0.5">
+                            {bookingSuccess.depositInfo.pixRecipientName}
+                          </strong>
+                        </div>
+                      )}
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-xs text-[#796758] dark:text-[#CDB196] font-semibold">
+                            Chave Pix ({bookingSuccess.depositInfo?.pixKeyType || 'Chave'}):
+                          </span>
+                          {copiedPix && (
+                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                              <Check size={14} /> Chave Pix Copiada!
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            readOnly
+                            value={bookingSuccess.depositInfo?.pixKey || ''}
+                            className="w-full px-4 py-3 bg-white dark:bg-[#1F1712] border-2 border-[#D0C3B2] dark:border-[#4A392D] rounded-xl font-mono text-sm font-bold text-[#2B1D15] dark:text-[#FAF7F2] select-all truncate"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey)}
+                            className="px-5 py-3 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs sm:text-sm shadow-sm"
+                          >
+                            <Copy size={16} />
+                            <span>Copiar Chave</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {bookingSuccess.depositInfo?.depositInstructions && (
+                        <div className="p-3.5 bg-amber-50/90 dark:bg-[#1F1712] rounded-xl text-xs text-[#5A4A3E] dark:text-[#CDB196] border border-amber-200/80 dark:border-[#382A21]">
+                          <strong>Instruções do Estabelecimento:</strong> {bookingSuccess.depositInfo.depositInstructions}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Botão de Enviar Comprovante no WhatsApp */}
+                    <div className="pt-2">
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all cursor-pointer"
+                      >
+                        <Phone size={20} />
+                        <span>{whatsappButtonLabel}</span>
+                      </a>
+                      <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-2">
+                        Após efetuar a transferência do sinal, envie o comprovante no WhatsApp para que o estabelecimento confirme sua vaga.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  /* VISÃO 2: MERCADO PAGO (PAGAMENTO TOTAL VIA PIX OU CARTÃO EM ATÉ 12X) */
+                  <div className="space-y-6">
+                    <div className="w-20 h-20 rounded-3xl bg-[#F5EFE6] dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] flex items-center justify-center mx-auto shadow-inner border border-[#E2D9CC] dark:border-[#382A21]">
+                      <Clock size={40} className="animate-pulse" />
+                    </div>
+
+                    <div>
+                      <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-amber-100/80 dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#CDB196] dark:border-[#4A392D] rounded-full mb-2">
+                        Horário Pré-Reservado (15 minutos)
+                      </span>
+                      <h2 className="text-2xl sm:text-3xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                        Aguardando Pagamento do Serviço
+                      </h2>
+                      <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] max-w-md mx-auto mt-2 leading-relaxed">
+                        Seu horário está reservado por 15 minutos! Escolha pagar via Pix ou Cartão de Crédito abaixo para confirmar seu agendamento imediatamente.
+                      </p>
+                    </div>
+
+                    {/* Alternador de Forma de Pagamento */}
+                    <div className="grid grid-cols-2 gap-2 bg-[#EFE9DF] dark:bg-[#1F1712] p-1.5 rounded-2xl max-w-md mx-auto">
+                      <button
+                        type="button"
+                        onClick={() => setBookingPaymentMethod('pix')}
+                        className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                          bookingPaymentMethod === 'pix'
+                            ? 'bg-white dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#FAF7F2] shadow-sm'
+                            : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15]'
+                        }`}
+                      >
+                        <span>Pix Instantâneo</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBookingPaymentMethod('card')}
+                        className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                          bookingPaymentMethod === 'card'
+                            ? 'bg-white dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#FAF7F2] shadow-sm'
+                            : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15]'
+                        }`}
+                      >
+                        <CreditCard size={15} />
+                        <span>Cartão (Até 12x)</span>
+                      </button>
+                    </div>
+
+                    {/* Card com Detalhes do Pagamento */}
+                    <div className="p-6 bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E5D7C5] dark:border-[#382A21] rounded-3xl text-left text-xs sm:text-sm space-y-5 shadow-sm">
+                      <div className="flex items-center justify-between border-b border-[#E2D9CC] dark:border-[#382A21] pb-3">
+                        <span className="text-[#6B3E26] dark:text-[#E2CEBC] font-bold uppercase tracking-wider text-xs">
+                          Valor Total do Atendimento
+                        </span>
+                        <span className="text-2xl font-black text-[#6B3E26] dark:text-[#E2CEBC]">
+                          {bookingSuccess.depositInfo?.depositValue || (`R$ ${Number(bookingSuccess.appointment?.priceAtBooking || currentServicePrice).toFixed(2)}`)}
+                        </span>
+                      </div>
+
+                      {/* OPÇÃO 1: PIX */}
+                      {bookingPaymentMethod === 'pix' && (
+                        <div className="space-y-4">
+                          {/* Exibição do QR Code Mercado Pago caso gerado */}
+                          {bookingSuccess.depositInfo?.pixQrCodeBase64 && (
+                            <div className="p-5 bg-white dark:bg-[#1F1712] rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] text-center space-y-3 shadow-xs">
+                              <span className="text-xs font-black uppercase tracking-wider text-[#6B3E26] dark:text-[#E2CEBC] block">
+                                Pague pelo QR Code do seu Banco
+                              </span>
+                              <div className="inline-block p-2 bg-white rounded-2xl border-2 border-[#E2D9CC] dark:border-[#4A392D] shadow-sm">
+                                <img
+                                  src={`data:image/png;base64,${bookingSuccess.depositInfo.pixQrCodeBase64}`}
+                                  alt="QR Code Pix Mercado Pago"
+                                  className="w-48 h-48 mx-auto rounded-xl object-contain"
+                                />
+                              </div>
+                              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                <span>Aguardando Pix... Confirmação 100% automática em tempo real</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {bookingSuccess.depositInfo?.pixRecipientName && (
+                            <div>
+                              <span className="text-xs text-[#796758] dark:text-[#CDB196] block">Titular / Recebedor:</span>
+                              <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-sm">
+                                {bookingSuccess.depositInfo.pixRecipientName}
+                              </strong>
+                            </div>
+                          )}
+
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-xs text-[#796758] dark:text-[#CDB196] font-semibold">
+                                Código Pix Copia e Cola:
+                              </span>
+                              {copiedPix && (
+                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                  <Check size={14} /> Código Pix Copiado!
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                readOnly
+                                value={bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola || ''}
+                                className="w-full px-4 py-2.5 bg-white dark:bg-[#1F1712] border-2 border-[#D0C3B2] dark:border-[#4A392D] rounded-xl font-mono text-xs font-bold text-[#2B1D15] dark:text-[#FAF7F2] select-all truncate"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola)}
+                                className="px-4 py-2.5 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-sm"
+                              >
+                                <Copy size={14} />
+                                <span>Copiar Pix</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {bookingSuccess.depositInfo?.depositInstructions && (
+                            <div className="p-3 bg-white/80 dark:bg-[#1F1712] rounded-xl text-xs text-[#5A4A3E] dark:text-[#CDB196] border border-[#E2D9CC] dark:border-[#382A21]">
+                              <strong>Orientações:</strong> {bookingSuccess.depositInfo.depositInstructions}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* OPÇÃO 2: CARTÃO DE CRÉDITO */}
+                      {bookingPaymentMethod === 'card' && (
+                        <div className="p-5 bg-white dark:bg-[#1F1712] rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] space-y-4 text-center">
+                          <div className="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-[#009EE3] flex items-center justify-center mx-auto">
+                            <CreditCard size={28} />
+                          </div>
+                          <div>
+                            <h4 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-base">
+                              Pague no Cartão pelo Mercado Pago
+                            </h4>
+                            <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1 max-w-sm mx-auto">
+                              Parcele em até 12x no cartão de crédito ou utilize débito com a proteção e tecnologia do Mercado Pago.
+                            </p>
+                          </div>
+
+                          <div className="p-3.5 bg-[#FAF8F5] dark:bg-[#251C16] rounded-xl border border-[#EFE9DF] dark:border-[#382A21] text-left text-xs space-y-2 text-[#5A4A3E] dark:text-[#CDB196]">
+                            <p className="flex items-center gap-2 font-bold text-[#2B1D15] dark:text-[#FAF7F2]">
+                              <Check size={14} className="text-emerald-600" />
+                              <span>Aceita Visa, Mastercard, Elo, Hipercard e American Express</span>
+                            </p>
+                            <p className="flex items-center gap-2 font-bold text-[#2B1D15] dark:text-[#FAF7F2]">
+                              <Check size={14} className="text-emerald-600" />
+                              <span>Confirmação imediata do seu horário após aprovação</span>
+                            </p>
+                          </div>
+
+                          {(bookingSuccess.depositInfo?.cardPaymentUrl || bookingSuccess.appointment?.cardPaymentUrl) ? (
+                            <a
+                              href={bookingSuccess.depositInfo?.cardPaymentUrl || bookingSuccess.appointment?.cardPaymentUrl}
+                              className="w-full py-4 bg-[#009EE3] hover:bg-[#0086c2] text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-sky-500/20 hover:shadow-xl transition-all cursor-pointer"
+                            >
+                              <CreditCard size={18} />
+                              <span>Pagar com Cartão de Crédito</span>
+                              <ExternalLink size={16} />
+                            </a>
+                          ) : (
+                            <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-200 dark:border-amber-800">
+                              Gerando link de pagamento com cartão... Caso não apareça, utilize o Pix acima.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Botão de Enviar Comprovante no WhatsApp */}
+                    <div className="pt-2">
+                      <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all cursor-pointer"
+                      >
+                        <Phone size={18} />
+                        <span>{whatsappButtonLabel}</span>
+                      </a>
+                      <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-2">
+                        Ao clicar, o WhatsApp abrirá com mensagem pré-formatada com todos os dados da sua reserva.
+                      </p>
+                    </div>
+                  </div>
+                )
               ) : (
                 /* CASO NÃO EXIJA SINAL (CONFIRMAÇÃO DIRETA) */
                 <div className="space-y-4">

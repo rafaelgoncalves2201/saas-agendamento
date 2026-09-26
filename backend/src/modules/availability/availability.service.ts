@@ -195,7 +195,22 @@ export class AvailabilityService {
       return fromZonedTime(dateLocal, timezone);
     };
 
-    // 7. Buscar bloqueios e agendamentos existentes no dia
+    // 7. Liberar reservas pendentes expiradas (mais de 15 minutos sem pagamento)
+    const expirationLimit = new Date(Date.now() - 15 * 60 * 1000);
+    await this.prisma.appointment.updateMany({
+      where: {
+        companyId,
+        status: 'PENDING_PAYMENT',
+        paidAt: null,
+        createdAt: { lt: expirationLimit },
+      },
+      data: {
+        status: 'CANCELLED',
+        cancellationReason: 'Tempo de pagamento do Mercado Pago expirado (15 minutos)',
+        cancelledAt: new Date(),
+      },
+    });
+
     const dayStartUtc = parseTimeToDate('00:00');
     const dayEndUtc = parseTimeToDate('23:59');
 

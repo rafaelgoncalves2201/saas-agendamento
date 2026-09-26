@@ -366,6 +366,7 @@ model Appointment {
   pixCopiaECola        String?           @db.Text
   pixQrCodeBase64      String?           @db.Text
   pixPaymentUrl        String?           @db.Text
+  cardPaymentUrl       String?           @db.Text
   paidAt               DateTime?
   status               AppointmentStatus @default(CONFIRMED)
   clientManagementCode String            @unique @default(uuid())

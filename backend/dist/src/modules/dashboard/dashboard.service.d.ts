@@ -21,7 +21,9 @@ export declare class DashboardService {
                 name: string;
                 price: import("@prisma/client/runtime/library").Decimal;
                 category: string | null;
+                unit: string;
                 stock: number;
+                minStock: number;
             }[];
         };
         chartData: any[];

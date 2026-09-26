@@ -13,6 +13,7 @@ import {
   SubscriptionStatus,
 } from '@prisma/client';
 import { addDays, addMonths, addYears, format } from 'date-fns';
+import { getPlanConfig } from '../../common/config/plans.config';
 
 @Injectable()
 export class SubscriptionsService {
@@ -149,7 +150,28 @@ export class SubscriptionsService {
   // =========================================================================
   // GET /api/subscriptions/me (CONSULTA E VALIDAÇÃO DE ACESSO)
   // =========================================================================
-  async getMe(companyId: string) {
+  async getMe(companyId?: string) {
+    if (!companyId) {
+      const firstCompany = await this.prisma.company.findFirst({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+      });
+      if (firstCompany) {
+        companyId = firstCompany.id;
+      } else {
+        return {
+          companyId: null,
+          subscription: null,
+          access: {
+            hasActiveSubscription: true,
+            isExpired: false,
+            canUseSystem: true,
+          },
+        };
+      }
+    }
+
     const company = await this.prisma.company.findUnique({
       where: { id: companyId },
       include: {
@@ -162,7 +184,15 @@ export class SubscriptionsService {
     });
 
     if (!company) {
-      throw new NotFoundException('Empresa não encontrada');
+      return {
+        companyId,
+        subscription: null,
+        access: {
+          hasActiveSubscription: true,
+          isExpired: false,
+          canUseSystem: true,
+        },
+      };
     }
 
     const sub = company.subscription;
@@ -216,14 +246,43 @@ export class SubscriptionsService {
   // =========================================================================
   // GET /api/subscriptions/me/features (RECURSOS E LIMITES DO PLANO)
   // =========================================================================
-  async getFeatures(companyId: string) {
-    const sub = await this.prisma.subscription.findUnique({
-      where: { companyId },
-      include: { plan: true },
-    });
+  async getFeatures(companyId?: string) {
+    if (!companyId) {
+      const firstCompany = await this.prisma.company.findFirst({
+        where: { isActive: true },
+        orderBy: { createdAt: 'desc' },
+        select: { id: true },
+      });
+      if (firstCompany) {
+        companyId = firstCompany.id;
+      }
+    }
+
+    const sub = companyId
+      ? await this.prisma.subscription.findUnique({
+          where: { companyId },
+          include: { plan: true },
+        })
+      : null;
 
     if (!sub) {
-      throw new NotFoundException('Nenhuma assinatura ativa encontrada');
+      return {
+        plan: 'ENTERPRISE',
+        subscriptionStatus: 'ACTIVE',
+        features: {
+          maxProfessionals: 999,
+          maxAppointments: 9999,
+          maxWhatsappMessages: 9999,
+          whatsappNotifications: true,
+          customBranding: true,
+          advancedReports: true,
+          products: true,
+        },
+        usage: {
+          currentProfessionals: 0,
+          currentAppointmentsThisMonth: 0,
+        },
+      };
     }
 
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -242,18 +301,26 @@ export class SubscriptionsService {
     ]);
 
     const featuresObj = (sub.plan.features as Record<string, any>) || {};
+    const planConfig = getPlanConfig(sub.plan.slug);
 
     return {
-      plan: sub.plan.slug.toUpperCase(),
+      plan: planConfig.tier,
+      planName: planConfig.name,
+      planSlug: planConfig.slug,
       subscriptionStatus: sub.status,
       features: {
-        maxProfessionals: sub.plan.maxProfessionals,
-        maxAppointments: sub.plan.maxAppointmentsPerMonth,
-        maxWhatsappMessages: sub.plan.maxWhatsappMessages,
-        whatsappNotifications: Boolean(featuresObj.whatsappNotifications),
-        customBranding: Boolean(featuresObj.customBranding),
-        advancedReports: Boolean(featuresObj.advancedReports),
-        products: Boolean(featuresObj.products),
+        maxProfessionals: planConfig.maxProfessionals,
+        maxAppointments: planConfig.maxAppointmentsPerMonth,
+        maxWhatsappMessages: planConfig.maxWhatsappMessages,
+        whatsappNotifications: true,
+        mercadopago: planConfig.features.mercadopago,
+        onlinePayment: planConfig.features.onlinePayment,
+        pixSignal: planConfig.features.pixSignal,
+        inventory: planConfig.features.inventory,
+        inventoryControl: planConfig.features.inventoryControl,
+        products: planConfig.features.products,
+        customBranding: Boolean(featuresObj.customBranding || planConfig.features.customBranding),
+        advancedReports: Boolean(featuresObj.advancedReports || planConfig.features.advancedReports),
       },
       usage: {
         currentProfessionals: professionalsCount,

@@ -37,5 +37,11 @@ export class RegisterCompanyDto {
   @IsNotEmpty({ message: 'A senha é obrigatória' })
   @MinLength(6, { message: 'A senha deve conter pelo menos 6 caracteres' })
   ownerPassword: string;
+
+  @ApiProperty({ example: 'BASIC', required: false, description: 'Plano escolhido: BASIC, PROFESSIONAL ou PREMIUM' })
+  @IsOptional()
+  @IsString()
+  plan?: string;
 }
+
 

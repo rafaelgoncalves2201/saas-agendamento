@@ -11,10 +11,14 @@ import {
   UpdateProductDto,
 } from './dto/product.dto';
 import { Prisma, StockMovementType } from '@prisma/client';
+import { WhatsAppService } from '../whatsapp/whatsapp.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private whatsAppService: WhatsAppService,
+  ) {}
 
   // Listar itens de estoque com filtros (busca, tipo, arquivados)
   async listProducts(
@@ -213,7 +217,7 @@ export class ProductsService {
       newStock = qty;
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       // 1. Atualizar saldo no produto
       const updatedProduct = await tx.product.update({
         where: { id: productId },
@@ -239,6 +243,20 @@ export class ProductsService {
         movement,
       };
     });
+
+    // 3. Notificar profissionais via WhatsApp caso atinja nível crítico de estoque
+    const reachedMinStock = product.minStock > 0 && newStock <= product.minStock;
+    const reachedZero = previousStock > 0 && newStock === 0;
+
+    if (dto.type !== StockMovementType.ENTRY && (reachedMinStock || reachedZero)) {
+      this.whatsAppService
+        .sendLowStockAlert(companyId, productId, newStock, product.minStock, product.unit)
+        .catch((err) => {
+          console.error('[ProductsService] Erro ao disparar alerta de estoque baixo via WhatsApp:', err?.message || err);
+        });
+    }
+
+    return result;
   }
 
   // Listar histórico de movimentações da empresa
@@ -270,5 +288,43 @@ export class ProductsService {
     return this.prisma.product.delete({
       where: { id },
     });
+  }
+
+  // Enviar alerta avulso de reposição via WhatsApp para um produto específico
+  async sendRestockAlert(companyId: string, productId: string) {
+    const product = await this.getProduct(companyId, productId);
+    return this.whatsAppService.sendLowStockAlert(
+      companyId,
+      productId,
+      product.stock,
+      product.minStock,
+      product.unit,
+    );
+  }
+
+  // Enviar alerta consolidado de reposição via WhatsApp para todos os produtos com estoque baixo
+  async sendBulkRestockAlert(companyId: string) {
+    const lowStockProducts = await this.prisma.product.findMany({
+      where: {
+        companyId,
+        isArchived: false,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        stock: true,
+        minStock: true,
+        unit: true,
+        sku: true,
+      },
+    });
+
+    const criticalItems = lowStockProducts.filter((p) => p.stock <= p.minStock);
+    if (criticalItems.length === 0) {
+      return { success: true, sentCount: 0, message: 'Nenhum item com estoque baixo no momento.' };
+    }
+
+    return this.whatsAppService.sendBulkLowStockAlert(companyId, criticalItems);
   }
 }

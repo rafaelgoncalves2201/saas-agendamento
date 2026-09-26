@@ -18,9 +18,11 @@ import {
 } from './dto/product.dto';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { RequireFeature } from '../../common/decorators/require-feature.decorator';
 
 @ApiTags('Estoque & Insumos')
 @ApiBearerAuth('JWT')
+@RequireFeature('inventory')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -53,6 +55,13 @@ export class ProductsController {
       type,
       isArchived: isArchived === 'true',
     });
+  }
+
+  @Post('alert-all')
+  @Roles(Role.COMPANY_ADMIN, Role.SUPER_ADMIN, Role.PROFESSIONAL)
+  @ApiOperation({ summary: 'Enviar alerta consolidado de reposição via WhatsApp para todos os itens em estoque baixo' })
+  sendBulkRestockAlert(@Req() req: any) {
+    return this.productsService.sendBulkRestockAlert(req.companyId);
   }
 
   @Get(':id')
@@ -95,6 +104,13 @@ export class ProductsController {
     @Body() dto: CreateStockMovementDto,
   ) {
     return this.productsService.createMovement(req.companyId, id, dto);
+  }
+
+  @Post(':id/alert')
+  @Roles(Role.COMPANY_ADMIN, Role.SUPER_ADMIN, Role.PROFESSIONAL)
+  @ApiOperation({ summary: 'Enviar alerta de reposição via WhatsApp para os profissionais' })
+  sendRestockAlert(@Req() req: any, @Param('id') id: string) {
+    return this.productsService.sendRestockAlert(req.companyId, id);
   }
 
   @Delete(':id')
