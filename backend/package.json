@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
+    "build": "node node_modules/prisma/build/index.js generate && nest build",
+    "prisma:generate": "node node_modules/prisma/build/index.js generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -22,6 +23,7 @@
   "dependencies": {
     "@nestjs/axios": "^12.0.1",
     "@nestjs/bullmq": "^12.0.0",
+    "@nestjs/cli": "^11.0.0",
     "@nestjs/common": "^12.0.3",
     "@nestjs/config": "^12.0.0",
     "@nestjs/core": "^12.0.3",
@@ -42,12 +44,12 @@
     "passport-jwt": "^4.0.1",
     "prisma": "^6.12.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "typescript": "^5.7.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
-    "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^12.0.3",
     "@types/express": "^5.0.0",
@@ -67,7 +69,6 @@
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
   "jest": {
