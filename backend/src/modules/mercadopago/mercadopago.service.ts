@@ -69,7 +69,7 @@ export class MercadoPagoService {
 
   // 2. Callback OAuth: troca do código de autorização por Access Token
   async handleOAuthCallback(code: string, state: string): Promise<string> {
-    const appUrl = process.env.APP_URL || 'http://localhost:5173';
+    const appUrl = process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com';
     let type = 'professional';
     let targetId: string;
     let companyId: string;
@@ -373,8 +373,8 @@ export class MercadoPagoService {
       companyName,
     } = params;
 
-    const apiUrl = process.env.API_URL || 'http://localhost:3000';
-    const appUrl = process.env.APP_URL || 'http://localhost:5173';
+    const apiUrl = process.env.API_URL || 'https://saas-agendamento-f3jo.onrender.com';
+    const appUrl = process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com';
     const notificationUrl = `${apiUrl}/api/webhooks/mercadopago`;
 
     // Modo simulado / token de teste sem credenciais reais
