@@ -40,8 +40,12 @@ export class WhatsAppService {
 
     const dateFormatted = format(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
 
+    const companySettings = (appointment.company.settings as Record<string, any>) || {};
+    const address = (appointment.professional as any)?.address || companySettings.address;
+    const addressLine = address ? `📍 *Endereço:* ${address}\n` : '';
+
     // 3. Enviar mensagem para o CLIENTE
-    const clientText = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi confirmado com sucesso! ✅\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Data e Horário:* ${dateFormatted}\n💰 *Valor:* R$ ${Number(appointment.priceAtBooking).toFixed(2)}\n\nCaso precise consultar ou cancelar, utilize seu link exclusivo de autoatendimento:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
+    const clientText = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi confirmado com sucesso! ✅\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Data e Horário:* ${dateFormatted}\n${addressLine}💰 *Valor:* R$ ${Number(appointment.priceAtBooking).toFixed(2)}\n\nCaso precise consultar ou cancelar, utilize seu link exclusivo de autoatendimento:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
 
     const clientResult = await this.provider.sendMessage({
       toPhone: appointment.client.phone,
@@ -175,7 +179,11 @@ export class WhatsAppService {
 
     const dateFormatted = format(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
 
-    const text = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi *reagendado* com sucesso!\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n\nVocê pode consultar seus detalhes a qualquer momento em:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
+    const companySettings = (appointment.company.settings as Record<string, any>) || {};
+    const address = (appointment.professional as any)?.address || companySettings.address;
+    const addressLine = address ? `📍 *Endereço:* ${address}\n` : '';
+
+    const text = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi *reagendado* com sucesso!\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n${addressLine}\nVocê pode consultar seus detalhes a qualquer momento em:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
 
     const result = await this.provider.sendMessage({
       toPhone: appointment.client.phone,
