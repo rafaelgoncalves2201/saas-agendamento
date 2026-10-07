@@ -1,4 +1,4 @@
-# 🗓️ Inova Agenda - SaaS de Agendamento Online Multi-tenant
+# 🗓️ Inovae Agenda - SaaS de Agendamento Online Multi-tenant
 
 Plataforma completa de agendamentos online, gestão de clientes (CRM), controle de estoque de insumos, faturamento recorrente via **Asaas**, pagamentos dos clientes via **Mercado Pago** / **Pix Direto de Sinal** e notificações automáticas via **WhatsApp**.
 
@@ -73,8 +73,8 @@ O sistema possui uma matriz de recursos centralizada no backend (`backend/src/co
 - Webhooks automatizados para sincronização instantânea de status (`ACTIVE`, `INCOMPLETE`, `PAST_DUE`, `TRIALING`).
 
 ### 🎨 Personalização Visual e Temas
-- **Paleta Neutra & Elegante**: Tons bege suave (`#FAF8F5`), chocolate quente (`#6B3E26`) e superfícies marfim.
-- **Modo Escuro Completo**: Tema em café espresso (`#120D0A`) de alto contraste.
+- **Paleta Neutra & Elegante**: Tons marfim suave (`#FAF8F5`), bege dourado champagne (`#E6D4B0`) e superfícies limpas com alto contraste.
+- **Modo Escuro Completo**: Tema refinado em grafite neutro com detalhes em bege `#E6D4B0`.
 - Simulador de celular em tempo real para testar como o cliente final verá a página de agendamento e as instruções de pagamento.
 
 ---

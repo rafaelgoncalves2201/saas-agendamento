@@ -128,11 +128,11 @@ export const RegisterCompanyPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 py-12 transition-colors">
       <div className="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-6 sm:p-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none mb-3">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#E6D4B0] text-stone-900 shadow-sm mb-3">
             <Building2 size={24} />
           </div>
-          <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-1">
-            Inova Agenda
+          <p className="text-xs font-bold uppercase tracking-widest text-stone-800 dark:text-[#E6D4B0] mb-1">
+            Inovae Agenda
           </p>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">Cadastre seu Estabelecimento</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -269,8 +269,8 @@ export const RegisterCompanyPage: React.FC = () => {
                   value={formData.companyName}
                   onChange={handleChange}
                   required
-                  placeholder="Ex: Studio Bella"
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Ex: Inovae Agenda"
+                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                 />
               </div>
 
@@ -284,8 +284,8 @@ export const RegisterCompanyPage: React.FC = () => {
                   value={formData.companySlug}
                   onChange={handleChange}
                   required
-                  placeholder="studio-bella"
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="inovae-agenda"
+                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                 />
               </div>
 
@@ -302,7 +302,7 @@ export const RegisterCompanyPage: React.FC = () => {
                     onChange={handleChange}
                     required
                     placeholder="11999998888"
-                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                   />
                 </div>
               </div>
@@ -317,7 +317,7 @@ export const RegisterCompanyPage: React.FC = () => {
                   value={formData.companyDocument}
                   onChange={handleChange}
                   placeholder="00.000.000/0001-00"
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                 />
               </div>
             </div>
@@ -326,7 +326,7 @@ export const RegisterCompanyPage: React.FC = () => {
           {/* ETAPA 3: DADOS DO RESPONSÁVEL */}
           <div>
             <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-[#E6D4B0]">
                 3. Dados do Responsável (Acesso)
               </h3>
             </div>
@@ -345,7 +345,7 @@ export const RegisterCompanyPage: React.FC = () => {
                     onChange={handleChange}
                     required
                     placeholder="Nome do proprietário"
-                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                   />
                 </div>
               </div>
@@ -362,8 +362,8 @@ export const RegisterCompanyPage: React.FC = () => {
                     value={formData.ownerEmail}
                     onChange={handleChange}
                     required
-                    placeholder="seu@email.com"
-                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="contato@inovaeagenda.com.br"
+                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                   />
                 </div>
               </div>
@@ -381,7 +381,7 @@ export const RegisterCompanyPage: React.FC = () => {
                     onChange={handleChange}
                     required
                     placeholder="Mínimo 6 caracteres"
-                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                   />
                 </div>
               </div>
@@ -391,7 +391,7 @@ export const RegisterCompanyPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm shadow-md shadow-indigo-200 dark:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
+            className="w-full py-3.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold rounded-xl text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
           >
             {loading ? (
               <Loader2 className="animate-spin" size={18} />
@@ -406,7 +406,7 @@ export const RegisterCompanyPage: React.FC = () => {
 
         <div className="mt-6 text-center text-xs text-slate-500">
           Já possui conta?{' '}
-          <Link to="/login" className="text-indigo-600 font-semibold hover:underline">
+          <Link to="/login" className="text-stone-900 dark:text-[#E6D4B0] font-bold hover:underline">
             Fazer login
           </Link>
         </div>

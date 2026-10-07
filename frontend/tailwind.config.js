@@ -38,61 +38,61 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // Mapeamento elegante de 'slate' para a paleta Bege & Café Espresso
+        // Mapeamento elegante de 'slate' para Marfim Limpo e Grafite Neutro (sem marrom)
         slate: {
-          50: '#F8F5EE',   // Fundo bege principal (suave, luxuoso e quente)
-          100: '#EFE9DF',  // Bege claro para botões e cards secundários
-          200: '#E2D9CC',  // Bordas bege suaves
-          300: '#D0C3B2',  // Divisórias e bordas mais escuras
-          400: '#9C8B7D',  // Texto secundário / muted suave
-          500: '#796758',  // Texto de apoio quente
-          600: '#5A4A3E',  // Texto de leitura confortável
-          700: '#42342A',  // Texto forte tom café
-          750: '#342921',  // Divisórias e bordas intermediárias no modo escuro
-          800: '#261E18',  // Cards e superfícies no modo escuro (chocolate escuro)
-          850: '#1F1813',  // Superfície intermediária de cards
-          900: '#1C1510',  // Containers escuros (café espresso)
-          950: '#120D0A',  // Fundo principal no modo escuro (café torrado profundo)
+          50: '#FAF8F5',   // Fundo marfim/creme suave
+          100: '#F5EFE6',  // Marfim/creme suave para botões e cards secundários
+          200: '#EAE1D1',  // Bordas suaves creme
+          300: '#D8CCA6',  // Divisórias e bordas mais definidas
+          400: '#94A3B8',  // Texto secundário neutro
+          500: '#64748B',  // Texto de apoio neutro
+          600: '#475569',  // Texto de leitura nítido
+          700: '#334155',  // Texto forte
+          750: '#1E293B',  // Divisórias no modo escuro
+          800: '#1E293B',  // Cards e superfícies no modo escuro
+          850: '#162032',  // Superfície intermediária de cards
+          900: '#0F172A',  // Containers escuros
+          950: '#090D16',  // Fundo principal no modo escuro
         },
-        // Mapeamento de 'indigo' para Marrom Nobre (#6B3E26)
+        // Mapeamento de 'indigo' para a cor da imagem Bege Inovae Agenda (#E6D4B0)
         indigo: {
-          50: '#F9F5F0',
-          100: '#F0E6DC',
-          200: '#E2CEBC',
-          300: '#CDB196',
-          400: '#A98263',
-          500: '#875135',
-          600: '#6B3E26',   // Marrom Nobre Principal
-          700: '#56311D',   // Marrom Escuro Hover
-          800: '#422415',
-          900: '#2E190E',
-          950: '#1D0E07',
+          50: '#FAF7F0',
+          100: '#F5EFE0',
+          200: '#EFE4CE',
+          300: '#E6D4B0',   // Cor exata da imagem do usuário
+          400: '#D8C296',
+          500: '#C7AC7B',
+          600: '#B59358',   // Bege/Dourado nobre para botões
+          700: '#9E7E45',   // Hover
+          800: '#826532',
+          900: '#5F4820',
+          950: '#3D2D10',
         },
-        // Paletas diretas
+        // Mapeamento de 'brown' também para a paleta Bege da imagem (#E6D4B0) para eliminar marrom
         brown: {
-          50: '#F9F5F0',
-          100: '#F0E6DC',
-          200: '#E2CEBC',
-          300: '#CDB196',
-          400: '#A98263',
-          500: '#875135',
-          600: '#6B3E26',
-          700: '#56311D',
-          800: '#422415',
-          900: '#2E190E',
-          950: '#1D0E07',
+          50: '#FAF7F0',
+          100: '#F5EFE0',
+          200: '#EFE4CE',
+          300: '#E6D4B0',   // #E6D4B0
+          400: '#D8C296',
+          500: '#C7AC7B',
+          600: '#B59358',
+          700: '#9E7E45',
+          800: '#826532',
+          900: '#5F4820',
+          950: '#3D2D10',
         },
         beige: {
           50: '#FAF8F4',
-          100: '#F8F5EE',
-          200: '#EFE9DF',
-          300: '#E2D9CC',
-          400: '#D0C3B2',
-          500: '#B8A592',
-          600: '#96816D',
-          700: '#756352',
-          800: '#54463A',
-          900: '#332A23',
+          100: '#F5EFE0',
+          200: '#EFE4CD',
+          300: '#E6D4B0',   // Cor exata da imagem
+          400: '#D8C296',
+          500: '#C7AC7B',
+          600: '#B59358',
+          700: '#9E7E45',
+          800: '#826532',
+          900: '#5F4820',
         },
       },
       borderRadius: {

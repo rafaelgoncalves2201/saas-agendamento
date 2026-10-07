@@ -61,7 +61,7 @@ export const ReviewsPage: React.FC = () => {
           <Star
             key={star}
             size={16}
-            className={star <= rating ? 'fill-amber-400 text-amber-400' : 'text-[#D0C3B2] dark:text-[#523A2C]'}
+            className={star <= rating ? 'fill-amber-400 text-amber-400' : 'text-[#D0C3B2] dark:text-[#334155]'}
           />
         ))}
       </div>
@@ -71,7 +71,7 @@ export const ReviewsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
-        <Loader2 className="animate-spin text-[#6B3E26]" size={32} />
+        <Loader2 className="animate-spin text-stone-900 dark:text-[#E6D4B0]" size={32} />
       </div>
     );
   }
@@ -86,46 +86,46 @@ export const ReviewsPage: React.FC = () => {
     <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* Top Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[#2B1D15] dark:text-[#F8F5EE]">Avaliações dos Clientes</h1>
-        <p className="text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+        <h1 className="text-2xl font-bold text-stone-900 dark:text-white">Avaliações dos Clientes</h1>
+        <p className="text-sm text-stone-500 dark:text-slate-400 mt-0.5">
           Acompanhe o nível de satisfação das clientes e modere os depoimentos exibidos na sua página pública.
         </p>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white dark:bg-[#1F1712] p-6 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
+            <p className="text-xs font-semibold text-stone-500 dark:text-slate-400 uppercase tracking-wider">
               Nota Média Geral
             </p>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-3xl font-black text-[#2B1D15] dark:text-[#F8F5EE]">{average}</span>
-              <span className="text-xs text-[#796758] dark:text-[#CDB196]">de 5.0</span>
+              <span className="text-3xl font-black text-stone-900 dark:text-white">{average}</span>
+              <span className="text-xs text-stone-500 dark:text-slate-400">de 5.0</span>
             </div>
             <div className="mt-1">{renderStars(Math.round(Number(average)))}</div>
           </div>
-          <div className="p-3 bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] rounded-2xl">
-            <Star size={24} className="fill-[#6B3E26] text-[#6B3E26]" />
+          <div className="p-3 bg-[#E6D4B0]/25 dark:bg-[#E6D4B0]/15 text-stone-900 dark:text-[#E6D4B0] rounded-2xl">
+            <Star size={24} className="fill-[#E6D4B0] text-stone-900 dark:text-[#E6D4B0]" />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1F1712] p-6 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
+            <p className="text-xs font-semibold text-stone-500 dark:text-slate-400 uppercase tracking-wider">
               Total de Avaliações
             </p>
-            <h3 className="text-3xl font-bold text-[#2B1D15] dark:text-[#F8F5EE] mt-1">{totalCount}</h3>
-            <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1">Opiniões registradas</p>
+            <h3 className="text-3xl font-bold text-stone-900 dark:text-white mt-1">{totalCount}</h3>
+            <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Opiniões registradas</p>
           </div>
-          <div className="p-3 bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] rounded-2xl">
+          <div className="p-3 bg-[#E6D4B0]/25 dark:bg-[#E6D4B0]/15 text-stone-900 dark:text-[#E6D4B0] rounded-2xl">
             <MessageSquare size={24} />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1F1712] p-6 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
+            <p className="text-xs font-semibold text-stone-500 dark:text-slate-400 uppercase tracking-wider">
               5 Estrelas (Excelente)
             </p>
             <h3 className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{fiveStars}</h3>
@@ -138,15 +138,15 @@ export const ReviewsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#1F1712] p-6 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold text-[#796758] dark:text-[#CDB196] uppercase tracking-wider">
+            <p className="text-xs font-semibold text-stone-500 dark:text-slate-400 uppercase tracking-wider">
               4 Estrelas (Muito Bom)
             </p>
-            <h3 className="text-3xl font-bold text-[#2B1D15] dark:text-[#F8F5EE] mt-1">{fourStars}</h3>
-            <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1">Clientes satisfeitos</p>
+            <h3 className="text-3xl font-bold text-stone-900 dark:text-white mt-1">{fourStars}</h3>
+            <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Clientes satisfeitos</p>
           </div>
-          <div className="p-3 bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] rounded-2xl">
+          <div className="p-3 bg-[#E6D4B0]/25 dark:bg-[#E6D4B0]/15 text-stone-900 dark:text-[#E6D4B0] rounded-2xl">
             <Star size={24} />
           </div>
         </div>
@@ -154,10 +154,10 @@ export const ReviewsPage: React.FC = () => {
 
       {/* Lista de Avaliações */}
       {reviews.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-[#1F1712] rounded-3xl border border-[#E2D9CC] dark:border-[#382A21] p-8 shadow-xs">
-          <Star size={40} className="mx-auto text-[#796758] dark:text-[#CDB196] mb-3 opacity-60" />
-          <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base">Nenhuma avaliação recebida ainda</h3>
-          <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1 max-w-sm mx-auto">
+        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-[#EAE1D2] dark:border-slate-800 p-8 shadow-xs">
+          <Star size={40} className="mx-auto text-stone-500 dark:text-slate-400 mb-3 opacity-60" />
+          <h3 className="font-bold text-stone-900 dark:text-white text-base">Nenhuma avaliação recebida ainda</h3>
+          <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
             Assim que seus clientes concluírem os atendimentos, eles poderão avaliar e deixar depoimentos na tela de acompanhamento.
           </p>
         </div>
@@ -168,13 +168,13 @@ export const ReviewsPage: React.FC = () => {
             return (
               <div
                 key={rev.id}
-                className="bg-white dark:bg-[#1F1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base">{rev.clientName}</h4>
-                      <span className="text-[11px] text-[#796758] dark:text-[#CDB196]">
+                      <h4 className="font-bold text-stone-900 dark:text-white text-base">{rev.clientName}</h4>
+                      <span className="text-[11px] text-stone-500 dark:text-slate-400">
                         {format(new Date(rev.createdAt), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                       </span>
                     </div>
@@ -182,35 +182,35 @@ export const ReviewsPage: React.FC = () => {
                   </div>
 
                   {rev.comment ? (
-                    <p className="text-xs text-[#2B1D15] dark:text-[#FAF7F2] italic bg-[#FAF8F5] dark:bg-[#251C16] p-3 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] leading-relaxed">
+                    <p className="text-xs text-stone-900 dark:text-white italic bg-[#FAF8F5] dark:bg-slate-800 p-3 rounded-xl border border-[#EAE1D2] dark:border-slate-800 leading-relaxed">
                       "{rev.comment}"
                     </p>
                   ) : (
-                    <p className="text-xs text-[#796758] dark:text-[#CDB196] italic">Sem comentário por escrito.</p>
+                    <p className="text-xs text-stone-500 dark:text-slate-400 italic">Sem comentário por escrito.</p>
                   )}
 
-                  <div className="flex items-center gap-3 text-[11px] text-[#796758] dark:text-[#CDB196] pt-1">
+                  <div className="flex items-center gap-3 text-[11px] text-stone-500 dark:text-slate-400 pt-1">
                     {rev.service && (
                       <span className="flex items-center gap-1">
-                        <Scissors size={12} className="text-[#6B3E26]" /> {rev.service.name}
+                        <Scissors size={12} className="text-stone-900 dark:text-[#E6D4B0]" /> {rev.service.name}
                       </span>
                     )}
                     {rev.professional && (
                       <span className="flex items-center gap-1">
-                        <User size={12} className="text-[#6B3E26]" /> {rev.professional.name}
+                        <User size={12} className="text-stone-900 dark:text-[#E6D4B0]" /> {rev.professional.name}
                       </span>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-[#EFE9DF] dark:border-[#33251D] flex items-center justify-between">
+                <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-[#33251D] flex items-center justify-between">
                   <button
                     onClick={() => handleToggleApproval(rev.id)}
                     disabled={isToggling}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                       rev.isApproved
                         ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                        : 'bg-[#FAF5ED] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196] border border-[#CDB196] dark:border-[#523A2C]'
+                        : 'bg-[#E6D4B0]/25 dark:bg-slate-800 text-stone-500 dark:text-slate-400 border border-[#E6D4B0] dark:border-slate-800'
                     }`}
                   >
                     {rev.isApproved ? <Eye size={14} /> : <EyeOff size={14} />}
@@ -219,7 +219,7 @@ export const ReviewsPage: React.FC = () => {
 
                   <button
                     onClick={() => handleDelete(rev.id)}
-                    className="p-2 text-[#796758] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors cursor-pointer border border-[#E2D9CC] dark:border-[#382A21]"
+                    className="p-2 text-stone-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors cursor-pointer border border-[#EAE1D2] dark:border-slate-800"
                     title="Excluir avaliação"
                   >
                     <Trash2 size={15} />

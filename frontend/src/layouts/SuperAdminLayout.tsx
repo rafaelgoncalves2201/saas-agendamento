@@ -6,7 +6,6 @@ import React from 'react';
     Building2,
     Layers,
     Users,
-    ArrowLeft,
     LogOut,
     ShieldAlert,
   } from 'lucide-react';
@@ -38,7 +37,7 @@ import React from 'react';
                 <ShieldAlert size={20} />
               </div>
               <div>
-                <h1 className="font-bold text-sm text-white">Inova Agenda</h1>
+                <h1 className="font-bold text-sm text-white">Inovae Agenda</h1>
                 <p className="text-xs text-slate-400">Super Admin • Gestão Global</p>
               </div>
             </div>
@@ -66,14 +65,6 @@ import React from 'react';
           </div>
 
           <div className="pt-4 border-t border-slate-800 space-y-2">
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-            >
-              <ArrowLeft size={16} />
-              Voltar ao Painel da Empresa
-            </Link>
-
             <div className="flex items-center justify-between pt-2 px-2">
               <div>
                 <p className="text-xs font-medium text-slate-200">{user?.name}</p>

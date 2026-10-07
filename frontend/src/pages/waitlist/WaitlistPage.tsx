@@ -69,7 +69,7 @@ export const WaitlistPage: React.FC = () => {
   const handleOpenWhatsApp = (entry: any) => {
     const phone = entry.clientPhone.replace(/\D/g, '');
     const serviceName = entry.service?.name ? `o procedimento "${entry.service.name}"` : 'seu atendimento';
-    const companyName = company?.name || 'Inova Agenda';
+    const companyName = company?.name || 'Inovae Agenda';
     const text = encodeURIComponent(
       `Olá ${entry.clientName}, tudo bem? Aqui é da ${companyName}! Vimos que você estava na nossa lista de espera. Abriu uma vaga para ${serviceName}! Gostaria de aproveitar esse horário?`,
     );
@@ -84,7 +84,7 @@ export const WaitlistPage: React.FC = () => {
     switch (status) {
       case 'PENDING':
         return (
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#FAF5ED] dark:bg-[#34241B] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#CDB196] dark:border-[#523A2C]">
+          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E6D4B0]/25 dark:bg-[#E6D4B0]/15 text-stone-900 dark:text-[#E6D4B0] border border-[#E6D4B0] dark:border-slate-800">
             Aguardando Vaga
           </span>
         );
@@ -116,14 +116,14 @@ export const WaitlistPage: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#2B1D15] dark:text-[#F8F5EE]">Lista de Espera</h1>
-          <p className="text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-white">Lista de Espera</h1>
+          <p className="text-sm text-stone-500 dark:text-slate-400 mt-0.5">
             Gerencie clientes aguardando vagas ou desistências de horários e acione pelo WhatsApp com 1 clique.
           </p>
         </div>
 
         {/* Filtros de Status */}
-        <div className="flex items-center gap-1.5 p-1 bg-[#FAF8F5] dark:bg-[#261E18] rounded-xl border border-[#E2D9CC] dark:border-[#3D2C22] overflow-x-auto">
+        <div className="flex items-center gap-1.5 p-1 bg-[#FAF8F5] dark:bg-slate-800 rounded-xl border border-[#EAE1D2] dark:border-slate-800 overflow-x-auto">
           {[
             { id: 'ALL', label: 'Todos' },
             { id: 'PENDING', label: 'Pendentes' },
@@ -135,8 +135,8 @@ export const WaitlistPage: React.FC = () => {
               onClick={() => setStatusFilter(f.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 statusFilter === f.id
-                  ? 'bg-[#6B3E26] text-white shadow-xs'
-                  : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white'
+                  ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs shadow-xs'
+                  : 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white'
               }`}
             >
               {f.label}
@@ -148,13 +148,13 @@ export const WaitlistPage: React.FC = () => {
       {/* Lista de Clientes */}
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="animate-spin text-[#6B3E26]" size={32} />
+          <Loader2 className="animate-spin text-stone-900 dark:text-[#E6D4B0]" size={32} />
         </div>
       ) : entries.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-[#1F1712] rounded-3xl border border-[#E2D9CC] dark:border-[#382A21] p-8 shadow-xs">
-          <Clock size={40} className="mx-auto text-[#796758] dark:text-[#CDB196] mb-3 opacity-60" />
-          <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base">Nenhum cliente na lista de espera</h3>
-          <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1 max-w-sm mx-auto">
+        <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-[#EAE1D2] dark:border-slate-800 p-8 shadow-xs">
+          <Clock size={40} className="mx-auto text-stone-500 dark:text-slate-400 mb-3 opacity-60" />
+          <h3 className="font-bold text-stone-900 dark:text-white text-base">Nenhum cliente na lista de espera</h3>
+          <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
             Quando seus horários estiverem concorridos, os clientes poderão solicitar entrada na fila diretamente pela sua página pública.
           </p>
         </div>
@@ -165,23 +165,23 @@ export const WaitlistPage: React.FC = () => {
             return (
               <div
                 key={entry.id}
-                className="bg-white dark:bg-[#1F1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base">{entry.clientName}</h3>
-                      <span className="flex items-center gap-1.5 text-xs text-[#796758] dark:text-[#CDB196] mt-0.5">
-                        <Phone size={12} className="text-[#6B3E26]" /> {entry.clientPhone}
+                      <h3 className="font-bold text-stone-900 dark:text-white text-base">{entry.clientName}</h3>
+                      <span className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-slate-400 mt-0.5">
+                        <Phone size={12} className="text-stone-900 dark:text-[#E6D4B0]" /> {entry.clientPhone}
                       </span>
                     </div>
                     {getStatusBadge(entry.status)}
                   </div>
 
-                  <div className="p-3 bg-[#FAF8F5] dark:bg-[#251C16] rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-xs space-y-1.5">
+                  <div className="p-3 bg-[#FAF8F5] dark:bg-slate-800 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-xs space-y-1.5">
                     {entry.service && (
-                      <div className="flex items-center justify-between text-[#2B1D15] dark:text-[#FAF7F2]">
-                        <span className="text-[#796758] dark:text-[#CDB196] flex items-center gap-1">
+                      <div className="flex items-center justify-between text-stone-900 dark:text-white">
+                        <span className="text-stone-500 dark:text-slate-400 flex items-center gap-1">
                           <Scissors size={13} /> Procedimento:
                         </span>
                         <strong className="truncate max-w-[150px]">{entry.service.name}</strong>
@@ -189,16 +189,16 @@ export const WaitlistPage: React.FC = () => {
                     )}
 
                     {entry.professional && (
-                      <div className="flex items-center justify-between text-[#2B1D15] dark:text-[#FAF7F2]">
-                        <span className="text-[#796758] dark:text-[#CDB196] flex items-center gap-1">
+                      <div className="flex items-center justify-between text-stone-900 dark:text-white">
+                        <span className="text-stone-500 dark:text-slate-400 flex items-center gap-1">
                           <User size={13} /> Especialista:
                         </span>
                         <strong>{entry.professional.name}</strong>
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between text-[#2B1D15] dark:text-[#FAF7F2]">
-                      <span className="text-[#796758] dark:text-[#CDB196] flex items-center gap-1">
+                    <div className="flex items-center justify-between text-stone-900 dark:text-white">
+                      <span className="text-stone-500 dark:text-slate-400 flex items-center gap-1">
                         <Calendar size={13} /> Preferência:
                       </span>
                       <strong>
@@ -210,20 +210,20 @@ export const WaitlistPage: React.FC = () => {
                     </div>
 
                     {entry.notes && (
-                      <p className="text-[11px] text-[#796758] dark:text-[#CDB196] pt-1.5 border-t border-[#E2D9CC] dark:border-[#382A21] italic">
+                      <p className="text-[11px] text-stone-500 dark:text-slate-400 pt-1.5 border-t border-[#EAE1D2] dark:border-slate-800 italic">
                         "{entry.notes}"
                       </p>
                     )}
                   </div>
 
-                  <span className="text-[10px] text-[#796758] dark:text-[#CDB196] block">
+                  <span className="text-[10px] text-stone-500 dark:text-slate-400 block">
                     Cadastrado em:{' '}
                     {format(new Date(entry.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                   </span>
                 </div>
 
                 {/* Ações */}
-                <div className="pt-4 mt-4 border-t border-[#EFE9DF] dark:border-[#33251D] flex items-center justify-between gap-2">
+                <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-[#33251D] flex items-center justify-between gap-2">
                   <button
                     onClick={() => handleOpenWhatsApp(entry)}
                     className="flex-1 py-2 px-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
@@ -237,7 +237,7 @@ export const WaitlistPage: React.FC = () => {
                       <button
                         onClick={() => handleUpdateStatus(entry.id, 'BOOKED')}
                         disabled={isUpdating}
-                        className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-colors cursor-pointer border border-[#E2D9CC] dark:border-[#382A21]"
+                        className="p-2 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition-colors cursor-pointer border border-[#EAE1D2] dark:border-slate-800"
                         title="Marcar como Agendado"
                       >
                         <Check size={16} />
@@ -246,7 +246,7 @@ export const WaitlistPage: React.FC = () => {
 
                     <button
                       onClick={() => handleDelete(entry.id)}
-                      className="p-2 text-[#796758] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors cursor-pointer border border-[#E2D9CC] dark:border-[#382A21]"
+                      className="p-2 text-stone-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors cursor-pointer border border-[#EAE1D2] dark:border-slate-800"
                       title="Excluir da lista"
                     >
                       <Trash2 size={15} />

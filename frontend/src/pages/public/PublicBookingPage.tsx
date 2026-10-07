@@ -292,23 +292,23 @@ export const PublicBookingPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
-        <Loader2 className="animate-spin text-[#6B3E26]" size={36} />
+        <Loader2 className="animate-spin text-stone-900 dark:text-[#E6D4B0]" size={36} />
       </div>
     );
   }
 
   if (error && !company) {
     return (
-      <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#1A120D] flex items-center justify-center p-4 text-center">
-        <div className="bg-white dark:bg-[#261E18] p-8 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] max-w-md shadow-sm">
-          <h2 className="text-xl font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-2">Ops!</h2>
-          <p className="text-sm text-[#6B3E26] dark:text-[#CDB196]">{error}</p>
+      <div className="min-h-screen bg-[#FAF8F5] dark:bg-slate-900 flex items-center justify-center p-4 text-center">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 max-w-md shadow-sm">
+          <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-2">Ops!</h2>
+          <p className="text-sm text-stone-900 dark:text-[#E6D4B0]">{error}</p>
         </div>
       </div>
     );
   }
 
-  const primaryColor = company?.settings?.primaryColor || '#6B3E26';
+  const primaryColor = company?.settings?.primaryColor || '#E6D4B0';
   const companySettings = company?.settings || {};
   const nextDays = Array.from({ length: 7 }).map((_, i) => addDays(new Date(), i + 1));
 
@@ -375,8 +375,8 @@ export const PublicBookingPage: React.FC = () => {
   const whatsappButtonLabel = companySettings.whatsappButtonText || 'Enviar Comprovante pelo WhatsApp';
 
   return (
-    <div className="min-h-screen bg-[#F8F5EE] dark:bg-[#120D0A] text-[#2B1D15] dark:text-[#FAF7F2] flex flex-col items-center justify-start p-3 sm:p-6 lg:p-8 transition-colors">
-      <div className="w-full max-w-6xl bg-white dark:bg-[#1C1510] border border-[#E2D9CC] dark:border-[#382A21] rounded-3xl shadow-xl overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-slate-900 text-stone-900 dark:text-white flex flex-col items-center justify-start p-3 sm:p-6 lg:p-8 transition-colors">
+      <div className="w-full max-w-6xl bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col">
         {/* Banner de Capa + Header da Empresa */}
         <div
           className="relative text-white p-6 sm:p-10 bg-cover bg-center overflow-hidden"
@@ -464,69 +464,69 @@ export const PublicBookingPage: React.FC = () => {
 
         {/* Mensagem de Boas-Vindas */}
         {step === 1 && companySettings.welcomeMessage && (
-          <div className="px-6 sm:px-10 py-3.5 text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] italic bg-[#FAF8F5] dark:bg-[#261E18] border-b border-[#E2D9CC] dark:border-[#382A21]">
+          <div className="px-6 sm:px-10 py-3.5 text-xs sm:text-sm text-stone-500 dark:text-slate-400 italic bg-[#FAF8F5] dark:bg-slate-800 border-b border-[#EAE1D2] dark:border-slate-800">
             "{companySettings.welcomeMessage}"
           </div>
         )}
 
         {/* Barra de Progresso do Agendamento (Stepper Responsivo) */}
         {step < 5 && (
-          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 px-4 sm:px-10 py-3 bg-[#FAF8F5] dark:bg-[#261E18]/80 border-b border-[#E2D9CC] dark:border-[#382A21] text-xs font-bold overflow-x-auto scrollbar-none">
+          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 px-4 sm:px-10 py-3 bg-[#FAF8F5] dark:bg-slate-800/80 border-b border-[#EAE1D2] dark:border-slate-800 text-xs font-bold overflow-x-auto scrollbar-none">
             <button
               onClick={() => setStep(1)}
               className={`flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 font-medium ${
-                step === 1 ? 'text-[#6B3E26] dark:text-[#E2CEBC] font-bold' : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white'
+                step === 1 ? 'text-stone-900 dark:text-[#E6D4B0] font-bold' : 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white'
               }`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 1 ? 'bg-[#6B3E26] text-white' : 'bg-[#EFE9DF] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196]'}`}>1</span>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 1 ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs' : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-slate-400'}`}>1</span>
               <span>Serviço</span>
             </button>
-            <span className="text-[#D0C3B2] dark:text-[#523A2C]">&rarr;</span>
+            <span className="text-[#D0C3B2] dark:text-[#334155]">&rarr;</span>
 
             <button
               onClick={() => selectedService && setStep(2)}
               disabled={!selectedService}
               className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
                 step === 2
-                  ? 'text-[#6B3E26] dark:text-[#E2CEBC] font-bold'
+                  ? 'text-stone-900 dark:text-[#E6D4B0] font-bold'
                   : selectedService
-                  ? 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer'
-                  : 'text-[#CDB196]/60 dark:text-[#523A2C] cursor-not-allowed'
+                  ? 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white cursor-pointer'
+                  : 'text-[#E6D4B0]/60 dark:text-[#334155] cursor-not-allowed'
               }`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 2 ? 'bg-[#6B3E26] text-white' : 'bg-[#EFE9DF] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196]'}`}>2</span>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 2 ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs' : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-slate-400'}`}>2</span>
               <span>Profissional</span>
             </button>
-            <span className="text-[#D0C3B2] dark:text-[#523A2C]">&rarr;</span>
+            <span className="text-[#D0C3B2] dark:text-[#334155]">&rarr;</span>
 
             <button
               onClick={() => selectedService && selectedProfessional && setStep(3)}
               disabled={!selectedService || !selectedProfessional}
               className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
                 step === 3
-                  ? 'text-[#6B3E26] dark:text-[#E2CEBC] font-bold'
+                  ? 'text-stone-900 dark:text-[#E6D4B0] font-bold'
                   : selectedService && selectedProfessional
-                  ? 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer'
-                  : 'text-[#CDB196]/60 dark:text-[#523A2C] cursor-not-allowed'
+                  ? 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white cursor-pointer'
+                  : 'text-[#E6D4B0]/60 dark:text-[#334155] cursor-not-allowed'
               }`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 3 ? 'bg-[#6B3E26] text-white' : 'bg-[#EFE9DF] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196]'}`}>3</span>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 3 ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs' : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-slate-400'}`}>3</span>
               <span>Horário</span>
             </button>
-            <span className="text-[#D0C3B2] dark:text-[#523A2C]">&rarr;</span>
+            <span className="text-[#D0C3B2] dark:text-[#334155]">&rarr;</span>
 
             <button
               onClick={() => selectedSlot && setStep(4)}
               disabled={!selectedSlot}
               className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
                 step === 4
-                  ? 'text-[#6B3E26] dark:text-[#E2CEBC] font-bold'
+                  ? 'text-stone-900 dark:text-[#E6D4B0] font-bold'
                   : selectedSlot
-                  ? 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer'
-                  : 'text-[#CDB196]/60 dark:text-[#523A2C] cursor-not-allowed'
+                  ? 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white cursor-pointer'
+                  : 'text-[#E6D4B0]/60 dark:text-[#334155] cursor-not-allowed'
               }`}
             >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 4 ? 'bg-[#6B3E26] text-white' : 'bg-[#EFE9DF] dark:bg-[#34241B] text-[#796758] dark:text-[#CDB196]'}`}>4</span>
+              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 4 ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs' : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-slate-400'}`}>4</span>
               <span>Dados</span>
             </button>
           </div>
@@ -543,16 +543,16 @@ export const PublicBookingPage: React.FC = () => {
           {/* PASSO 1: SELECIONAR SERVIÇO COM FOTOS (TELA TODA NO COMPUTADOR) */}
           {step === 1 && (
             <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EFE9DF] dark:border-[#382A21] pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EAE1D2] dark:border-slate-800 pb-4">
                 <div>
-                  <h2 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-xl sm:text-2xl">
+                  <h2 className="font-extrabold text-stone-900 dark:text-white text-xl sm:text-2xl">
                     Escolha o Serviço
                   </h2>
-                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 mt-0.5">
                     Selecione o procedimento que deseja agendar com nossos especialistas.
                   </p>
                 </div>
-                <span className="text-xs font-semibold px-3 py-1 bg-[#FAF8F5] dark:bg-[#251C16] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#E2D9CC] dark:border-[#382A21] rounded-full w-fit">
+                <span className="text-xs font-semibold px-3 py-1 bg-[#FAF8F5] dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] border border-[#EAE1D2] dark:border-slate-800 rounded-full w-fit">
                   {company?.services?.length || 0} serviço(s) disponível(is)
                 </span>
               </div>
@@ -570,14 +570,14 @@ export const PublicBookingPage: React.FC = () => {
                       }}
                       className={`group rounded-2xl border transition-all flex flex-col justify-between cursor-pointer overflow-hidden p-4 w-full max-w-[280px] mx-auto sm:mx-0 ${
                         isSelected
-                          ? 'border-[#6B3E26] ring-2 ring-[#6B3E26]/20 bg-[#FAF8F5] dark:bg-[#251C16] shadow-md'
-                          : 'border-[#E2D9CC] dark:border-[#382A21] bg-white dark:bg-[#1F1712] hover:border-[#6B3E26] hover:shadow-lg hover:-translate-y-0.5'
+                          ? 'border-[#E6D4B0] ring-2 ring-[#E6D4B0]/20 bg-[#FAF8F5] dark:bg-slate-800 shadow-md'
+                          : 'border-[#EAE1D2] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#E6D4B0] hover:shadow-lg hover:-translate-y-0.5'
                       }`}
                     >
                       <div>
                         {/* Imagem Quadrada do Serviço */}
                         {srv.imageUrl ? (
-                          <div className="w-full aspect-square rounded-2xl overflow-hidden mb-4 border border-[#E2D9CC] dark:border-[#382A21] bg-[#FAF8F5] dark:bg-[#19120D]">
+                          <div className="w-full aspect-square rounded-2xl overflow-hidden mb-4 border border-[#EAE1D2] dark:border-slate-800 bg-[#FAF8F5] dark:bg-[#19120D]">
                             <img
                               src={srv.imageUrl}
                               alt={srv.name}
@@ -595,24 +595,24 @@ export const PublicBookingPage: React.FC = () => {
                         )}
 
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] text-base group-hover:text-[#6B3E26] transition-colors">
+                          <h3 className="font-bold text-stone-900 dark:text-white text-base group-hover:text-stone-900 dark:text-[#E6D4B0] transition-colors">
                             {srv.name}
                           </h3>
                         </div>
 
                         {srv.description && (
-                          <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1.5 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-stone-500 dark:text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
                             {srv.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="pt-4 mt-4 border-t border-[#EFE9DF] dark:border-[#382A21] flex items-center justify-between gap-3">
+                      <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-slate-800 flex items-center justify-between gap-3">
                         <div>
-                          <span className="flex items-center gap-1.5 text-xs text-[#796758] dark:text-[#CDB196] font-medium">
+                          <span className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-slate-400 font-medium">
                             <Clock size={13} /> {srv.durationMinutes} minutos
                           </span>
-                          <span className="font-black text-lg text-[#2B1D15] dark:text-[#FAF7F2] block mt-0.5">
+                          <span className="font-black text-lg text-stone-900 dark:text-white block mt-0.5">
                             R$ {Number(srv.price).toFixed(2)}
                           </span>
                         </div>
@@ -632,13 +632,13 @@ export const PublicBookingPage: React.FC = () => {
               </div>
 
               {/* Banner de Lista de Espera */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6">
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-bold text-[#2B1D15] dark:text-[#FAF7F2]">
-                    <Clock size={16} className="text-[#6B3E26]" />
+                  <div className="flex items-center gap-2 text-sm font-bold text-stone-900 dark:text-white">
+                    <Clock size={16} className="text-stone-900 dark:text-[#E6D4B0]" />
                     <span>Não encontrou o horário ideal ou agenda concorrida?</span>
                   </div>
-                  <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+                  <p className="text-xs text-stone-500 dark:text-slate-400">
                     Entre na nossa lista de espera! Caso surja um cancelamento ou novo horário, você será o primeiro a ser chamado.
                   </p>
                 </div>
@@ -651,7 +651,7 @@ export const PublicBookingPage: React.FC = () => {
                     setWaitlistSuccess(false);
                     setWaitlistModalOpen(true);
                   }}
-                  className="px-4 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs cursor-pointer"
+                  className="px-4 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs cursor-pointer"
                 >
                   Entrar na Lista de Espera
                 </button>
@@ -659,14 +659,14 @@ export const PublicBookingPage: React.FC = () => {
 
               {/* Seção de Avaliações / Depoimentos de Clientes */}
               {publicReviews && publicReviews.reviews.length > 0 && (
-                <div className="pt-8 border-t border-[#EFE9DF] dark:border-[#382A21] space-y-4">
+                <div className="pt-8 border-t border-[#EAE1D2] dark:border-slate-800 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-black text-[#2B1D15] dark:text-[#FAF7F2] flex items-center gap-2">
-                        <Star size={18} className="text-[#6B3E26] fill-[#6B3E26]" />
+                      <h3 className="text-lg font-black text-stone-900 dark:text-white flex items-center gap-2">
+                        <Star size={18} className="text-stone-900 dark:text-[#E6D4B0] fill-[#E6D4B0]" />
                         <span>O que nossos clientes dizem</span>
                       </h3>
-                      <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-0.5">
+                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
                         Média de {publicReviews.averageRating.toFixed(1)} estrelas com base em {publicReviews.totalCount} avaliação(ões)
                       </p>
                     </div>
@@ -676,11 +676,11 @@ export const PublicBookingPage: React.FC = () => {
                     {publicReviews.reviews.slice(0, 6).map((rev: any) => (
                       <div
                         key={rev.id}
-                        className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] space-y-2.5 flex flex-col justify-between"
+                        className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 space-y-2.5 flex flex-col justify-between"
                       >
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="font-bold text-xs text-[#2B1D15] dark:text-[#FAF7F2]">
+                            <span className="font-bold text-xs text-stone-900 dark:text-white">
                               {rev.clientName}
                             </span>
                             <div className="flex items-center gap-0.5">
@@ -698,18 +698,18 @@ export const PublicBookingPage: React.FC = () => {
                             </div>
                           </div>
                           {rev.comment ? (
-                            <p className="text-xs text-[#5A4A3E] dark:text-[#CDB196] italic line-clamp-3">
+                            <p className="text-xs text-stone-500 dark:text-slate-400 italic line-clamp-3">
                               "{rev.comment}"
                             </p>
                           ) : (
-                            <p className="text-xs text-[#9C8B7D] italic">
+                            <p className="text-xs text-stone-500 italic">
                               Avaliou com {rev.rating} estrelas.
                             </p>
                           )}
                         </div>
                         {rev.service && (
-                          <div className="pt-2 border-t border-[#E2D9CC]/60 dark:border-[#382A21] text-[10px] text-[#796758] dark:text-[#CDB196]">
-                            Serviço: <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{rev.service.name}</strong>
+                          <div className="pt-2 border-t border-[#EAE1D2]/60 dark:border-slate-800 text-[10px] text-stone-500 dark:text-slate-400">
+                            Serviço: <strong className="text-stone-900 dark:text-white">{rev.service.name}</strong>
                           </div>
                         )}
                       </div>
@@ -723,18 +723,18 @@ export const PublicBookingPage: React.FC = () => {
           {/* PASSO 2: SELECIONAR PROFISSIONAL (TELA TODA NO COMPUTADOR) */}
           {step === 2 && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-[#EFE9DF] dark:border-[#382A21] pb-4">
+              <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-4">
                 <div>
-                  <h2 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-xl sm:text-2xl">
+                  <h2 className="font-extrabold text-stone-900 dark:text-white text-xl sm:text-2xl">
                     Escolha o Profissional
                   </h2>
-                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
-                    Serviço selecionado: <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedService?.name}</strong>
+                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 mt-0.5">
+                    Serviço selecionado: <strong className="text-stone-900 dark:text-white">{selectedService?.name}</strong>
                   </p>
                 </div>
                 <button
                   onClick={() => setStep(1)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-[#796758] dark:text-[#CDB196] cursor-pointer hover:bg-[#FAF8F5]"
+                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400 cursor-pointer hover:bg-[#FAF8F5]"
                 >
                   <ChevronLeft size={14} /> Trocar Serviço
                 </button>
@@ -753,8 +753,8 @@ export const PublicBookingPage: React.FC = () => {
                       }}
                       className={`group p-5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer ${
                         isSelected
-                          ? 'border-[#6B3E26] ring-2 ring-[#6B3E26]/20 bg-[#FAF8F5] dark:bg-[#251C16] shadow-md'
-                          : 'border-[#E2D9CC] dark:border-[#382A21] bg-white dark:bg-[#1F1712] hover:border-[#6B3E26] hover:shadow-lg hover:-translate-y-0.5'
+                          ? 'border-[#E6D4B0] ring-2 ring-[#E6D4B0]/20 bg-[#FAF8F5] dark:bg-slate-800 shadow-md'
+                          : 'border-[#EAE1D2] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#E6D4B0] hover:shadow-lg hover:-translate-y-0.5'
                       }`}
                     >
                       <div className="flex items-center gap-4">
@@ -762,7 +762,7 @@ export const PublicBookingPage: React.FC = () => {
                           <img
                             src={prof.avatarUrl}
                             alt={prof.name}
-                            className="w-16 h-16 rounded-2xl object-cover shrink-0 border border-[#E2D9CC] dark:border-[#382A21] shadow-xs"
+                            className="w-16 h-16 rounded-2xl object-cover shrink-0 border border-[#EAE1D2] dark:border-slate-800 shadow-xs"
                           />
                         ) : (
                           <div
@@ -773,16 +773,16 @@ export const PublicBookingPage: React.FC = () => {
                           </div>
                         )}
                         <div className="min-w-0">
-                          <h3 className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] text-base group-hover:text-[#6B3E26] transition-colors">
+                          <h3 className="font-bold text-stone-900 dark:text-white text-base group-hover:text-stone-900 dark:text-[#E6D4B0] transition-colors">
                             {prof.name}
                           </h3>
-                          <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1 line-clamp-2">
+                          <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 line-clamp-2">
                             {prof.bio || `Especialista em ${company?.name}`}
                           </p>
                         </div>
                       </div>
 
-                      <div className="pt-4 mt-4 border-t border-[#EFE9DF] dark:border-[#382A21] flex items-center justify-end">
+                      <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-slate-800 flex items-center justify-end">
                         <button
                           type="button"
                           className="w-full py-2.5 rounded-xl font-bold text-xs text-white shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
@@ -802,18 +802,18 @@ export const PublicBookingPage: React.FC = () => {
           {/* PASSO 3: SELECIONAR DATA E HORÁRIO (2 COLUNAS NO COMPUTADOR) */}
           {step === 3 && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-[#EFE9DF] dark:border-[#382A21] pb-4">
+              <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-4">
                 <div>
-                  <h2 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-xl sm:text-2xl">
+                  <h2 className="font-extrabold text-stone-900 dark:text-white text-xl sm:text-2xl">
                     Selecione Data e Horário
                   </h2>
-                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 mt-0.5">
                     {selectedService?.name} com {selectedProfessional?.name}
                   </p>
                 </div>
                 <button
                   onClick={() => setStep(selectedProfessional && !professionalSlug ? 2 : 1)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-[#796758] dark:text-[#CDB196] cursor-pointer hover:bg-[#FAF8F5]"
+                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400 cursor-pointer hover:bg-[#FAF8F5]"
                 >
                   <ChevronLeft size={14} /> Voltar
                 </button>
@@ -823,7 +823,7 @@ export const PublicBookingPage: React.FC = () => {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Coluna 1 (Esquerda): Seleção da Data */}
                 <div className="lg:col-span-5 space-y-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
                     1. Escolha o Dia
                   </h3>
                   <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-4 gap-2">
@@ -837,7 +837,7 @@ export const PublicBookingPage: React.FC = () => {
                           className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
                             isSelected
                               ? 'text-white shadow-md'
-                              : 'bg-[#FAF8F5] dark:bg-[#251C16] text-[#2B1D15] dark:text-[#FAF7F2] border-[#E2D9CC] dark:border-[#382A21] hover:bg-[#F0E6DC] dark:hover:bg-[#34241B]'
+                              : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-900 dark:text-white border-[#EAE1D2] dark:border-slate-800 hover:bg-[#E6D4B0]/25 dark:hover:bg-slate-900'
                           }`}
                           style={{
                             backgroundColor: isSelected ? primaryColor : undefined,
@@ -854,21 +854,21 @@ export const PublicBookingPage: React.FC = () => {
                   </div>
 
                   {/* Card Resumo do Serviço Escolhido */}
-                  <div className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] text-xs space-y-2 mt-4">
-                    <span className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] block text-sm">
+                  <div className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 text-xs space-y-2 mt-4">
+                    <span className="font-bold text-stone-900 dark:text-white block text-sm">
                       {selectedService?.name}
                     </span>
-                    <div className="flex items-center justify-between text-[#796758] dark:text-[#CDB196]">
+                    <div className="flex items-center justify-between text-stone-500 dark:text-slate-400">
                       <span>Profissional:</span>
-                      <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedProfessional?.name}</strong>
+                      <strong className="text-stone-900 dark:text-white">{selectedProfessional?.name}</strong>
                     </div>
-                    <div className="flex items-center justify-between text-[#796758] dark:text-[#CDB196]">
+                    <div className="flex items-center justify-between text-stone-500 dark:text-slate-400">
                       <span>Duração:</span>
-                      <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedService?.durationMinutes} minutos</strong>
+                      <strong className="text-stone-900 dark:text-white">{selectedService?.durationMinutes} minutos</strong>
                     </div>
-                    <div className="flex items-center justify-between text-[#796758] dark:text-[#CDB196] pt-2 border-t border-[#E2D9CC] dark:border-[#382A21]">
+                    <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 pt-2 border-t border-[#EAE1D2] dark:border-slate-800">
                       <span>Valor:</span>
-                      <strong className="text-base text-[#2B1D15] dark:text-[#FAF7F2]">
+                      <strong className="text-base text-stone-900 dark:text-white">
                         R$ {Number(selectedService?.price).toFixed(2)}
                       </strong>
                     </div>
@@ -878,23 +878,23 @@ export const PublicBookingPage: React.FC = () => {
                 {/* Coluna 2 (Direita): Lista de Slots de Horários Vagos */}
                 <div className="lg:col-span-7 space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
                       2. Horários Disponíveis ({dateFormatted})
                     </h3>
                     {selectedSlot && (
-                      <span className="text-xs font-bold text-[#6B3E26] dark:text-[#E2CEBC]">
+                      <span className="text-xs font-bold text-stone-900 dark:text-[#E6D4B0]">
                         Horário Selecionado: {selectedSlot.time}
                       </span>
                     )}
                   </div>
 
                   {loadingSlots ? (
-                    <div className="flex flex-col items-center justify-center py-16 bg-[#FAF8F5] dark:bg-[#251C16] rounded-2xl border border-[#E2D9CC] dark:border-[#382A21]">
-                      <Loader2 className="animate-spin text-[#6B3E26] dark:text-[#E2CEBC]" size={32} />
-                      <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-2 font-medium">Buscando horários disponíveis...</p>
+                    <div className="flex flex-col items-center justify-center py-16 bg-[#FAF8F5] dark:bg-slate-800 rounded-2xl border border-[#EAE1D2] dark:border-slate-800">
+                      <Loader2 className="animate-spin text-stone-900 dark:text-[#E6D4B0]" size={32} />
+                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-2 font-medium">Buscando horários disponíveis...</p>
                     </div>
                   ) : availableSlots.length === 0 ? (
-                    <div className="p-8 bg-[#FAF5ED] dark:bg-[#2B1F14] rounded-2xl border border-[#EADCC8] dark:border-[#4A3220] text-center space-y-3">
+                    <div className="p-8 bg-[#E6D4B0]/25 dark:bg-slate-800 rounded-2xl border border-[#EADCC8] dark:border-[#4A3220] text-center space-y-3">
                       <p className="text-xs text-[#6B584C] dark:text-[#D7C1AC]">
                         Nenhum horário livre para {dateFormatted}. Selecione outro dia ao lado ou entre na lista de espera deste dia.
                       </p>
@@ -907,7 +907,7 @@ export const PublicBookingPage: React.FC = () => {
                           setWaitlistSuccess(false);
                           setWaitlistModalOpen(true);
                         }}
-                        className="px-4 py-2 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                        className="px-4 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
                       >
                         <Clock size={14} />
                         <span>Entrar na Lista de Espera deste Dia</span>
@@ -924,7 +924,7 @@ export const PublicBookingPage: React.FC = () => {
                             className={`py-2.5 px-3 rounded-xl border font-bold transition-all cursor-pointer flex flex-col items-center justify-center ${
                               isChosen
                                 ? 'text-white shadow-md'
-                                : 'bg-[#FAF8F5] dark:bg-[#251C16] text-[#2B1D15] dark:text-[#FAF7F2] border-[#E2D9CC] dark:border-[#382A21] hover:border-[#6B3E26]'
+                                : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-900 dark:text-white border-[#EAE1D2] dark:border-slate-800 hover:border-[#E6D4B0]'
                             }`}
                             style={{
                               backgroundColor: isChosen ? primaryColor : undefined,
@@ -935,7 +935,7 @@ export const PublicBookingPage: React.FC = () => {
                             {slot.endTime && (
                               <span
                                 className={`text-[10px] font-normal tracking-tight ${
-                                  isChosen ? 'text-white/90' : 'text-[#796758] dark:text-[#CDB196]'
+                                  isChosen ? 'text-white/90' : 'text-stone-500 dark:text-slate-400'
                                 }`}
                               >
                                 até {slot.endTime}
@@ -965,19 +965,19 @@ export const PublicBookingPage: React.FC = () => {
           {/* PASSO 4: DADOS DO CLIENTE (2 COLUNAS NO COMPUTADOR) */}
           {step === 4 && (
             <form onSubmit={handleConfirmBooking} className="space-y-6">
-              <div className="flex items-center justify-between border-b border-[#EFE9DF] dark:border-[#382A21] pb-4">
+              <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-4">
                 <div>
-                  <h2 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-xl sm:text-2xl">
+                  <h2 className="font-extrabold text-stone-900 dark:text-white text-xl sm:text-2xl">
                     Seus Dados de Contato
                   </h2>
-                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 mt-0.5">
                     Preencha seus dados para receber o lembrete e confirmação do seu horário.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-[#796758] dark:text-[#CDB196] cursor-pointer hover:bg-[#FAF8F5]"
+                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400 cursor-pointer hover:bg-[#FAF8F5]"
                 >
                   <ChevronLeft size={14} /> Voltar
                 </button>
@@ -988,7 +988,7 @@ export const PublicBookingPage: React.FC = () => {
                 {/* Coluna 1 (Esquerda): Formulário */}
                 <div className="lg:col-span-7 space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2] mb-1.5">
+                    <label className="block text-xs font-semibold text-stone-900 dark:text-white mb-1.5">
                       Seu Nome Completo *
                     </label>
                     <input
@@ -997,12 +997,12 @@ export const PublicBookingPage: React.FC = () => {
                       placeholder="Como gostaria de ser chamado(a)?"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2] mb-1.5">
+                    <label className="block text-xs font-semibold text-stone-900 dark:text-white mb-1.5">
                       WhatsApp com DDD (para envio da confirmação e lembretes) *
                     </label>
                     <input
@@ -1011,12 +1011,12 @@ export const PublicBookingPage: React.FC = () => {
                       placeholder="Ex: 17999998888"
                       value={clientPhone}
                       onChange={(e) => setClientPhone(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2] mb-1.5">
+                    <label className="block text-xs font-semibold text-stone-900 dark:text-white mb-1.5">
                       E-mail (Opcional)
                     </label>
                     <input
@@ -1024,12 +1024,12 @@ export const PublicBookingPage: React.FC = () => {
                       placeholder="seu@email.com"
                       value={clientEmail}
                       onChange={(e) => setClientEmail(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2] mb-1.5">
+                    <label className="block text-xs font-semibold text-stone-900 dark:text-white mb-1.5">
                       Observações ou Preferências (Opcional)
                     </label>
                     <textarea
@@ -1037,13 +1037,13 @@ export const PublicBookingPage: React.FC = () => {
                       placeholder="Alguma observação importante para o profissional?"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                     />
                   </div>
 
                   {/* Cupom de Desconto */}
-                  <div className="p-4 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl space-y-2">
-                    <label className="block text-xs font-semibold text-[#2B1D15] dark:text-[#FAF7F2]">
+                  <div className="p-4 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl space-y-2">
+                    <label className="block text-xs font-semibold text-stone-900 dark:text-white">
                       Possui Cupom de Desconto?
                     </label>
                     {appliedCoupon ? (
@@ -1064,7 +1064,7 @@ export const PublicBookingPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={handleRemoveCoupon}
-                          className="text-[#796758] hover:text-red-500 font-bold p-1 cursor-pointer transition-colors"
+                          className="text-stone-500 hover:text-red-500 font-bold p-1 cursor-pointer transition-colors"
                           title="Remover cupom"
                         >
                           <X size={16} />
@@ -1073,7 +1073,7 @@ export const PublicBookingPage: React.FC = () => {
                     ) : (
                       <div className="flex items-center gap-2">
                         <div className="relative flex-1">
-                          <Tag className="absolute left-3.5 top-3 text-[#9C8B7D]" size={15} />
+                          <Tag className="absolute left-3.5 top-3 text-stone-500" size={15} />
                           <input
                             type="text"
                             placeholder="DIGITE SEU CUPOM"
@@ -1082,14 +1082,14 @@ export const PublicBookingPage: React.FC = () => {
                               setCouponCodeInput(e.target.value.toUpperCase());
                               setCouponError(null);
                             }}
-                            className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-[#1F1712] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-xl text-xs uppercase font-mono font-bold focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                            className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs uppercase font-mono font-bold focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                           />
                         </div>
                         <button
                           type="button"
                           onClick={handleApplyCoupon}
                           disabled={validatingCoupon || !couponCodeInput.trim()}
-                          className="px-5 py-2.5 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0"
+                          className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0"
                         >
                           {validatingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Aplicar'}
                         </button>
@@ -1103,37 +1103,37 @@ export const PublicBookingPage: React.FC = () => {
 
                 {/* Coluna 2 (Direita): Resumo e Botão de Confirmação */}
                 <div className="lg:col-span-5 space-y-4">
-                  <div className="p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] bg-[#FAF8F5] dark:bg-[#251C16] text-xs space-y-3 sticky top-4">
-                    <h3 className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] text-sm border-b border-[#E2D9CC] dark:border-[#382A21] pb-2">
+                  <div className="p-5 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 bg-[#FAF8F5] dark:bg-slate-800 text-xs space-y-3 sticky top-4">
+                    <h3 className="font-bold text-stone-900 dark:text-white text-sm border-b border-[#EAE1D2] dark:border-slate-800 pb-2">
                       Resumo da Sua Reserva
                     </h3>
 
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-[#796758] dark:text-[#CDB196]">Serviço:</span>
-                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-right">{selectedService?.name}</strong>
+                        <span className="text-stone-500 dark:text-slate-400">Serviço:</span>
+                        <strong className="text-stone-900 dark:text-white text-right">{selectedService?.name}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#796758] dark:text-[#CDB196]">Profissional:</span>
-                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedProfessional?.name}</strong>
+                        <span className="text-stone-500 dark:text-slate-400">Profissional:</span>
+                        <strong className="text-stone-900 dark:text-white">{selectedProfessional?.name}</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#796758] dark:text-[#CDB196]">Data e Hora:</span>
-                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-right">
+                        <span className="text-stone-500 dark:text-slate-400">Data e Hora:</span>
+                        <strong className="text-stone-900 dark:text-white text-right">
                           {dateFormatted} às {selectedSlot?.time}
                           {selectedSlot?.endTime ? ` até ${selectedSlot.endTime}` : ''}
                         </strong>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[#796758] dark:text-[#CDB196]">Duração estimada:</span>
-                        <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">{selectedService?.durationMinutes} min</strong>
+                        <span className="text-stone-500 dark:text-slate-400">Duração estimada:</span>
+                        <strong className="text-stone-900 dark:text-white">{selectedService?.durationMinutes} min</strong>
                       </div>
                     </div>
 
                     {appliedCoupon ? (
-                      <div className="pt-3 border-t border-[#E2D9CC] dark:border-[#382A21] flex justify-between items-baseline">
+                      <div className="pt-3 border-t border-[#EAE1D2] dark:border-slate-800 flex justify-between items-baseline">
                         <div className="space-y-0.5">
-                          <span className="text-[#9C8B7D] line-through text-xs font-semibold">
+                          <span className="text-stone-500 line-through text-xs font-semibold">
                             R$ {Number(selectedService?.price).toFixed(2)}
                           </span>
                           <span className="text-[11px] block font-bold text-emerald-600">
@@ -1145,33 +1145,33 @@ export const PublicBookingPage: React.FC = () => {
                         </p>
                       </div>
                     ) : (
-                      <div className="pt-3 border-t border-[#E2D9CC] dark:border-[#382A21] flex justify-between items-baseline">
-                        <span className="text-[#2B1D15] dark:text-[#FAF7F2] font-bold text-sm">Total:</span>
-                        <p className="font-black text-xl text-[#2B1D15] dark:text-[#FAF7F2]">
+                      <div className="pt-3 border-t border-[#EAE1D2] dark:border-slate-800 flex justify-between items-baseline">
+                        <span className="text-stone-900 dark:text-white font-bold text-sm">Total:</span>
+                        <p className="font-black text-xl text-stone-900 dark:text-white">
                           R$ {Number(selectedService?.price).toFixed(2)}
                         </p>
                       </div>
                     )}
 
                     {activePaymentModel === 'DEPOSIT_PIX' && (
-                      <div className="p-3 bg-[#F5EFE6] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl space-y-1.5 text-xs">
+                      <div className="p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl space-y-1.5 text-xs">
                         <div className="flex justify-between items-center text-emerald-700 dark:text-emerald-400 font-bold">
                           <span>Sinal via Pix (agora):</span>
                           <span className="text-sm font-black">R$ {step4DepositVal.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between items-center text-[#796758] dark:text-[#CDB196]">
+                        <div className="flex justify-between items-center text-stone-500 dark:text-slate-400">
                           <span>Restante no atendimento:</span>
                           <span className="font-semibold">R$ {step4RemainingVal.toFixed(2)}</span>
                         </div>
                       </div>
                     )}
 
-                    <div className="p-3.5 bg-amber-50/90 dark:bg-[#2B1F14] border border-amber-200/80 dark:border-[#4A3220] rounded-xl text-xs text-[#5A4A3E] dark:text-[#E2CEBC] flex items-start gap-2.5">
-                      <AlertCircle className="text-[#6B3E26] shrink-0 mt-0.5" size={16} />
+                    <div className="p-3.5 bg-amber-50/90 dark:bg-slate-800 border border-amber-200/80 dark:border-[#4A3220] rounded-xl text-xs text-stone-500 dark:text-slate-400 flex items-start gap-2.5">
+                      <AlertCircle className="text-stone-900 dark:text-[#E6D4B0] shrink-0 mt-0.5" size={16} />
                       <div>
                         {activePaymentModel === 'NONE' ? (
                           <>
-                            <strong className="block font-bold text-[#6B3E26] dark:text-[#FAF7F2]">
+                            <strong className="block font-bold text-stone-900 dark:text-[#E6D4B0] dark:text-white">
                               Agendamento com Pagamento no Local
                             </strong>
                             <span className="text-[11px] leading-relaxed block mt-0.5">
@@ -1180,7 +1180,7 @@ export const PublicBookingPage: React.FC = () => {
                           </>
                         ) : activePaymentModel === 'DEPOSIT_PIX' ? (
                           <>
-                            <strong className="block font-bold text-[#6B3E26] dark:text-[#FAF7F2]">
+                            <strong className="block font-bold text-stone-900 dark:text-[#E6D4B0] dark:text-white">
                               Reserva com Sinal via Pix de R$ {step4DepositVal.toFixed(2)}
                             </strong>
                             <span className="text-[11px] leading-relaxed block mt-0.5">
@@ -1189,7 +1189,7 @@ export const PublicBookingPage: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <strong className="block font-bold text-[#6B3E26] dark:text-[#FAF7F2]">
+                            <strong className="block font-bold text-stone-900 dark:text-[#E6D4B0] dark:text-white">
                               Pagamento Total via Pix ou Cartão (Até 12x)
                             </strong>
                             <span className="text-[11px] leading-relaxed block mt-0.5">
@@ -1237,18 +1237,18 @@ export const PublicBookingPage: React.FC = () => {
                 bookingSuccess.depositInfo?.paymentModel === 'DEPOSIT_PIX' || !bookingSuccess.depositInfo?.isMercadoPago ? (
                   /* VISÃO 1: SINAL VIA CHAVE PIX DE PREFERÊNCIA */
                   <div className="space-y-6">
-                    <div className="w-20 h-20 rounded-3xl bg-amber-50 dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] flex items-center justify-center mx-auto shadow-inner border border-amber-200/80 dark:border-[#382A21]">
+                    <div className="w-20 h-20 rounded-3xl bg-amber-50 dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] flex items-center justify-center mx-auto shadow-inner border border-amber-200/80 dark:border-slate-800">
                       <Clock size={40} className="animate-pulse" />
                     </div>
 
                     <div>
-                      <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-amber-100/80 dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#CDB196] dark:border-[#4A392D] rounded-full mb-2">
+                      <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-amber-100/80 dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] border border-[#E6D4B0] dark:border-[#4A392D] rounded-full mb-2">
                         Pré-Reserva Garantida (Aguardando Sinal)
                       </span>
-                      <h2 className="text-2xl sm:text-3xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                      <h2 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white">
                         Pague o Sinal via Pix para Confirmar
                       </h2>
-                      <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] max-w-md mx-auto mt-2 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 max-w-md mx-auto mt-2 leading-relaxed">
                         Transfira o sinal via Pix e envie o comprovante no WhatsApp do estabelecimento. O restante será pago presencialmente no atendimento!
                       </p>
                     </div>
@@ -1267,44 +1267,44 @@ export const PublicBookingPage: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="p-4 bg-white dark:bg-[#1F1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl text-center shadow-xs">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196] block">
+                      <div className="p-4 bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl text-center shadow-xs">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 block">
                           Restante no Atendimento
                         </span>
-                        <p className="text-2xl font-black text-[#2B1D15] dark:text-[#FAF7F2] mt-1">
+                        <p className="text-2xl font-black text-stone-900 dark:text-white mt-1">
                           {bookingSuccess.depositInfo?.remainingValue}
                         </p>
-                        <span className="text-[10px] text-[#796758] dark:text-[#CDB196] block mt-0.5">
+                        <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5">
                           Pague no local
                         </span>
                       </div>
 
-                      <div className="p-4 bg-white dark:bg-[#1F1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl text-center shadow-xs">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196] block">
+                      <div className="p-4 bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl text-center shadow-xs">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 block">
                           Valor Total
                         </span>
-                        <p className="text-2xl font-black text-[#2B1D15] dark:text-[#FAF7F2] mt-1">
+                        <p className="text-2xl font-black text-stone-900 dark:text-white mt-1">
                           R$ {Number(bookingSuccess.appointment?.priceAtBooking || currentServicePrice).toFixed(2)}
                         </p>
-                        <span className="text-[10px] text-[#796758] dark:text-[#CDB196] block mt-0.5">
+                        <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5">
                           Serviço completo
                         </span>
                       </div>
                     </div>
 
                     {/* Detalhes da Chave Pix */}
-                    <div className="p-6 bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E5D7C5] dark:border-[#382A21] rounded-3xl text-left text-xs sm:text-sm space-y-4 shadow-sm">
-                      <div className="flex items-center justify-between border-b border-[#E2D9CC] dark:border-[#382A21] pb-3">
+                    <div className="p-6 bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-3xl text-left text-xs sm:text-sm space-y-4 shadow-sm">
+                      <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-3">
                         <div>
-                          <span className="text-xs font-black uppercase tracking-wider text-[#6B3E26] dark:text-[#E2CEBC] block">
+                          <span className="text-xs font-black uppercase tracking-wider text-stone-900 dark:text-[#E6D4B0] block">
                             Dados para Transferência do Sinal
                           </span>
-                          <span className="text-[11px] text-[#796758] dark:text-[#CDB196]">
+                          <span className="text-[11px] text-stone-500 dark:text-slate-400">
                             Tipo: {bookingSuccess.depositInfo?.pixKeyType || 'Chave Pix'}
                           </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[10px] uppercase font-bold text-[#796758] dark:text-[#CDB196] block">Valor a Transferir</span>
+                          <span className="text-[10px] uppercase font-bold text-stone-500 dark:text-slate-400 block">Valor a Transferir</span>
                           <span className="text-lg font-black text-emerald-700 dark:text-emerald-400">
                             {bookingSuccess.depositInfo?.depositValue}
                           </span>
@@ -1312,9 +1312,9 @@ export const PublicBookingPage: React.FC = () => {
                       </div>
 
                       {bookingSuccess.depositInfo?.pixRecipientName && (
-                        <div className="p-3 bg-white dark:bg-[#1F1712] rounded-xl border border-[#E2D9CC] dark:border-[#382A21]">
-                          <span className="text-[11px] text-[#796758] dark:text-[#CDB196] block font-medium">Titular / Favorecido:</span>
-                          <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-sm block mt-0.5">
+                        <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-[#EAE1D2] dark:border-slate-800">
+                          <span className="text-[11px] text-stone-500 dark:text-slate-400 block font-medium">Titular / Favorecido:</span>
+                          <strong className="text-stone-900 dark:text-white text-sm block mt-0.5">
                             {bookingSuccess.depositInfo.pixRecipientName}
                           </strong>
                         </div>
@@ -1322,7 +1322,7 @@ export const PublicBookingPage: React.FC = () => {
 
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs text-[#796758] dark:text-[#CDB196] font-semibold">
+                          <span className="text-xs text-stone-500 dark:text-slate-400 font-semibold">
                             Chave Pix ({bookingSuccess.depositInfo?.pixKeyType || 'Chave'}):
                           </span>
                           {copiedPix && (
@@ -1336,12 +1336,12 @@ export const PublicBookingPage: React.FC = () => {
                             type="text"
                             readOnly
                             value={bookingSuccess.depositInfo?.pixKey || ''}
-                            className="w-full px-4 py-3 bg-white dark:bg-[#1F1712] border-2 border-[#D0C3B2] dark:border-[#4A392D] rounded-xl font-mono text-sm font-bold text-[#2B1D15] dark:text-[#FAF7F2] select-all truncate"
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 border-2 border-[#EAE1D2] dark:border-[#4A392D] rounded-xl font-mono text-sm font-bold text-stone-900 dark:text-white select-all truncate"
                           />
                           <button
                             type="button"
                             onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey)}
-                            className="px-5 py-3 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs sm:text-sm shadow-sm"
+                            className="px-5 py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs sm:text-sm shadow-sm"
                           >
                             <Copy size={16} />
                             <span>Copiar Chave</span>
@@ -1350,7 +1350,7 @@ export const PublicBookingPage: React.FC = () => {
                       </div>
 
                       {bookingSuccess.depositInfo?.depositInstructions && (
-                        <div className="p-3.5 bg-amber-50/90 dark:bg-[#1F1712] rounded-xl text-xs text-[#5A4A3E] dark:text-[#CDB196] border border-amber-200/80 dark:border-[#382A21]">
+                        <div className="p-3.5 bg-amber-50/90 dark:bg-slate-900 rounded-xl text-xs text-stone-500 dark:text-slate-400 border border-amber-200/80 dark:border-slate-800">
                           <strong>Instruções do Estabelecimento:</strong> {bookingSuccess.depositInfo.depositInstructions}
                         </div>
                       )}
@@ -1367,7 +1367,7 @@ export const PublicBookingPage: React.FC = () => {
                         <Phone size={20} />
                         <span>{whatsappButtonLabel}</span>
                       </a>
-                      <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-2">
+                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-2">
                         Após efetuar a transferência do sinal, envie o comprovante no WhatsApp para que o estabelecimento confirme sua vaga.
                       </p>
                     </div>
@@ -1375,31 +1375,31 @@ export const PublicBookingPage: React.FC = () => {
                 ) : (
                   /* VISÃO 2: MERCADO PAGO (PAGAMENTO TOTAL VIA PIX OU CARTÃO EM ATÉ 12X) */
                   <div className="space-y-6">
-                    <div className="w-20 h-20 rounded-3xl bg-[#F5EFE6] dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] flex items-center justify-center mx-auto shadow-inner border border-[#E2D9CC] dark:border-[#382A21]">
+                    <div className="w-20 h-20 rounded-3xl bg-[#FAF8F5] dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] flex items-center justify-center mx-auto shadow-inner border border-[#EAE1D2] dark:border-slate-800">
                       <Clock size={40} className="animate-pulse" />
                     </div>
 
                     <div>
-                      <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-amber-100/80 dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#CDB196] dark:border-[#4A392D] rounded-full mb-2">
+                      <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-amber-100/80 dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] border border-[#E6D4B0] dark:border-[#4A392D] rounded-full mb-2">
                         Horário Pré-Reservado (15 minutos)
                       </span>
-                      <h2 className="text-2xl sm:text-3xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                      <h2 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white">
                         Aguardando Pagamento do Serviço
                       </h2>
-                      <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] max-w-md mx-auto mt-2 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 max-w-md mx-auto mt-2 leading-relaxed">
                         Seu horário está reservado por 15 minutos! Escolha pagar via Pix ou Cartão de Crédito abaixo para confirmar seu agendamento imediatamente.
                       </p>
                     </div>
 
                     {/* Alternador de Forma de Pagamento */}
-                    <div className="grid grid-cols-2 gap-2 bg-[#EFE9DF] dark:bg-[#1F1712] p-1.5 rounded-2xl max-w-md mx-auto">
+                    <div className="grid grid-cols-2 gap-2 bg-[#FAF8F5] dark:bg-slate-900 p-1.5 rounded-2xl max-w-md mx-auto">
                       <button
                         type="button"
                         onClick={() => setBookingPaymentMethod('pix')}
                         className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
                           bookingPaymentMethod === 'pix'
-                            ? 'bg-white dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#FAF7F2] shadow-sm'
-                            : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15]'
+                            ? 'bg-white dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] dark:text-white shadow-sm'
+                            : 'text-stone-500 dark:text-slate-400 hover:text-stone-900'
                         }`}
                       >
                         <span>Pix Instantâneo</span>
@@ -1409,8 +1409,8 @@ export const PublicBookingPage: React.FC = () => {
                         onClick={() => setBookingPaymentMethod('card')}
                         className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
                           bookingPaymentMethod === 'card'
-                            ? 'bg-white dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#FAF7F2] shadow-sm'
-                            : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15]'
+                            ? 'bg-white dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] dark:text-white shadow-sm'
+                            : 'text-stone-500 dark:text-slate-400 hover:text-stone-900'
                         }`}
                       >
                         <CreditCard size={15} />
@@ -1419,12 +1419,12 @@ export const PublicBookingPage: React.FC = () => {
                     </div>
 
                     {/* Card com Detalhes do Pagamento */}
-                    <div className="p-6 bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E5D7C5] dark:border-[#382A21] rounded-3xl text-left text-xs sm:text-sm space-y-5 shadow-sm">
-                      <div className="flex items-center justify-between border-b border-[#E2D9CC] dark:border-[#382A21] pb-3">
-                        <span className="text-[#6B3E26] dark:text-[#E2CEBC] font-bold uppercase tracking-wider text-xs">
+                    <div className="p-6 bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-3xl text-left text-xs sm:text-sm space-y-5 shadow-sm">
+                      <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-3">
+                        <span className="text-stone-900 dark:text-[#E6D4B0] font-bold uppercase tracking-wider text-xs">
                           Valor Total do Atendimento
                         </span>
-                        <span className="text-2xl font-black text-[#6B3E26] dark:text-[#E2CEBC]">
+                        <span className="text-2xl font-black text-stone-900 dark:text-[#E6D4B0]">
                           {bookingSuccess.depositInfo?.depositValue || (`R$ ${Number(bookingSuccess.appointment?.priceAtBooking || currentServicePrice).toFixed(2)}`)}
                         </span>
                       </div>
@@ -1434,11 +1434,11 @@ export const PublicBookingPage: React.FC = () => {
                         <div className="space-y-4">
                           {/* Exibição do QR Code Mercado Pago caso gerado */}
                           {bookingSuccess.depositInfo?.pixQrCodeBase64 && (
-                            <div className="p-5 bg-white dark:bg-[#1F1712] rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] text-center space-y-3 shadow-xs">
-                              <span className="text-xs font-black uppercase tracking-wider text-[#6B3E26] dark:text-[#E2CEBC] block">
+                            <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 text-center space-y-3 shadow-xs">
+                              <span className="text-xs font-black uppercase tracking-wider text-stone-900 dark:text-[#E6D4B0] block">
                                 Pague pelo QR Code do seu Banco
                               </span>
-                              <div className="inline-block p-2 bg-white rounded-2xl border-2 border-[#E2D9CC] dark:border-[#4A392D] shadow-sm">
+                              <div className="inline-block p-2 bg-white rounded-2xl border-2 border-[#EAE1D2] dark:border-[#4A392D] shadow-sm">
                                 <img
                                   src={`data:image/png;base64,${bookingSuccess.depositInfo.pixQrCodeBase64}`}
                                   alt="QR Code Pix Mercado Pago"
@@ -1454,8 +1454,8 @@ export const PublicBookingPage: React.FC = () => {
 
                           {bookingSuccess.depositInfo?.pixRecipientName && (
                             <div>
-                              <span className="text-xs text-[#796758] dark:text-[#CDB196] block">Titular / Recebedor:</span>
-                              <strong className="text-[#2B1D15] dark:text-[#FAF7F2] text-sm">
+                              <span className="text-xs text-stone-500 dark:text-slate-400 block">Titular / Recebedor:</span>
+                              <strong className="text-stone-900 dark:text-white text-sm">
                                 {bookingSuccess.depositInfo.pixRecipientName}
                               </strong>
                             </div>
@@ -1463,7 +1463,7 @@ export const PublicBookingPage: React.FC = () => {
 
                           <div>
                             <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-xs text-[#796758] dark:text-[#CDB196] font-semibold">
+                              <span className="text-xs text-stone-500 dark:text-slate-400 font-semibold">
                                 Código Pix Copia e Cola:
                               </span>
                               {copiedPix && (
@@ -1477,12 +1477,12 @@ export const PublicBookingPage: React.FC = () => {
                                 type="text"
                                 readOnly
                                 value={bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola || ''}
-                                className="w-full px-4 py-2.5 bg-white dark:bg-[#1F1712] border-2 border-[#D0C3B2] dark:border-[#4A392D] rounded-xl font-mono text-xs font-bold text-[#2B1D15] dark:text-[#FAF7F2] select-all truncate"
+                                className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border-2 border-[#EAE1D2] dark:border-[#4A392D] rounded-xl font-mono text-xs font-bold text-stone-900 dark:text-white select-all truncate"
                               />
                               <button
                                 type="button"
                                 onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola)}
-                                className="px-4 py-2.5 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-sm"
+                                className="px-4 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-sm"
                               >
                                 <Copy size={14} />
                                 <span>Copiar Pix</span>
@@ -1491,7 +1491,7 @@ export const PublicBookingPage: React.FC = () => {
                           </div>
 
                           {bookingSuccess.depositInfo?.depositInstructions && (
-                            <div className="p-3 bg-white/80 dark:bg-[#1F1712] rounded-xl text-xs text-[#5A4A3E] dark:text-[#CDB196] border border-[#E2D9CC] dark:border-[#382A21]">
+                            <div className="p-3 bg-white/80 dark:bg-slate-900 rounded-xl text-xs text-stone-500 dark:text-slate-400 border border-[#EAE1D2] dark:border-slate-800">
                               <strong>Orientações:</strong> {bookingSuccess.depositInfo.depositInstructions}
                             </div>
                           )}
@@ -1500,25 +1500,25 @@ export const PublicBookingPage: React.FC = () => {
 
                       {/* OPÇÃO 2: CARTÃO DE CRÉDITO */}
                       {bookingPaymentMethod === 'card' && (
-                        <div className="p-5 bg-white dark:bg-[#1F1712] rounded-2xl border border-[#E2D9CC] dark:border-[#382A21] space-y-4 text-center">
+                        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-4 text-center">
                           <div className="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-[#009EE3] flex items-center justify-center mx-auto">
                             <CreditCard size={28} />
                           </div>
                           <div>
-                            <h4 className="font-extrabold text-[#2B1D15] dark:text-[#FAF7F2] text-base">
+                            <h4 className="font-extrabold text-stone-900 dark:text-white text-base">
                               Pague no Cartão pelo Mercado Pago
                             </h4>
-                            <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-1 max-w-sm mx-auto">
+                            <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
                               Parcele em até 12x no cartão de crédito ou utilize débito com a proteção e tecnologia do Mercado Pago.
                             </p>
                           </div>
 
-                          <div className="p-3.5 bg-[#FAF8F5] dark:bg-[#251C16] rounded-xl border border-[#EFE9DF] dark:border-[#382A21] text-left text-xs space-y-2 text-[#5A4A3E] dark:text-[#CDB196]">
-                            <p className="flex items-center gap-2 font-bold text-[#2B1D15] dark:text-[#FAF7F2]">
+                          <div className="p-3.5 bg-[#FAF8F5] dark:bg-slate-800 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-left text-xs space-y-2 text-stone-500 dark:text-slate-400">
+                            <p className="flex items-center gap-2 font-bold text-stone-900 dark:text-white">
                               <Check size={14} className="text-emerald-600" />
                               <span>Aceita Visa, Mastercard, Elo, Hipercard e American Express</span>
                             </p>
-                            <p className="flex items-center gap-2 font-bold text-[#2B1D15] dark:text-[#FAF7F2]">
+                            <p className="flex items-center gap-2 font-bold text-stone-900 dark:text-white">
                               <Check size={14} className="text-emerald-600" />
                               <span>Confirmação imediata do seu horário após aprovação</span>
                             </p>
@@ -1553,7 +1553,7 @@ export const PublicBookingPage: React.FC = () => {
                         <Phone size={18} />
                         <span>{whatsappButtonLabel}</span>
                       </a>
-                      <p className="text-xs text-[#796758] dark:text-[#CDB196] mt-2">
+                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-2">
                         Ao clicar, o WhatsApp abrirá com mensagem pré-formatada com todos os dados da sua reserva.
                       </p>
                     </div>
@@ -1566,36 +1566,36 @@ export const PublicBookingPage: React.FC = () => {
                     <CheckCircle2 size={40} />
                   </div>
 
-                  <h2 className="text-2xl sm:text-3xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                  <h2 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white">
                     Agendamento Confirmado!
                   </h2>
-                  <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] max-w-md mx-auto">
+                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 max-w-md mx-auto">
                     Seu horário foi agendado com sucesso no <strong>{company?.name}</strong>. Te esperamos com muito carinho!
                   </p>
                 </div>
               )}
 
               {/* Resumo do Agendamento */}
-              <div className="p-5 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl text-left text-xs sm:text-sm space-y-2 text-[#2B1D15] dark:text-[#FAF7F2]">
+              <div className="p-5 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl text-left text-xs sm:text-sm space-y-2 text-stone-900 dark:text-white">
                 <p>
-                  <strong className="text-[#796758] dark:text-[#CDB196]">Serviço:</strong> {selectedService?.name}
+                  <strong className="text-stone-500 dark:text-slate-400">Serviço:</strong> {selectedService?.name}
                 </p>
                 <p>
-                  <strong className="text-[#796758] dark:text-[#CDB196]">Profissional:</strong> {selectedProfessional?.name}
+                  <strong className="text-stone-500 dark:text-slate-400">Profissional:</strong> {selectedProfessional?.name}
                 </p>
                 <p>
-                  <strong className="text-[#796758] dark:text-[#CDB196]">Horário:</strong> {selectedSlot?.time}
+                  <strong className="text-stone-500 dark:text-slate-400">Horário:</strong> {selectedSlot?.time}
                   {selectedSlot?.endTime ? ` até ${selectedSlot.endTime}` : ''} ({dateFormatted})
                 </p>
                 <p>
-                  <strong className="text-[#796758] dark:text-[#CDB196]">Local:</strong> {company?.name}
+                  <strong className="text-stone-500 dark:text-slate-400">Local:</strong> {company?.name}
                 </p>
               </div>
 
               <div className="space-y-3 pt-2">
                 <Link
                   to={`/agendamento/${bookingSuccess.appointment?.clientManagementCode}`}
-                  className="block w-full py-4 bg-[#6B3E26] hover:bg-[#56311D] text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md text-center"
+                  className="block w-full py-4 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md text-center"
                 >
                   Consultar ou Cancelar Agendamento
                 </Link>
@@ -1607,7 +1607,7 @@ export const PublicBookingPage: React.FC = () => {
                     setSelectedSlot(null);
                     setBookingSuccess(null);
                   }}
-                  className="block w-full py-3 text-[#796758] dark:text-[#CDB196] hover:bg-[#FAF8F5] dark:hover:bg-[#251C16] rounded-xl text-xs font-semibold cursor-pointer transition-colors"
+                  className="block w-full py-3 text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] dark:hover:bg-slate-900 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
                 >
                   Fazer Outro Agendamento
                 </button>
@@ -1616,22 +1616,22 @@ export const PublicBookingPage: React.FC = () => {
           )}
         </div>
 
-        {/* Rodapé Oficial Inova Agenda */}
-        <div className="py-4 px-6 border-t border-[#EFE9DF] dark:border-[#382A21] bg-[#FAF8F5] dark:bg-[#18120D] text-center">
-          <p className="text-[11px] text-[#796758] dark:text-[#CDB196]">
-            Plataforma de Agendamentos por <strong className="text-[#2B1D15] dark:text-[#FAF7F2]">Inova Agenda</strong>
+        {/* Rodapé Oficial Inovae Agenda */}
+        <div className="py-4 px-6 border-t border-[#EAE1D2] dark:border-slate-800 bg-[#FAF8F5] dark:bg-slate-900 text-center">
+          <p className="text-[11px] text-stone-500 dark:text-slate-400">
+            Plataforma de Agendamentos por <strong className="text-stone-900 dark:text-white">Inovae Agenda</strong>
           </p>
         </div>
       </div>
 
       {/* Modal Lista de Espera */}
       {waitlistModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#120D0A]/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-[#1E1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-3xl w-full max-w-lg p-6 sm:p-8 space-y-5 shadow-2xl relative my-8">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 sm:p-8 space-y-5 shadow-2xl relative my-8">
             <button
               type="button"
               onClick={() => setWaitlistModalOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-[#796758] hover:text-[#2B1D15] dark:hover:text-white hover:bg-[#FAF8F5] dark:hover:bg-[#2A2018] transition-colors cursor-pointer"
+              className="absolute top-5 right-5 p-2 rounded-xl text-stone-500 hover:text-stone-900 dark:hover:text-white hover:bg-[#FAF8F5] dark:hover:bg-slate-900 transition-colors cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -1641,10 +1641,10 @@ export const PublicBookingPage: React.FC = () => {
                 <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-inner">
                   <CheckCircle2 size={36} />
                 </div>
-                <h3 className="text-xl font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                <h3 className="text-xl font-black text-stone-900 dark:text-white">
                   Você está na Lista de Espera!
                 </h3>
-                <p className="text-xs sm:text-sm text-[#796758] dark:text-[#CDB196] leading-relaxed max-w-sm mx-auto">
+                <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
                   Registramos seu interesse com sucesso. Assim que um horário compatível surgir na agenda de {company?.name}, entraremos em contato imediatamente pelo WhatsApp: <strong>{waitlistPhone}</strong>.
                 </p>
                 <div className="pt-2">
@@ -1654,7 +1654,7 @@ export const PublicBookingPage: React.FC = () => {
                       setWaitlistModalOpen(false);
                       setWaitlistSuccess(false);
                     }}
-                    className="w-full py-3 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
+                    className="w-full py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
                   >
                     Entendido, Voltar aos Agendamentos
                   </button>
@@ -1664,14 +1664,14 @@ export const PublicBookingPage: React.FC = () => {
               <form onSubmit={handleJoinWaitlist} className="space-y-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="p-2 rounded-xl bg-[#FAF5ED] dark:bg-[#251C16] text-[#6B3E26] dark:text-[#E2CEBC]">
+                    <span className="p-2 rounded-xl bg-[#E6D4B0]/25 dark:bg-[#E6D4B0]/15 text-stone-900 dark:text-[#E6D4B0]">
                       <Clock size={20} />
                     </span>
                     <div>
-                      <h3 className="text-lg font-black text-[#2B1D15] dark:text-[#FAF7F2]">
+                      <h3 className="text-lg font-black text-stone-900 dark:text-white">
                         Lista de Espera VIP
                       </h3>
-                      <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+                      <p className="text-xs text-stone-500 dark:text-slate-400">
                         Não encontrou vaga? Seja notificado caso surja uma desistência!
                       </p>
                     </div>
@@ -1687,7 +1687,7 @@ export const PublicBookingPage: React.FC = () => {
 
                 <div className="space-y-3 text-xs">
                   <div>
-                    <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                    <label className="block font-bold text-stone-900 dark:text-white mb-1">
                       Seu Nome Completo *
                     </label>
                     <input
@@ -1696,13 +1696,13 @@ export const PublicBookingPage: React.FC = () => {
                       value={waitlistName}
                       onChange={(e) => setWaitlistName(e.target.value)}
                       placeholder="Como gostaria de ser chamado(a)?"
-                      className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                      className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
                         WhatsApp com DDD *
                       </label>
                       <input
@@ -1711,11 +1711,11 @@ export const PublicBookingPage: React.FC = () => {
                         value={waitlistPhone}
                         onChange={(e) => setWaitlistPhone(e.target.value)}
                         placeholder="(11) 99999-9999"
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
                         E-mail (opcional)
                       </label>
                       <input
@@ -1723,20 +1723,20 @@ export const PublicBookingPage: React.FC = () => {
                         value={waitlistEmail}
                         onChange={(e) => setWaitlistEmail(e.target.value)}
                         placeholder="seu@email.com"
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
                         Serviço Desejado
                       </label>
                       <select
                         value={waitlistServiceId}
                         onChange={(e) => setWaitlistServiceId(e.target.value)}
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
                       >
                         <option value="">Qualquer serviço</option>
                         {company?.services?.map((s: any) => (
@@ -1748,13 +1748,13 @@ export const PublicBookingPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
                         Profissional Preferido
                       </label>
                       <select
                         value={waitlistProfessionalId}
                         onChange={(e) => setWaitlistProfessionalId(e.target.value)}
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
                       >
                         <option value="">Qualquer profissional</option>
                         {company?.professionals?.map((p: any) => (
@@ -1768,25 +1768,25 @@ export const PublicBookingPage: React.FC = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
                         Data Preferida
                       </label>
                       <input
                         type="date"
                         value={waitlistPreferredDate}
                         onChange={(e) => setWaitlistPreferredDate(e.target.value)}
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
                       />
                     </div>
 
                     <div>
-                      <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
                         Período de Preferência
                       </label>
                       <select
                         value={waitlistPreferredPeriod}
                         onChange={(e) => setWaitlistPreferredPeriod(e.target.value as any)}
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26]"
+                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
                       >
                         <option value="QUALQUER">Qualquer horário</option>
                         <option value="MANHA">Manhã (08h às 12h)</option>
@@ -1797,7 +1797,7 @@ export const PublicBookingPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-[#2B1D15] dark:text-[#FAF7F2] mb-1">
+                    <label className="block font-bold text-stone-900 dark:text-white mb-1">
                       Observações / Dias Específicos
                     </label>
                     <textarea
@@ -1805,7 +1805,7 @@ export const PublicBookingPage: React.FC = () => {
                       value={waitlistNotes}
                       onChange={(e) => setWaitlistNotes(e.target.value)}
                       placeholder="Ex: Tenho preferência para sexta-feira à tarde..."
-                      className="w-full p-3 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#E2D9CC] dark:border-[#382A21] rounded-xl text-[#2B1D15] dark:text-[#FAF7F2] focus:outline-none focus:border-[#6B3E26] resize-none"
+                      className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295] resize-none"
                     />
                   </div>
                 </div>
@@ -1814,14 +1814,14 @@ export const PublicBookingPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setWaitlistModalOpen(false)}
-                    className="px-4 py-3 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] text-xs font-semibold text-[#796758] dark:text-[#CDB196] hover:bg-[#FAF8F5] dark:hover:bg-[#251C16] transition-colors cursor-pointer"
+                    className="px-4 py-3 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-xs font-semibold text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] dark:hover:bg-slate-900 transition-colors cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
                     disabled={submittingWaitlist}
-                    className="flex-1 py-3 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {submittingWaitlist ? (
                       <>

@@ -40,11 +40,11 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 transition-colors">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none mb-3">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#E6D4B0] text-stone-900 shadow-sm mb-3">
             <Calendar size={24} />
           </div>
-          <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-1">
-            Inova Agenda
+          <p className="text-xs font-bold uppercase tracking-widest text-stone-800 dark:text-[#E6D4B0] mb-1">
+            Inovae Agenda
           </p>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Acesse sua Conta</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -70,8 +70,8 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="seu@email.com"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                placeholder="contato@inovaeagenda.com.br"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0] transition-all"
               />
             </div>
           </div>
@@ -88,7 +88,7 @@ export const LoginPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0] transition-all"
               />
             </div>
           </div>
@@ -96,7 +96,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl text-sm shadow-md shadow-indigo-200 dark:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
+            className="w-full mt-2 py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold rounded-xl text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
           >
             {loading ? (
               <Loader2 className="animate-spin" size={18} />
@@ -111,7 +111,7 @@ export const LoginPage: React.FC = () => {
 
         <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
           Ainda não cadastrou sua empresa?{' '}
-          <Link to="/register" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+          <Link to="/register" className="text-stone-900 dark:text-[#E6D4B0] font-bold hover:underline">
             Criar conta grátis
           </Link>
         </div>

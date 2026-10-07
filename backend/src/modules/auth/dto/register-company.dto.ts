@@ -2,12 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class RegisterCompanyDto {
-  @ApiProperty({ example: 'Studio Beleza Pura', description: 'Nome fantasia da empresa' })
+  @ApiProperty({ example: 'Inovae Agenda', description: 'Nome fantasia da empresa' })
   @IsString()
   @IsNotEmpty({ message: 'O nome da empresa é obrigatório' })
   companyName: string;
 
-  @ApiProperty({ example: 'studio-beleza-pura', description: 'Slug único da empresa para link público' })
+  @ApiProperty({ example: 'inovae-agenda', description: 'Slug único da empresa para link público' })
   @IsString()
   @IsNotEmpty({ message: 'O slug da empresa é obrigatório' })
   companySlug: string;
@@ -22,12 +22,12 @@ export class RegisterCompanyDto {
   @IsString()
   companyDocument?: string;
 
-  @ApiProperty({ example: 'Maria da Silva', description: 'Nome completo do proprietário' })
+  @ApiProperty({ example: 'Administrador Inovae', description: 'Nome completo do proprietário' })
   @IsString()
   @IsNotEmpty({ message: 'O nome do proprietário é obrigatório' })
   ownerName: string;
 
-  @ApiProperty({ example: 'maria@studiobelezapura.com.br', description: 'E-mail de acesso do proprietário' })
+  @ApiProperty({ example: 'contato@inovaeagenda.com.br', description: 'E-mail de acesso do proprietário' })
   @IsEmail({}, { message: 'Formato de e-mail inválido' })
   @IsNotEmpty({ message: 'O e-mail é obrigatório' })
   ownerEmail: string;

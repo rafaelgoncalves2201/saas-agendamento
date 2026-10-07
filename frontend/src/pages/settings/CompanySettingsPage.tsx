@@ -80,7 +80,7 @@ export const CompanySettingsPage: React.FC = () => {
     document: '',
     logoUrl: '',
     coverUrl: '',
-    primaryColor: '#6B3E26',
+    primaryColor: '#E6D4B0',
     publicTheme: 'light', // 'dark' | 'light'
     bio: '',
     instagram: '',
@@ -89,8 +89,8 @@ export const CompanySettingsPage: React.FC = () => {
     requiresDeposit: true,
     depositValue: 'R$ 50',
     pixKeyType: 'EMAIL',
-    pixKey: 'lashhem1@gmail.com',
-    pixRecipientName: 'Hayane Beauty',
+    pixKey: 'contato@inovaeagenda.com.br',
+    pixRecipientName: 'Inovae Agenda',
     depositInstructions: 'Envie o comprovante do sinal pelo WhatsApp para confirmar seu horário.',
     whatsappButtonText: 'Enviar Comprovante pelo WhatsApp',
     welcomeMessage: 'Agende seu horário com nossos profissionais com facilidade e rapidez!',
@@ -146,7 +146,7 @@ export const CompanySettingsPage: React.FC = () => {
           document: c.document || '',
           logoUrl: c.logoUrl || '',
           coverUrl: c.coverUrl || '',
-          primaryColor: settings.primaryColor || '#6B3E26',
+          primaryColor: settings.primaryColor || '#E6D4B0',
           publicTheme: settings.publicTheme || 'light',
           bio: settings.bio || '',
           instagram: settings.instagram || '',
@@ -449,7 +449,7 @@ export const CompanySettingsPage: React.FC = () => {
                     </div>
                     <Link
                       to="/subscription"
-                      className="px-4 py-2 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl font-bold shrink-0 text-center transition-colors shadow-sm"
+                      className="px-4 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 rounded-xl font-bold shrink-0 text-center transition-colors shadow-sm"
                     >
                       Fazer Upgrade
                     </Link>
@@ -669,7 +669,7 @@ export const CompanySettingsPage: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        placeholder="Ex: lashhem1@gmail.com ou 17996220064"
+                        placeholder="Ex: contato@inovaeagenda.com.br ou 17997542025"
                         value={formData.pixKey}
                         onChange={(e) => setFormData({ ...formData, pixKey: e.target.value })}
                         className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none font-mono"
@@ -682,7 +682,7 @@ export const CompanySettingsPage: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        placeholder="Ex: Hayane Beauty"
+                        placeholder="Ex: Inovae Agenda"
                         value={formData.pixRecipientName}
                         onChange={(e) => setFormData({ ...formData, pixRecipientName: e.target.value })}
                         className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium"
@@ -819,7 +819,7 @@ export const CompanySettingsPage: React.FC = () => {
                   <label className="block text-slate-700 dark:text-slate-300 font-semibold mb-1">Instagram (@usuario)</label>
                   <input
                     type="text"
-                    placeholder="@hayanebeauty"
+                    placeholder="@inovaeagenda"
                     value={formData.instagram}
                     onChange={(e) => setFormData({ ...formData, instagram: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -843,7 +843,7 @@ export const CompanySettingsPage: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    placeholder="Ex: Especialista em extensões de cílios e sobrancelhas com design exclusivo."
+                    placeholder="Ex: Atendimento de excelência com agendamento online rápido e descomplicado."
                     value={formData.bio}
                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -858,7 +858,7 @@ export const CompanySettingsPage: React.FC = () => {
                 type="submit"
                 disabled={saving}
                 style={{ backgroundColor: formData.primaryColor }}
-                className="px-6 py-3.5 text-white rounded-xl font-bold flex items-center gap-2 cursor-pointer shadow-lg hover:brightness-110 transition-all text-xs"
+                className="px-6 py-3.5 text-stone-900 rounded-xl font-black flex items-center gap-2 cursor-pointer shadow-lg hover:brightness-105 transition-all text-xs"
               >
                 {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
                 <span>Salvar Todas as Configurações</span>
@@ -943,7 +943,7 @@ export const CompanySettingsPage: React.FC = () => {
                         AGENDAMENTO ONLINE
                       </span>
                       <h4 className="font-black text-sm truncate leading-tight mt-0.5">
-                        {formData.name || 'Hayane Beauty'}
+                        {formData.name || 'Inovae Agenda'}
                       </h4>
                       <p className="text-[10px] text-white/80 truncate">
                         {formData.phone ? `📞 ${formData.phone}` : '📞 (00) 00000-0000'}
@@ -954,7 +954,7 @@ export const CompanySettingsPage: React.FC = () => {
                   {previewTab === 'confirmation' && (
                     <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center gap-1.5 text-[10px] text-white/90">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                      <span>Atendimento com <strong>Hemilli da Silva</strong></span>
+                      <span>Atendimento com <strong>Especialista</strong></span>
                     </div>
                   )}
                 </div>
@@ -989,7 +989,7 @@ export const CompanySettingsPage: React.FC = () => {
 
                       <div>
                         <span className="text-slate-400 block text-[9px]">Favorecido / Titular:</span>
-                        <strong className="text-slate-200">{formData.pixRecipientName || formData.name || 'Hayane Beauty'}</strong>
+                        <strong className="text-slate-200">{formData.pixRecipientName || formData.name || 'Inovae Agenda'}</strong>
                       </div>
 
                       <div>
@@ -1000,7 +1000,7 @@ export const CompanySettingsPage: React.FC = () => {
                           <input
                             type="text"
                             readOnly
-                            value={formData.pixKey || 'lashhem1@gmail.com'}
+                            value={formData.pixKey || 'contato@inovaeagenda.com.br'}
                             className="w-full px-2 py-1 bg-slate-800 border border-slate-700 rounded-lg font-mono text-[10px] text-slate-200"
                           />
                           <span className="px-2 py-1 bg-slate-800 border border-slate-700 rounded-lg text-slate-300 font-bold shrink-0 text-[9px]">
@@ -1027,10 +1027,10 @@ export const CompanySettingsPage: React.FC = () => {
 
                     {/* RESUMO DO AGENDAMENTO */}
                     <div className="p-3 bg-slate-900 border border-slate-800 rounded-2xl space-y-1 text-[10px]">
-                      <p><span className="text-slate-400">Serviço:</span> <strong className="text-white">Kim Kardashian</strong></p>
-                      <p><span className="text-slate-400">Profissional:</span> <strong className="text-white">Hemilli da Silva</strong></p>
-                      <p><span className="text-slate-400">Horário:</span> <strong className="text-white">09:30 até 12:30 (28/09/2026)</strong></p>
-                      <p><span className="text-slate-400">Local:</span> <strong className="text-white">{formData.name || 'Hayane Beauty'}</strong></p>
+                      <p><span className="text-slate-400">Serviço:</span> <strong className="text-white">Procedimento VIP</strong></p>
+                      <p><span className="text-slate-400">Profissional:</span> <strong className="text-white">Especialista</strong></p>
+                      <p><span className="text-slate-400">Horário:</span> <strong className="text-white">09:30 até 12:30 (Hoje)</strong></p>
+                      <p><span className="text-slate-400">Local:</span> <strong className="text-white">{formData.name || 'Inovae Agenda'}</strong></p>
                     </div>
 
                     <div className="w-full py-2 text-center bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-xl text-[10px]">
@@ -1059,7 +1059,7 @@ export const CompanySettingsPage: React.FC = () => {
                           R$ 180,00
                         </span>
                         <div
-                          className="mt-1 px-2.5 py-1 text-white rounded-lg text-[9px] font-bold flex items-center gap-1 shadow-xs"
+                          className="mt-1 px-2.5 py-1 text-stone-900 rounded-lg text-[9px] font-black flex items-center gap-1 shadow-xs"
                           style={{ backgroundColor: formData.primaryColor }}
                         >
                           <span>Agendar</span>
@@ -1079,7 +1079,7 @@ export const CompanySettingsPage: React.FC = () => {
                           R$ 65,00
                         </span>
                         <div
-                          className="mt-1 px-2.5 py-1 text-white rounded-lg text-[9px] font-bold flex items-center gap-1 shadow-xs"
+                          className="mt-1 px-2.5 py-1 text-stone-900 rounded-lg text-[9px] font-black flex items-center gap-1 shadow-xs"
                           style={{ backgroundColor: formData.primaryColor }}
                         >
                           <span>Agendar</span>
@@ -1090,7 +1090,7 @@ export const CompanySettingsPage: React.FC = () => {
 
                     {/* Botão de Exemplo */}
                     <div
-                      className="w-full py-2.5 text-white font-bold rounded-xl text-center text-xs shadow-md mt-2"
+                      className="w-full py-2.5 text-stone-900 font-black rounded-xl text-center text-xs shadow-md mt-2"
                       style={{ backgroundColor: formData.primaryColor }}
                     >
                       Continuar para Escolha do Horário

@@ -151,7 +151,7 @@ export class AuthService {
           document: dto.companyDocument || null,
           email: dto.ownerEmail,
           settings: {
-            primaryColor: '#6B3E26',
+            primaryColor: '#E6D4B0',
             publicTheme: 'light',
             requiresDeposit: false,
             depositValue: 'R$ 0',

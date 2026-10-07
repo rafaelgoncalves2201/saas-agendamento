@@ -4,67 +4,67 @@
 
 @layer base {
   :root {
-    /* Fundo Bege & Detalhes Marrom Nobre */
-    --background: 40 33% 95%;      /* #F8F5EE - Bege suave luxo */
-    --foreground: 24 35% 14%;      /* #2B1D15 - Café escuro legível */
+    /* Fundo Marfim Suave & Detalhes Bege Inovae Agenda (#E6D4B0) */
+    --background: 40 30% 98%;      /* Marfim neutro e limpo */
+    --foreground: 0 0% 13%;        /* #212121 - Texto escuro nítido e legível */
 
-    --card: 40 35% 99%;            /* #FDFCF9 - Marfim suave */
-    --card-foreground: 24 35% 14%;
+    --card: 0 0% 100%;            /* Branco puro */
+    --card-foreground: 0 0% 13%;
 
-    --popover: 40 35% 99%;
-    --popover-foreground: 24 35% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
 
-    --primary: 22 48% 28%;         /* #6B3E26 - Marrom nobre chocolate */
-    --primary-foreground: 40 33% 96%; /* #FAF7F2 - Texto bege/marfim sobre marrom */
+    --primary: 40 53% 80%;         /* #E6D4B0 - Bege/Creme da imagem */
+    --primary-foreground: 0 0% 13%; /* Texto escuro contrastante e legível sobre o bege */
 
-    --secondary: 38 25% 90%;       /* #EFE9DF - Bege areia secundário */
-    --secondary-foreground: 24 35% 14%;
+    --secondary: 40 35% 93%;       /* #F4EDE0 - Bege suave secundário */
+    --secondary-foreground: 0 0% 13%;
 
-    --muted: 38 25% 90%;           /* #EFE9DF */
-    --muted-foreground: 26 16% 41%; /* #796758 - Taupe quente */
+    --muted: 40 30% 94%;           /* #F5EFE3 */
+    --muted-foreground: 0 0% 45%;   /* #737373 - Cinza neutro legível */
 
-    --accent: 38 25% 90%;
-    --accent-foreground: 24 35% 14%;
+    --accent: 40 53% 80%;          /* #E6D4B0 */
+    --accent-foreground: 0 0% 13%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 40 33% 96%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 36 24% 85%;          /* #E2D9CC - Borda bege sofisticada */
-    --input: 36 24% 85%;
-    --ring: 22 48% 28%;            /* #6B3E26 */
+    --border: 40 25% 86%;          /* #E6DEC9 - Borda creme suave */
+    --input: 40 25% 86%;
+    --ring: 40 53% 80%;            /* #E6D4B0 */
 
     --radius: 0.75rem;
   }
 
   .dark {
-    /* Modo Escuro: Café Espresso & Caramelo Dourado */
-    --background: 23 27% 6%;       /* #120D0A - Café torrado profundo */
-    --foreground: 37 35% 93%;      /* #F5EFE6 - Marfim quente */
+    /* Modo Escuro Sofisticado com Acentos Bege #E6D4B0 */
+    --background: 240 10% 8%;      /* Preto/Grafite neutro e elegante */
+    --foreground: 40 30% 95%;      /* Marfim claro legível */
 
-    --card: 24 24% 10%;            /* #1F1712 - Chocolate escuro */
-    --card-foreground: 37 35% 93%;
+    --card: 240 10% 12%;           /* Grafite refinado */
+    --card-foreground: 40 30% 95%;
 
-    --popover: 24 24% 10%;
-    --popover-foreground: 37 35% 93%;
+    --popover: 240 10% 12%;
+    --popover-foreground: 40 30% 95%;
 
-    --primary: 26 53% 54%;         /* #C88452 - Caramelo âmbar quente */
-    --primary-foreground: 23 27% 6%;
+    --primary: 40 53% 80%;         /* #E6D4B0 - Bege/Creme Inovae Agenda */
+    --primary-foreground: 0 0% 10%; /* Texto escuro sobre o bege */
 
-    --secondary: 25 21% 15%;       /* #2D221A */
-    --secondary-foreground: 37 35% 93%;
+    --secondary: 240 8% 18%;
+    --secondary-foreground: 40 30% 95%;
 
-    --muted: 25 21% 15%;
-    --muted-foreground: 28 14% 60%; /* #9F8E80 */
+    --muted: 240 8% 18%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 25 21% 15%;
-    --accent-foreground: 37 35% 93%;
+    --accent: 40 53% 80%;
+    --accent-foreground: 0 0% 10%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 37 35% 93%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 25 21% 18%;          /* #382A21 */
-    --input: 25 21% 18%;
-    --ring: 26 53% 54%;
+    --border: 240 8% 20%;
+    --input: 240 8% 20%;
+    --ring: 40 53% 80%;
   }
 }
 

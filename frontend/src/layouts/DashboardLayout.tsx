@@ -70,15 +70,15 @@ export const DashboardLayout: React.FC = () => {
   ];
 
   const companySlug = companyData?.slug || user?.company?.slug;
-  const primaryColor = companyData?.settings?.primaryColor || '#6B3E26';
+  const primaryColor = companyData?.settings?.primaryColor || '#E6D4B0';
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#120D0A] text-[#2B1D15] dark:text-[#F8F5EE] flex flex-col md:flex-row transition-colors">
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-slate-950 text-stone-900 dark:text-stone-100 flex flex-col md:flex-row transition-colors">
       {/* Mobile Topbar */}
-      <div className="md:hidden bg-white dark:bg-[#1F1712] border-b border-[#E2D9CC] dark:border-[#382A21] px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+      <div className="md:hidden bg-white dark:bg-slate-900 border-b border-[#EAE1D2] dark:border-slate-800 px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-xs">
         <div className="flex items-center gap-2">
           <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold overflow-hidden shadow-xs"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-stone-900 font-bold overflow-hidden shadow-xs"
             style={{ backgroundColor: primaryColor }}
           >
             {companyData?.logoUrl ? (
@@ -87,8 +87,8 @@ export const DashboardLayout: React.FC = () => {
               (companyData?.name?.charAt(0) || 'I').toUpperCase()
             )}
           </div>
-          <span className="font-bold text-[#2B1D15] dark:text-[#FAF7F2] text-sm truncate max-w-[140px]">
-            {companyData?.name || 'Inova Agenda'}
+          <span className="font-bold text-stone-900 dark:text-white text-sm truncate max-w-[140px]">
+            {companyData?.name || 'Inovae Agenda'}
           </span>
         </div>
 
@@ -96,7 +96,7 @@ export const DashboardLayout: React.FC = () => {
           {/* Quick theme toggle for mobile */}
           <button
             onClick={() => setTheme(effectiveTheme === 'dark' ? 'light' : 'dark')}
-            className="p-2 text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white rounded-lg hover:bg-[#FAF8F5] dark:hover:bg-[#251C16] transition-colors"
+            className="p-2 text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white rounded-lg hover:bg-[#FAF8F5] dark:hover:bg-slate-800 transition-colors"
             title="Alternar Tema Claro/Escuro"
           >
             {effectiveTheme === 'dark' ? <Sun size={19} className="text-amber-400" /> : <Moon size={19} />}
@@ -104,7 +104,7 @@ export const DashboardLayout: React.FC = () => {
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-white rounded-lg"
+            className="p-2 text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white rounded-lg"
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -121,15 +121,15 @@ export const DashboardLayout: React.FC = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-[#1A130E] border-r border-[#E2D9CC] dark:border-[#382A21] flex flex-col justify-between transition-transform duration-200 ease-in-out md:translate-x-0 md:static ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r border-[#EAE1D2] dark:border-slate-800 flex flex-col justify-between transition-transform duration-200 ease-in-out md:translate-x-0 md:static ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="overflow-y-auto flex-1">
           {/* Logo & Tenant Info */}
-          <div className="p-5 border-b border-[#E2D9CC] dark:border-[#382A21] flex items-center gap-3">
+          <div className="p-5 border-b border-[#EAE1D2] dark:border-slate-800 flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm overflow-hidden shrink-0"
+              className="w-10 h-10 rounded-xl flex items-center justify-center text-stone-900 font-bold text-lg shadow-sm overflow-hidden shrink-0"
               style={{ backgroundColor: primaryColor }}
             >
               {companyData?.logoUrl ? (
@@ -139,12 +139,12 @@ export const DashboardLayout: React.FC = () => {
               )}
             </div>
             <div className="overflow-hidden">
-              <h2 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-sm truncate">
-                {companyData?.name || 'Inova Agenda'}
+              <h2 className="font-bold text-stone-900 dark:text-white text-sm truncate">
+                {companyData?.name || 'Inovae Agenda'}
               </h2>
               <span
                 className="text-xs font-semibold"
-                style={{ color: primaryColor }}
+                style={{ color: primaryColor === '#E6D4B0' ? '#9E7E45' : primaryColor }}
               >
                 Plano {companyData?.subscription?.plan?.name || 'Starter'}
               </span>
@@ -163,13 +163,13 @@ export const DashboardLayout: React.FC = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-[#FAF5ED] dark:bg-[#2B1F14] text-[#6B3E26] dark:text-[#E2CEBC] font-bold border border-[#CDB196]/40 dark:border-[#523A2C]'
-                      : 'text-[#796758] dark:text-[#CDB196] hover:bg-[#FAF8F5] dark:hover:bg-[#251C16] hover:text-[#2B1D15] dark:hover:text-white'
+                      ? 'bg-[#E6D4B0]/25 dark:bg-[#E6D4B0]/15 text-stone-900 dark:text-[#E6D4B0] font-bold border border-[#E6D4B0]/50'
+                      : 'text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] dark:hover:bg-slate-800 hover:text-stone-900 dark:hover:text-white'
                   }`}
                 >
                   <Icon
                     size={17}
-                    className={isActive ? 'text-[#6B3E26] dark:text-[#E2CEBC]' : 'text-[#796758] dark:text-[#CDB196]'}
+                    className={isActive ? 'text-stone-900 dark:text-[#E6D4B0]' : 'text-stone-500 dark:text-slate-400'}
                   />
                   <span>{item.label}</span>
                 </Link>
@@ -178,7 +178,7 @@ export const DashboardLayout: React.FC = () => {
 
             {/* Super Admin Area Link */}
             {user?.role === 'SUPER_ADMIN' && (
-              <div className="pt-3 mt-3 border-t border-[#E2D9CC] dark:border-[#382A21]">
+              <div className="pt-3 mt-3 border-t border-[#EAE1D2] dark:border-slate-800">
                 <Link
                   to="/admin"
                   className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors"
@@ -192,23 +192,23 @@ export const DashboardLayout: React.FC = () => {
         </div>
 
         {/* Footer info & Public link */}
-        <div className="p-4 border-t border-[#E2D9CC] dark:border-[#382A21] space-y-3">
+        <div className="p-4 border-t border-[#EAE1D2] dark:border-slate-800 space-y-3">
           {/* Seletor de Tema */}
           <div>
-            <div className="flex items-center justify-between text-[11px] text-[#796758] dark:text-[#CDB196] font-semibold mb-1.5 px-0.5">
+            <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-slate-400 font-semibold mb-1.5 px-0.5">
               <span>Aparência</span>
-              <span className="text-[10px] text-[#6B3E26] dark:text-[#E2CEBC] font-bold">
+              <span className="text-[10px] text-stone-800 dark:text-[#E6D4B0] font-bold">
                 {theme === 'system' ? 'Padrão' : theme === 'dark' ? 'Escuro' : 'Claro'}
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-1 bg-[#FAF8F5] dark:bg-[#251C16] p-1 rounded-xl border border-[#E2D9CC] dark:border-[#382A21]">
+            <div className="grid grid-cols-3 gap-1 bg-[#FAF8F5] dark:bg-slate-800/60 p-1 rounded-xl border border-[#EAE1D2] dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => setTheme('system')}
                 className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   theme === 'system'
-                    ? 'bg-white dark:bg-[#34241B] text-[#6B3E26] dark:text-white shadow-xs'
-                    : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-slate-200'
+                    ? 'bg-[#E6D4B0] text-stone-900 shadow-xs font-bold'
+                    : 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200'
                 }`}
                 title="Padrão do Dispositivo"
               >
@@ -221,8 +221,8 @@ export const DashboardLayout: React.FC = () => {
                 onClick={() => setTheme('light')}
                 className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   theme === 'light'
-                    ? 'bg-white dark:bg-[#34241B] text-[#6B3E26] dark:text-white shadow-xs'
-                    : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-slate-200'
+                    ? 'bg-[#E6D4B0] text-stone-900 shadow-xs font-bold'
+                    : 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200'
                 }`}
                 title="Modo Claro"
               >
@@ -235,8 +235,8 @@ export const DashboardLayout: React.FC = () => {
                 onClick={() => setTheme('dark')}
                 className={`py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                   theme === 'dark'
-                    ? 'bg-white dark:bg-[#34241B] text-[#6B3E26] dark:text-white shadow-xs'
-                    : 'text-[#796758] dark:text-[#CDB196] hover:text-[#2B1D15] dark:hover:text-slate-200'
+                    ? 'bg-[#E6D4B0] text-stone-900 shadow-xs font-bold'
+                    : 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-slate-200'
                 }`}
                 title="Modo Escuro"
               >
@@ -251,22 +251,22 @@ export const DashboardLayout: React.FC = () => {
               href={`/empresa/${companySlug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-[#6B3E26] dark:text-[#E2CEBC] bg-[#FAF5ED] dark:bg-[#261E18] hover:bg-[#F0EAE1] rounded-xl border border-[#CDB196]/40 dark:border-[#523A2C] transition-colors"
+              className="flex items-center justify-between w-full px-3 py-2 text-xs font-bold text-stone-900 dark:text-stone-100 bg-[#FAF8F5] dark:bg-slate-800 hover:bg-[#E6D4B0]/30 rounded-xl border border-[#EAE1D2] dark:border-slate-700 transition-colors"
             >
               <span>Ver Página Pública</span>
-              <ExternalLink size={13} className="text-[#6B3E26] dark:text-[#E2CEBC]" />
+              <ExternalLink size={13} className="text-stone-900 dark:text-[#E6D4B0]" />
             </a>
           )}
 
-          <div className="flex items-center justify-between pt-2 border-t border-[#E2D9CC] dark:border-[#382A21]">
+          <div className="flex items-center justify-between pt-2 border-t border-[#EAE1D2] dark:border-slate-800">
             <div className="overflow-hidden">
-              <p className="text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] truncate">{user?.name}</p>
-              <p className="text-[11px] text-[#796758] dark:text-[#CDB196] truncate">{user?.email}</p>
+              <p className="text-xs font-bold text-stone-900 dark:text-white truncate">{user?.name}</p>
+              <p className="text-[11px] text-stone-500 dark:text-slate-400 truncate">{user?.email}</p>
             </div>
             <button
               onClick={handleLogout}
               title="Sair"
-              className="p-1.5 text-[#796758] hover:text-red-600 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-stone-500 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
             >
               <LogOut size={16} />
             </button>

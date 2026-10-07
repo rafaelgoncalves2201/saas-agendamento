@@ -249,8 +249,8 @@ export const AvailabilityPage: React.FC = () => {
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#2B1D15] dark:text-[#FAF7F2]">Horários de Funcionamento</h1>
-          <p className="text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-white">Horários de Funcionamento</h1>
+          <p className="text-sm text-stone-500 dark:text-slate-400 mt-0.5">
             Configure turnos e intervalos de atendimento por dia (ex: manhã, tarde e noite).
           </p>
         </div>
@@ -258,7 +258,7 @@ export const AvailabilityPage: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#6B3E26] hover:bg-[#56311D] text-white text-sm font-bold rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-60"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-sm font-bold rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-60"
         >
           {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
           <span>Salvar Horários</span>
@@ -278,26 +278,26 @@ export const AvailabilityPage: React.FC = () => {
             <AlertCircle size={16} className="text-red-600 dark:text-red-400 shrink-0" />
             <span>{errorMessage}</span>
           </div>
-          <button onClick={() => setErrorMessage(null)} className="text-[#796758] hover:text-[#2B1D15] font-bold ml-2 cursor-pointer">
+          <button onClick={() => setErrorMessage(null)} className="text-stone-500 hover:text-stone-900 font-bold ml-2 cursor-pointer">
             ✕
           </button>
         </div>
       )}
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-[#1F1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl">
-          <Loader2 className="animate-spin text-[#6B3E26] dark:text-[#E2CEBC]" size={32} />
-          <span className="text-xs text-[#796758] dark:text-[#CDB196] mt-2 font-medium">Carregando horários cadastrados...</span>
+        <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl">
+          <Loader2 className="animate-spin text-stone-900 dark:text-[#E6D4B0]" size={32} />
+          <span className="text-xs text-stone-500 dark:text-slate-400 mt-2 font-medium">Carregando horários cadastrados...</span>
         </div>
       ) : (
-        <div className="bg-white dark:bg-[#1F1712] border border-[#E2D9CC] dark:border-[#382A21] rounded-2xl p-6 shadow-sm space-y-4">
-          <div className="text-xs text-[#6B584C] dark:text-[#CDB196] bg-[#FAF5ED] dark:bg-[#251C16] border border-[#E5D7C5] dark:border-[#382A21] p-3.5 rounded-xl flex items-center gap-2.5">
-            <Clock size={16} className="text-[#6B3E26] dark:text-[#E2CEBC] shrink-0" />
+        <div className="bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="text-xs text-[#6B584C] dark:text-slate-400 bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 p-3.5 rounded-xl flex items-center gap-2.5">
+            <Clock size={16} className="text-stone-900 dark:text-[#E6D4B0] shrink-0" />
             <span>
               <strong>Dica de horários fracionados:</strong> Você pode adicionar múltiplos turnos em um mesmo dia, por exemplo: 
-              <span className="font-mono font-bold bg-white dark:bg-[#1F1712] text-[#2B1D15] dark:text-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E2D9CC] dark:border-[#382A21] ml-1">08:00 às 12:00</span>, 
-              <span className="font-mono font-bold bg-white dark:bg-[#1F1712] text-[#2B1D15] dark:text-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E2D9CC] dark:border-[#382A21] ml-1">13:00 às 16:00</span> e 
-              <span className="font-mono font-bold bg-white dark:bg-[#1F1712] text-[#2B1D15] dark:text-[#FAF7F2] px-1.5 py-0.5 rounded border border-[#E2D9CC] dark:border-[#382A21] ml-1">16:30 às 19:30</span>. 
+              <span className="font-mono font-bold bg-white dark:bg-slate-900 text-stone-900 dark:text-white px-1.5 py-0.5 rounded border border-[#EAE1D2] dark:border-slate-800 ml-1">08:00 às 12:00</span>, 
+              <span className="font-mono font-bold bg-white dark:bg-slate-900 text-stone-900 dark:text-white px-1.5 py-0.5 rounded border border-[#EAE1D2] dark:border-slate-800 ml-1">13:00 às 16:00</span> e 
+              <span className="font-mono font-bold bg-white dark:bg-slate-900 text-stone-900 dark:text-white px-1.5 py-0.5 rounded border border-[#EAE1D2] dark:border-slate-800 ml-1">16:30 às 19:30</span>. 
               Os intervalos entre os turnos não serão exibidos aos clientes.
             </span>
           </div>
@@ -307,8 +307,8 @@ export const AvailabilityPage: React.FC = () => {
               key={dayItem.dayOfWeek}
               className={`p-4 rounded-xl border transition-all ${
                 dayItem.isActive
-                  ? 'border-[#E2D9CC] dark:border-[#382A21] bg-[#FAF8F5] dark:bg-[#251C16]'
-                  : 'border-[#EFE9DF] dark:border-[#2D221A] bg-[#F8F5EE]/40 dark:bg-[#1C1510]/50 opacity-60'
+                  ? 'border-[#EAE1D2] dark:border-slate-800 bg-[#FAF8F5] dark:bg-slate-800'
+                  : 'border-[#EAE1D2] dark:border-[#2D221A] bg-[#FAF8F5]/40 dark:bg-slate-900/50 opacity-60'
               }`}
             >
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -319,11 +319,11 @@ export const AvailabilityPage: React.FC = () => {
                     id={`day-${dayItem.dayOfWeek}`}
                     checked={dayItem.isActive}
                     onChange={(e) => handleToggleDay(dayIdx, e.target.checked)}
-                    className="w-4 h-4 accent-[#6B3E26] rounded cursor-pointer"
+                    className="w-4 h-4 accent-[#E6D4B0] rounded cursor-pointer"
                   />
                   <label
                     htmlFor={`day-${dayItem.dayOfWeek}`}
-                    className="text-sm font-bold text-[#2B1D15] dark:text-[#FAF7F2] cursor-pointer select-none"
+                    className="text-sm font-bold text-stone-900 dark:text-white cursor-pointer select-none"
                   >
                     {DAYS_OF_WEEK[dayItem.dayOfWeek]}
                   </label>
@@ -335,9 +335,9 @@ export const AvailabilityPage: React.FC = () => {
                     {dayItem.shifts.map((shift, shiftIdx) => (
                       <div
                         key={shift.id}
-                        className="flex items-center flex-wrap gap-2 text-xs bg-white dark:bg-[#1F1712] p-2.5 rounded-xl border border-[#E2D9CC] dark:border-[#382A21] shadow-2xs"
+                        className="flex items-center flex-wrap gap-2 text-xs bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-[#EAE1D2] dark:border-slate-800 shadow-2xs"
                       >
-                        <span className="text-[#796758] dark:text-[#CDB196] font-semibold w-16">
+                        <span className="text-stone-500 dark:text-slate-400 font-semibold w-16">
                           Turno {shiftIdx + 1}:
                         </span>
 
@@ -347,10 +347,10 @@ export const AvailabilityPage: React.FC = () => {
                           onChange={(e) =>
                             handleUpdateShift(dayIdx, shiftIdx, 'startTime', e.target.value)
                           }
-                          className="px-2.5 py-1 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-[#6B3E26]"
+                          className="px-2.5 py-1 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-[#E6D4B0]"
                         />
 
-                        <span className="text-[#9C8B7D] font-medium">até</span>
+                        <span className="text-stone-500 font-medium">até</span>
 
                         <input
                           type="time"
@@ -358,7 +358,7 @@ export const AvailabilityPage: React.FC = () => {
                           onChange={(e) =>
                             handleUpdateShift(dayIdx, shiftIdx, 'endTime', e.target.value)
                           }
-                          className="px-2.5 py-1 bg-[#FAF8F5] dark:bg-[#251C16] border border-[#D0C3B2] dark:border-[#4A392D] text-[#2B1D15] dark:text-[#FAF7F2] rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-[#6B3E26]"
+                          className="px-2.5 py-1 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-[#E6D4B0]"
                         />
 
                         {dayItem.shifts.length > 1 && (
@@ -371,7 +371,7 @@ export const AvailabilityPage: React.FC = () => {
                                 timeRange: `${shift.startTime} às ${shift.endTime}`,
                               })
                             }
-                            className="p-1.5 text-[#9C8B7D] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors ml-auto cursor-pointer"
+                            className="p-1.5 text-stone-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors ml-auto cursor-pointer"
                             title="Remover este turno"
                           >
                             <Trash2 size={15} />
@@ -383,14 +383,14 @@ export const AvailabilityPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleAddShift(dayIdx)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[#6B3E26] dark:text-[#E2CEBC] bg-[#F5EFE6] dark:bg-[#34241B] hover:bg-[#EFE4D6] dark:hover:bg-[#433024] border border-[#E2D9CC] dark:border-[#523A2C] transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-900 dark:text-[#E6D4B0] bg-[#FAF8F5] dark:bg-slate-800 hover:bg-[#EFE4D6] dark:hover:bg-[#433024] border border-[#EAE1D2] dark:border-slate-800 transition-colors cursor-pointer"
                     >
                       <Plus size={14} />
                       <span>Adicionar Turno / Intervalo</span>
                     </button>
                   </div>
                 ) : (
-                  <span className="text-xs text-[#9C8B7D] italic pt-1">
+                  <span className="text-xs text-stone-500 italic pt-1">
                     Fechado neste dia
                   </span>
                 )}

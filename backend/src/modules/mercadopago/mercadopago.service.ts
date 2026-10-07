@@ -293,9 +293,9 @@ export class MercadoPagoService {
     // Se estiver em modo de teste simulado
     if (professionalAccessToken.startsWith('TEST_')) {
       const mockPaymentId = `mp_pay_${Date.now()}`;
-      const mockQrCode = `00020126580014br.gov.bcb.pix0136test-inova-agenda-mock-pix-copia-e-cola-520400005303986540${amount.toFixed(
+      const mockQrCode = `00020126580014br.gov.bcb.pix0136test-inovae-agenda-mock-pix-copia-e-cola-520400005303986540${amount.toFixed(
         2,
-      )}5802BR5913Inova Agenda6009SAO PAULO62070503***6304MOCK`;
+      )}5802BR5914Inovae Agenda6009SAO PAULO62070503***6304MOCK`;
       const mockQrCodeBase64 =
         'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
 

@@ -141,18 +141,18 @@ export const AppointmentTrackingPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
-        <Loader2 className="animate-spin text-[#6B3E26]" size={36} />
+        <Loader2 className="animate-spin text-stone-700" size={36} />
       </div>
     );
   }
 
   if (error || !appointment) {
     return (
-      <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#1A120D] flex items-center justify-center p-4 text-center">
-        <div className="bg-white dark:bg-[#261E18] p-8 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] max-w-md shadow-sm">
+      <div className="min-h-screen bg-[#FAF8F5] dark:bg-slate-950 flex items-center justify-center p-4 text-center">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 max-w-md shadow-sm">
           <AlertCircle className="mx-auto text-red-500 mb-3" size={40} />
-          <h2 className="text-xl font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">Agendamento Não Encontrado</h2>
-          <p className="text-xs text-[#6B3E26] dark:text-[#CDB196]">
+          <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-1">Agendamento Não Encontrado</h2>
+          <p className="text-xs text-stone-500 dark:text-slate-400">
             Verifique se o link está correto ou se o agendamento já expirou.
           </p>
         </div>
@@ -166,7 +166,7 @@ export const AppointmentTrackingPage: React.FC = () => {
   const timeFormatted = format(start, 'HH:mm');
   const endTimeFormatted = format(end, 'HH:mm');
   const isDark = appointment.company?.settings?.publicTheme !== 'light';
-  const primaryColor = appointment.company?.settings?.primaryColor || '#6B3E26';
+  const primaryColor = appointment.company?.settings?.primaryColor || '#E6D4B0';
 
   const isMercadoPago = Boolean(
     appointment.pixQrCodeBase64 ||
@@ -191,8 +191,8 @@ export const AppointmentTrackingPage: React.FC = () => {
   const trackingWhatsappUrl = `https://wa.me/${cleanTrackingPhone}?text=${trackingWhatsappMsg}`;
 
   return (
-    <div className="min-h-screen bg-[#F8F5EE] text-[#2B1D15] flex flex-col items-center justify-start p-4 py-12">
-      <div className="w-full max-w-md bg-white border border-[#E2D9CC] rounded-3xl shadow-xl p-6 sm:p-8 space-y-6">
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 flex flex-col items-center justify-start p-4 py-12">
+      <div className="w-full max-w-md bg-white border border-[#EAE1D2] rounded-3xl shadow-xl p-6 sm:p-8 space-y-6">
         <div className="text-center">
           <span
             className={`inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-3 border ${
@@ -201,7 +201,7 @@ export const AppointmentTrackingPage: React.FC = () => {
                 : appointment.status === 'CONFIRMED'
                 ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
                 : appointment.status === 'COMPLETED'
-                ? 'bg-[#F0E6DC] border-[#6B3E26] text-[#6B3E26]'
+                ? 'bg-[#E6D4B0]/30 border-[#E6D4B0] text-stone-900'
                 : 'bg-red-50 border-red-200 text-red-700'
             }`}
           >
@@ -214,20 +214,20 @@ export const AppointmentTrackingPage: React.FC = () => {
               : 'Agendamento Cancelado'}
           </span>
 
-          <h1 className="text-2xl font-black text-[#2B1D15]">{appointment.company.name}</h1>
-          <p className="text-xs text-[#796758] mt-0.5 font-mono">Código: {appointment.clientManagementCode.slice(0, 8)}</p>
+          <h1 className="text-2xl font-black text-stone-900">{appointment.company.name}</h1>
+          <p className="text-xs text-stone-500 mt-0.5 font-mono">Código: {appointment.clientManagementCode.slice(0, 8)}</p>
         </div>
 
         {/* Alerta quando Aguardando Pagamento (Mercado Pago ou Sinal via Pix) */}
         {(appointment.status === 'PENDING' || appointment.status === 'PENDING_PAYMENT') && (
           !isMercadoPago ? (
             /* CASO 1: SINAL VIA CHAVE PIX */
-            <div className="p-5 bg-[#FAF5ED] border border-[#E5D7C5] rounded-3xl text-xs space-y-4 shadow-xs">
-              <div className="flex items-center gap-2 font-bold text-[#6B3E26]">
-                <Clock size={18} className="text-[#6B3E26] shrink-0 animate-pulse" />
+            <div className="p-5 bg-[#FAF8F5] border border-[#EAE1D2] rounded-3xl text-xs space-y-4 shadow-xs">
+              <div className="flex items-center gap-2 font-bold text-stone-900">
+                <Clock size={18} className="text-stone-800 shrink-0 animate-pulse" />
                 <span className="text-sm font-extrabold">Aguardando Pagamento do Sinal via Pix</span>
               </div>
-              <p className="text-xs text-[#5A4A3E] leading-relaxed">
+              <p className="text-xs text-stone-600 leading-relaxed">
                 Para confirmar seu agendamento, faça a transferência do sinal via Pix diretamente para a chave do estabelecimento e envie o comprovante no WhatsApp. O restante será acertado no atendimento.
               </p>
 
@@ -237,29 +237,29 @@ export const AppointmentTrackingPage: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold text-emerald-800 block">Sinal (Pix)</span>
                   <span className="text-sm font-black text-emerald-700 block mt-0.5">R$ {depositAmountNum.toFixed(2)}</span>
                 </div>
-                <div className="p-2.5 bg-white border border-[#E2D9CC] rounded-xl">
-                  <span className="text-[10px] uppercase font-bold text-[#796758] block">No Local</span>
-                  <span className="text-sm font-black text-[#2B1D15] block mt-0.5">R$ {remainingAmountNum.toFixed(2)}</span>
+                <div className="p-2.5 bg-white border border-[#EAE1D2] rounded-xl">
+                  <span className="text-[10px] uppercase font-bold text-stone-500 block">No Local</span>
+                  <span className="text-sm font-black text-stone-900 block mt-0.5">R$ {remainingAmountNum.toFixed(2)}</span>
                 </div>
-                <div className="p-2.5 bg-white border border-[#E2D9CC] rounded-xl">
-                  <span className="text-[10px] uppercase font-bold text-[#796758] block">Total</span>
-                  <span className="text-sm font-black text-[#2B1D15] block mt-0.5">R$ {totalPriceNum.toFixed(2)}</span>
+                <div className="p-2.5 bg-white border border-[#EAE1D2] rounded-xl">
+                  <span className="text-[10px] uppercase font-bold text-stone-500 block">Total</span>
+                  <span className="text-sm font-black text-stone-900 block mt-0.5">R$ {totalPriceNum.toFixed(2)}</span>
                 </div>
               </div>
 
               {/* Dados da Chave Pix */}
               <div className="space-y-3 pt-1">
                 {appointment.company.settings?.pixRecipientName && (
-                  <div className="p-2.5 bg-white rounded-xl border border-[#E2D9CC] text-left">
-                    <span className="text-[10px] text-[#796758] block font-medium">Titular / Favorecido:</span>
-                    <span className="font-bold text-[#2B1D15] text-xs">{appointment.company.settings.pixRecipientName}</span>
+                  <div className="p-2.5 bg-white rounded-xl border border-[#EAE1D2] text-left">
+                    <span className="text-[10px] text-stone-500 block font-medium">Titular / Favorecido:</span>
+                    <span className="font-bold text-stone-900 text-xs">{appointment.company.settings.pixRecipientName}</span>
                   </div>
                 )}
 
                 {appointment.company.settings?.pixKey && (
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-[#796758] font-bold uppercase tracking-wider text-[10px]">
+                      <span className="text-stone-500 font-bold uppercase tracking-wider text-[10px]">
                         Chave Pix ({appointment.company.settings?.pixKeyType || 'Chave'}):
                       </span>
                       {copiedPix && (
@@ -273,12 +273,12 @@ export const AppointmentTrackingPage: React.FC = () => {
                         type="text"
                         readOnly
                         value={appointment.company.settings.pixKey}
-                        className="w-full px-3 py-2 bg-white border border-[#D0C3B2] rounded-xl font-mono text-xs font-bold text-[#2B1D15] select-all truncate"
+                        className="w-full px-3 py-2 bg-white border border-[#EAE1D2] rounded-xl font-mono text-xs font-bold text-stone-900 select-all truncate"
                       />
                       <button
                         type="button"
                         onClick={() => handleCopyPix(appointment.company.settings.pixKey)}
-                        className="px-3.5 py-2 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs"
+                        className="px-3.5 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-xs"
                       >
                         {copiedPix ? <Check size={14} /> : <Copy size={14} />}
                         <span>{copiedPix ? 'Copiado!' : 'Copiar'}</span>
@@ -288,7 +288,7 @@ export const AppointmentTrackingPage: React.FC = () => {
                 )}
 
                 {appointment.company.settings?.depositInstructions && (
-                  <div className="p-2.5 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[11px] text-[#5A4A3E]">
+                  <div className="p-2.5 bg-amber-50/80 rounded-xl border border-amber-200/80 text-[11px] text-stone-700">
                     <strong>Instruções:</strong> {appointment.company.settings.depositInstructions}
                   </div>
                 )}
@@ -307,24 +307,24 @@ export const AppointmentTrackingPage: React.FC = () => {
             </div>
           ) : (
             /* CASO 2: MERCADO PAGO TOTAL (PIX OU CARTÃO EM ATÉ 12X) */
-            <div className="p-5 bg-[#FAF5ED] border border-[#E5D7C5] rounded-3xl text-xs space-y-4 shadow-xs">
-              <div className="flex items-center gap-2 font-bold text-[#6B3E26]">
-                <Clock size={18} className="text-[#6B3E26] shrink-0 animate-pulse" />
+            <div className="p-5 bg-[#FAF8F5] border border-[#EAE1D2] rounded-3xl text-xs space-y-4 shadow-xs">
+              <div className="flex items-center gap-2 font-bold text-stone-900">
+                <Clock size={18} className="text-stone-800 shrink-0 animate-pulse" />
                 <span className="text-sm font-extrabold">Aguardando Pagamento do Serviço</span>
               </div>
-              <p className="text-xs text-[#5A4A3E] leading-relaxed">
+              <p className="text-xs text-stone-600 leading-relaxed">
                 Seu horário está reservado por 15 minutos! Escolha pagar via Pix ou Cartão de Crédito abaixo para confirmar sua vaga na hora.
               </p>
 
               {/* Alternador de Forma de Pagamento */}
-              <div className="grid grid-cols-2 gap-2 bg-[#EFE9DF] p-1 rounded-2xl">
+              <div className="grid grid-cols-2 gap-2 bg-[#FAF8F5] border border-[#EAE1D2] p-1 rounded-2xl">
                 <button
                   type="button"
                   onClick={() => setPaymentTab('pix')}
                   className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     paymentTab === 'pix'
-                      ? 'bg-white text-[#6B3E26] shadow-sm'
-                      : 'text-[#796758] hover:text-[#2B1D15]'
+                      ? 'bg-[#E6D4B0] text-stone-900 shadow-xs'
+                      : 'text-stone-500 hover:text-stone-900'
                   }`}
                 >
                   <span>Pix Instantâneo</span>
@@ -334,8 +334,8 @@ export const AppointmentTrackingPage: React.FC = () => {
                   onClick={() => setPaymentTab('card')}
                   className={`py-2 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     paymentTab === 'card'
-                      ? 'bg-white text-[#6B3E26] shadow-sm'
-                      : 'text-[#796758] hover:text-[#2B1D15]'
+                      ? 'bg-[#E6D4B0] text-stone-900 shadow-xs'
+                      : 'text-stone-500 hover:text-stone-900'
                   }`}
                 >
                   <CreditCard size={14} />
@@ -348,14 +348,14 @@ export const AppointmentTrackingPage: React.FC = () => {
                 <div className="space-y-4">
                   {/* QR Code Pix Mercado Pago se disponível */}
                   {appointment.pixQrCodeBase64 && (
-                    <div className="p-4 bg-white rounded-2xl border border-[#E2D9CC] text-center space-y-2.5">
-                      <span className="text-[11px] font-black uppercase tracking-wider text-[#6B3E26] block">
+                    <div className="p-4 bg-white rounded-2xl border border-[#EAE1D2] text-center space-y-2.5">
+                      <span className="text-[11px] font-black uppercase tracking-wider text-stone-900 block">
                         QR Code Pix Mercado Pago
                       </span>
                       <img
                         src={`data:image/png;base64,${appointment.pixQrCodeBase64}`}
                         alt="QR Code Pix"
-                        className="w-44 h-44 mx-auto rounded-xl object-contain border border-[#E2D9CC] p-1"
+                        className="w-44 h-44 mx-auto rounded-xl object-contain border border-[#EAE1D2] p-1"
                       />
                       <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[10px] font-bold text-emerald-800">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -368,10 +368,10 @@ export const AppointmentTrackingPage: React.FC = () => {
                   {(appointment.pixCopiaECola || appointment.company.settings?.pixKey) && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#796758] font-bold uppercase tracking-wider text-[10px]">
+                        <span className="text-stone-500 font-bold uppercase tracking-wider text-[10px]">
                           {appointment.pixCopiaECola ? 'Código Pix Copia e Cola:' : 'Chave Pix:'}
                         </span>
-                        <span className="text-xs font-black text-[#6B3E26] bg-[#F5EFE6] px-2.5 py-0.5 rounded-md border border-[#E2CEBC]">
+                        <span className="text-xs font-black text-stone-900 bg-[#E6D4B0]/30 px-2.5 py-0.5 rounded-md border border-[#E6D4B0]">
                           Valor Total: R$ {totalPriceNum.toFixed(2)}
                         </span>
                       </div>
@@ -381,12 +381,12 @@ export const AppointmentTrackingPage: React.FC = () => {
                           type="text"
                           readOnly
                           value={appointment.pixCopiaECola || appointment.company.settings?.pixKey || ''}
-                          className="w-full px-3 py-2 bg-white border border-[#D0C3B2] rounded-xl font-mono text-xs font-bold text-[#2B1D15] select-all truncate"
+                          className="w-full px-3 py-2 bg-white border border-[#EAE1D2] rounded-xl font-mono text-xs font-bold text-stone-900 select-all truncate"
                         />
                         <button
                           type="button"
                           onClick={() => handleCopyPix(appointment.pixCopiaECola || appointment.company.settings?.pixKey)}
-                          className="px-3.5 py-2 bg-[#6B3E26] hover:bg-[#56311D] text-white rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs"
+                          className="px-3.5 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-xs"
                         >
                           {copiedPix ? <Check size={14} /> : <Copy size={14} />}
                           <span>{copiedPix ? 'Copiado!' : 'Copiar'}</span>
@@ -399,25 +399,25 @@ export const AppointmentTrackingPage: React.FC = () => {
 
               {/* OPÇÃO 2: CARTÃO DE CRÉDITO / DÉBITO */}
               {paymentTab === 'card' && (
-                <div className="p-4 bg-white rounded-2xl border border-[#E2D9CC] space-y-3.5 text-center">
+                <div className="p-4 bg-white rounded-2xl border border-[#EAE1D2] space-y-3.5 text-center">
                   <div className="w-12 h-12 rounded-2xl bg-sky-50 text-[#009EE3] flex items-center justify-center mx-auto">
                     <CreditCard size={24} />
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-[#2B1D15] text-sm">
+                    <h4 className="font-extrabold text-stone-900 text-sm">
                       Pague com Cartão no Mercado Pago
                     </h4>
-                    <p className="text-xs text-[#796758] mt-1">
+                    <p className="text-xs text-stone-500 mt-1">
                       Parcele em até 12x no cartão de crédito com toda a segurança oficial do Mercado Pago.
                     </p>
                   </div>
 
-                  <div className="p-3 bg-[#FAF8F5] rounded-xl border border-[#EFE9DF] text-left text-[11px] space-y-1.5 text-[#5A4A3E]">
-                    <p className="flex items-center gap-1.5 font-bold text-[#2B1D15]">
+                  <div className="p-3 bg-[#FAF8F5] rounded-xl border border-[#EAE1D2] text-left text-[11px] space-y-1.5 text-stone-700">
+                    <p className="flex items-center gap-1.5 font-bold text-stone-900">
                       <Check size={13} className="text-emerald-600" />
                       <span>Aceita as principais bandeiras (Visa, Master, Elo, etc.)</span>
                     </p>
-                    <p className="flex items-center gap-1.5 font-bold text-[#2B1D15]">
+                    <p className="flex items-center gap-1.5 font-bold text-stone-900">
                       <Check size={13} className="text-emerald-600" />
                       <span>Confirmação e liberação automática do agendamento</span>
                     </p>
@@ -444,55 +444,55 @@ export const AppointmentTrackingPage: React.FC = () => {
         )}
 
         {/* Detalhes do Atendimento */}
-        <div className="p-5 bg-[#FAF8F5] rounded-2xl border border-[#E2D9CC] space-y-3.5 text-xs">
+        <div className="p-5 bg-[#FAF8F5] rounded-2xl border border-[#EAE1D2] space-y-3.5 text-xs">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#F0E6DC] text-[#6B3E26] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#E6D4B0]/30 text-stone-900 flex items-center justify-center shrink-0">
               <Scissors size={16} />
             </div>
             <div>
-              <p className="text-[#796758] text-[10px] uppercase font-bold tracking-wider">Serviço</p>
-              <p className="font-bold text-[#2B1D15] text-sm">{appointment.service.name}</p>
+              <p className="text-stone-500 text-[10px] uppercase font-bold tracking-wider">Serviço</p>
+              <p className="font-bold text-stone-900 text-sm">{appointment.service.name}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#F0E6DC] text-[#6B3E26] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#E6D4B0]/30 text-stone-900 flex items-center justify-center shrink-0">
               <User size={16} />
             </div>
             <div>
-              <p className="text-[#796758] text-[10px] uppercase font-bold tracking-wider">Profissional</p>
-              <p className="font-bold text-[#2B1D15]">{appointment.professional.name}</p>
+              <p className="text-stone-500 text-[10px] uppercase font-bold tracking-wider">Profissional</p>
+              <p className="font-bold text-stone-900">{appointment.professional.name}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#F0E6DC] text-[#6B3E26] flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#E6D4B0]/30 text-stone-900 flex items-center justify-center shrink-0">
               <Calendar size={16} />
             </div>
             <div>
-              <p className="text-[#796758] text-[10px] uppercase font-bold tracking-wider">Data & Horário</p>
-              <p className="font-bold text-[#2B1D15]">
+              <p className="text-stone-500 text-[10px] uppercase font-bold tracking-wider">Data & Horário</p>
+              <p className="font-bold text-stone-900">
                 {dateFormatted} das {timeFormatted} às {endTimeFormatted} ({appointment.durationMinutes} min)
               </p>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[#E2D9CC] flex items-center justify-between">
+          <div className="pt-3 border-t border-[#EAE1D2] flex items-center justify-between">
             <div>
-              <p className="text-[#796758] text-[10px] uppercase font-bold">Valor do Serviço</p>
+              <p className="text-stone-500 text-[10px] uppercase font-bold">Valor do Serviço</p>
               <div className="flex items-baseline gap-2 flex-wrap">
                 {appointment.originalPrice && Number(appointment.originalPrice) > Number(appointment.priceAtBooking) && (
-                  <span className="text-[#9C8B7D] line-through text-xs font-semibold">
+                  <span className="text-stone-400 line-through text-xs font-semibold">
                     R$ {Number(appointment.originalPrice).toFixed(2)}
                   </span>
                 )}
-                <p className="font-black text-[#2B1D15] text-lg">
+                <p className="font-black text-stone-900 text-lg">
                   R$ {Number(appointment.priceAtBooking).toFixed(2)}
                 </p>
               </div>
             </div>
             {appointment.couponCode && (
-              <span className="text-[11px] font-bold text-[#6B3E26] bg-[#F0E6DC] border border-[#CDB196] px-2.5 py-1 rounded-full">
+              <span className="text-[11px] font-bold text-stone-900 bg-[#E6D4B0]/30 border border-[#E6D4B0] px-2.5 py-1 rounded-full">
                 Cupom: {appointment.couponCode}
               </span>
             )}
@@ -501,10 +501,10 @@ export const AppointmentTrackingPage: React.FC = () => {
 
         {/* Avaliação do Atendimento */}
         {appointment.status !== 'CANCELLED' && (
-          <div className="p-5 bg-[#FAF8F5] rounded-2xl border border-[#E2D9CC] space-y-3">
+          <div className="p-5 bg-[#FAF8F5] rounded-2xl border border-[#EAE1D2] space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-[#2B1D15] text-sm flex items-center gap-1.5">
-                <Star size={16} className="text-[#6B3E26] fill-[#6B3E26]" />
+              <h3 className="font-bold text-stone-900 text-sm flex items-center gap-1.5">
+                <Star size={16} className="text-amber-500 fill-amber-500" />
                 {appointment.review ? 'Sua Avaliação' : 'Avalie seu Atendimento'}
               </h3>
               {appointment.review && (
@@ -524,24 +524,24 @@ export const AppointmentTrackingPage: React.FC = () => {
                       className={
                         star <= appointment.review.rating
                           ? 'text-amber-500 fill-amber-500'
-                          : 'text-[#D0C3B2]'
+                          : 'text-[#EAE1D2]'
                       }
                     />
                   ))}
-                  <span className="ml-2 font-bold text-xs text-[#2B1D15]">
+                  <span className="ml-2 font-bold text-xs text-stone-900">
                     {appointment.review.rating}.0 / 5
                   </span>
                 </div>
                 {appointment.review.comment && (
-                  <p className="text-xs text-[#5A4A3E] italic bg-white p-3 rounded-xl border border-[#E2D9CC]">
+                  <p className="text-xs text-stone-700 italic bg-white p-3 rounded-xl border border-[#EAE1D2]">
                     "{appointment.review.comment}"
                   </p>
                 )}
-                <p className="text-[11px] text-[#796758]">Obrigado pelo seu feedback! Ele nos ajuda a manter a excelência.</p>
+                <p className="text-[11px] text-stone-500">Obrigado pelo seu feedback! Ele nos ajuda a manter a excelência.</p>
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-xs text-[#796758]">
+                <p className="text-xs text-stone-500">
                   Como foi ou está sendo sua experiência com {appointment.company.name}?
                 </p>
                 <div className="flex items-center gap-2">
@@ -557,12 +557,12 @@ export const AppointmentTrackingPage: React.FC = () => {
                         className={
                           star <= reviewRating
                             ? 'text-amber-500 fill-amber-500'
-                            : 'text-[#D0C3B2]'
+                            : 'text-[#EAE1D2]'
                         }
                       />
                     </button>
                   ))}
-                  <span className="ml-1 text-xs font-bold text-[#6B3E26]">
+                  <span className="ml-1 text-xs font-bold text-stone-900">
                     {reviewRating === 5
                       ? 'Excelente (5 estrelas)'
                       : reviewRating === 4
@@ -580,14 +580,14 @@ export const AppointmentTrackingPage: React.FC = () => {
                   onChange={(e) => setReviewComment(e.target.value)}
                   placeholder="Escreva um comentário sobre o atendimento (opcional)..."
                   rows={2}
-                  className="w-full text-xs p-3 bg-white border border-[#E2D9CC] rounded-xl text-[#2B1D15] placeholder:text-[#9C8B7D] focus:outline-none focus:border-[#6B3E26] focus:ring-1 focus:ring-[#6B3E26] transition-all resize-none"
+                  className="w-full text-xs p-3 bg-white border border-[#EAE1D2] rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-[#DAC295] focus:ring-1 focus:ring-[#E6D4B0] transition-all resize-none"
                 />
 
                 <button
                   type="button"
                   onClick={handleSubmitReview}
                   disabled={submittingReview}
-                  className="w-full py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
                 >
                   {submittingReview ? (
                     <>
@@ -625,10 +625,10 @@ export const AppointmentTrackingPage: React.FC = () => {
         {appointment.status === 'CONFIRMED' && (
           <div className="pt-2 text-center">
             {isSameDayOrPast ? (
-              <div className="p-3.5 bg-[#FAF8F5] border border-[#E2D9CC] rounded-2xl text-left flex items-start gap-2.5">
+              <div className="p-3.5 bg-[#FAF8F5] border border-[#EAE1D2] rounded-2xl text-left flex items-start gap-2.5">
                 <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={16} />
-                <div className="text-[11px] text-[#796758] leading-relaxed">
-                  <span className="font-bold text-[#2B1D15] block">Cancelamento online indisponível hoje</span>
+                <div className="text-[11px] text-stone-600 leading-relaxed">
+                  <span className="font-bold text-stone-900 block">Cancelamento online indisponível hoje</span>
                   Cancelamentos no dia do agendamento não podem ser feitos pelo sistema para evitar estornos de última hora. Fale diretamente com o estabelecimento pelo WhatsApp.
                 </div>
               </div>
@@ -646,10 +646,10 @@ export const AppointmentTrackingPage: React.FC = () => {
 
       {/* Modal Cancelar */}
       {cancelModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#120D0A]/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E2D9CC] rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl">
-            <h3 className="font-bold text-[#2B1D15] text-base">Confirmar Cancelamento</h3>
-            <p className="text-xs text-[#796758]">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-[#EAE1D2] rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl">
+            <h3 className="font-bold text-stone-900 text-base">Confirmar Cancelamento</h3>
+            <p className="text-xs text-stone-500">
               Por favor informe o motivo do cancelamento para avisarmos o profissional:
             </p>
 
@@ -660,14 +660,14 @@ export const AppointmentTrackingPage: React.FC = () => {
                 placeholder="Ex: Tive um imprevisto no trabalho..."
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
-                className="w-full p-3 bg-[#FAF8F5] border border-[#E2D9CC] text-[#2B1D15] rounded-xl text-xs focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                className="w-full p-3 bg-[#FAF8F5] border border-[#EAE1D2] text-stone-900 rounded-xl text-xs focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
               />
 
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setCancelModalOpen(false)}
-                  className="px-4 py-2 text-[#796758] hover:bg-[#F8F5EE] rounded-xl text-xs font-semibold cursor-pointer"
+                  className="px-4 py-2 text-stone-500 hover:bg-[#FAF8F5] rounded-xl text-xs font-semibold cursor-pointer"
                 >
                   Voltar
                 </button>

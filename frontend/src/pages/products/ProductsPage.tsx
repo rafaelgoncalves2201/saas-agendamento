@@ -360,10 +360,10 @@ export const ProductsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-white">
             Controle de Estoque & Insumos
           </h1>
-          <p className="text-sm text-[#796758] dark:text-[#CDB196] mt-0.5">
+          <p className="text-sm text-stone-500 dark:text-slate-400 mt-0.5">
             Gerencie os insumos de atendimento, materiais de trabalho e estoque da sua empresa.
           </p>
         </div>
@@ -371,7 +371,7 @@ export const ProductsPage: React.FC = () => {
         {isFeatureAllowed && (
           <button
             onClick={handleOpenCreateModal}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer shrink-0"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer shrink-0"
           >
             <Plus size={16} />
             <span>Novo item</span>
@@ -381,20 +381,20 @@ export const ProductsPage: React.FC = () => {
 
       {/* Upgrade Banner if not allowed */}
       {!isFeatureAllowed && !loading && (
-        <div className="p-6 rounded-3xl bg-[#FAF5ED] dark:bg-[#261E18] border border-[#E2D9CC] dark:border-[#3D2C22] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="p-6 rounded-3xl bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base flex items-center gap-2">
-              <Boxes className="text-[#6B3E26] dark:text-[#CDB196]" size={20} />
+            <h3 className="font-bold text-stone-900 dark:text-white text-base flex items-center gap-2">
+              <Boxes className="text-stone-900 dark:text-[#E6D4B0]" size={20} />
               <span>Controle de Estoque & Insumos não habilitado</span>
             </h3>
-            <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+            <p className="text-xs text-stone-500 dark:text-slate-400">
               O controle de estoque e alertas de reposição está disponível exclusivamente nos planos{' '}
               <strong>Profissional</strong> (R$ 59,90) e <strong>Premium</strong> (R$ 99,90).
             </p>
           </div>
           <Link
             to="/subscription"
-            className="px-5 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl shrink-0 transition-all text-center"
+            className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl shrink-0 transition-all text-center"
           >
             Fazer Upgrade do Plano
           </Link>
@@ -420,25 +420,25 @@ export const ProductsPage: React.FC = () => {
       {/* KPI Cards (Matches image media_1790196496722.png) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Ativos */}
-        <div className="bg-white dark:bg-[#261E18] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
               ATIVOS
             </span>
-            <div className="text-3xl font-black text-[#2B1D15] dark:text-[#F8F5EE] mt-1">
+            <div className="text-3xl font-black text-stone-900 dark:text-white mt-1">
               {stats.totalActive}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#FAF5ED] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] flex items-center justify-center text-[#6B3E26] dark:text-[#CDB196]">
+          <div className="w-10 h-10 rounded-xl bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-900 dark:text-[#E6D4B0]">
             <Package size={20} />
           </div>
         </div>
 
         {/* Baixo */}
-        <div className="bg-white dark:bg-[#261E18] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
                 BAIXO
               </span>
               <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mt-1">
@@ -454,7 +454,7 @@ export const ProductsPage: React.FC = () => {
               type="button"
               onClick={handleSendAllLowStockAlerts}
               disabled={alertingAll}
-              className="mt-3 pt-2 border-t border-[#E2D9CC] dark:border-[#3D2C22] text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="mt-3 pt-2 border-t border-[#EAE1D2] dark:border-slate-800 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1.5 transition-colors cursor-pointer"
               title="Disparar aviso no WhatsApp dos profissionais para todos os itens em falta"
             >
               {alertingAll ? <Loader2 size={12} className="animate-spin text-emerald-600" /> : <MessageSquare size={12} />}
@@ -464,16 +464,16 @@ export const ProductsPage: React.FC = () => {
         </div>
 
         {/* Arquivados */}
-        <div className="bg-white dark:bg-[#261E18] p-5 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
               ARQUIVADOS
             </span>
-            <div className="text-3xl font-black text-[#796758] dark:text-[#CDB196] mt-1">
+            <div className="text-3xl font-black text-stone-500 dark:text-slate-400 mt-1">
               {stats.totalArchived}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#FAF5ED] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] flex items-center justify-center text-[#796758] dark:text-[#CDB196]">
+          <div className="w-10 h-10 rounded-xl bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-500 dark:text-slate-400">
             <Archive size={20} />
           </div>
         </div>
@@ -485,8 +485,8 @@ export const ProductsPage: React.FC = () => {
           onClick={() => setActiveTab('stock')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'stock'
-              ? 'bg-[#2B1D15] dark:bg-[#FAF8F5] text-white dark:text-[#2B1D15] shadow-sm'
-              : 'bg-white dark:bg-[#261E18] text-[#796758] dark:text-[#CDB196] border border-[#E2D9CC] dark:border-[#3D2C22] hover:text-[#2B1D15] dark:hover:text-white'
+              ? 'bg-[#1C1917] dark:bg-[#FAF8F5] text-white dark:text-stone-900 shadow-sm'
+              : 'bg-white dark:bg-slate-800 text-stone-500 dark:text-slate-400 border border-[#EAE1D2] dark:border-slate-800 hover:text-stone-900 dark:hover:text-white'
           }`}
         >
           <Package size={15} />
@@ -497,8 +497,8 @@ export const ProductsPage: React.FC = () => {
           onClick={() => setActiveTab('history')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
             activeTab === 'history'
-              ? 'bg-[#2B1D15] dark:bg-[#FAF8F5] text-white dark:text-[#2B1D15] shadow-sm'
-              : 'bg-white dark:bg-[#261E18] text-[#796758] dark:text-[#CDB196] border border-[#E2D9CC] dark:border-[#3D2C22] hover:text-[#2B1D15] dark:hover:text-white'
+              ? 'bg-[#1C1917] dark:bg-[#FAF8F5] text-white dark:text-stone-900 shadow-sm'
+              : 'bg-white dark:bg-slate-800 text-stone-500 dark:text-slate-400 border border-[#EAE1D2] dark:border-slate-800 hover:text-stone-900 dark:hover:text-white'
           }`}
         >
           <Clock size={15} />
@@ -510,18 +510,18 @@ export const ProductsPage: React.FC = () => {
       {activeTab === 'stock' && (
         <div className="space-y-4">
           {/* Filter Bar (Matches media_1790196496722.png) */}
-          <div className="bg-white dark:bg-[#261E18] p-3 rounded-2xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
+          <div className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-stretch md:items-center gap-3">
             <div className="relative flex-1">
               <Search
                 size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#796758] dark:text-[#CDB196]"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500 dark:text-slate-400"
               />
               <input
                 type="text"
                 placeholder="Buscar por nome ou SKU"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] placeholder-[#796758] dark:placeholder-[#CDB196]/60 focus:outline-none focus:ring-2 focus:ring-[#6B3E26]"
+                className="w-full pl-10 pr-4 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white placeholder-[#78716C] dark:placeholder-[#E6D4B0]/60 focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
               />
             </div>
 
@@ -529,7 +529,7 @@ export const ProductsPage: React.FC = () => {
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs font-semibold text-[#2B1D15] dark:text-[#F8F5EE] focus:outline-none focus:ring-2 focus:ring-[#6B3E26] cursor-pointer"
+                className="px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs font-semibold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#E6D4B0] cursor-pointer"
               >
                 <option value="ALL">Todos os tipos</option>
                 <option value="Insumo atendimento">Insumo atendimento</option>
@@ -543,8 +543,8 @@ export const ProductsPage: React.FC = () => {
                 onClick={() => setShowArchived(!showArchived)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
                   showArchived
-                    ? 'bg-[#6B3E26] text-white border-[#6B3E26]'
-                    : 'bg-[#FAF8F5] dark:bg-[#1E1713] text-[#796758] dark:text-[#CDB196] border-[#E2D9CC] dark:border-[#3D2C22] hover:text-[#2B1D15] dark:hover:text-white'
+                    ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs border-[#E6D4B0]'
+                    : 'bg-[#FAF8F5] dark:bg-[#1E1713] text-stone-500 dark:text-slate-400 border-[#EAE1D2] dark:border-slate-800 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 <Archive size={14} />
@@ -556,19 +556,19 @@ export const ProductsPage: React.FC = () => {
           {/* List of Items */}
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="animate-spin text-[#6B3E26]" size={32} />
+              <Loader2 className="animate-spin text-stone-900 dark:text-[#E6D4B0]" size={32} />
             </div>
           ) : products.length === 0 ? (
-            <div className="bg-white dark:bg-[#261E18] rounded-3xl p-12 text-center border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs space-y-3">
-              <div className="w-14 h-14 bg-[#FAF5ED] dark:bg-[#1E1713] rounded-2xl flex items-center justify-center mx-auto text-[#6B3E26] dark:text-[#CDB196]">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl p-12 text-center border border-[#EAE1D2] dark:border-slate-800 shadow-xs space-y-3">
+              <div className="w-14 h-14 bg-[#E6D4B0]/25 dark:bg-[#1E1713] rounded-2xl flex items-center justify-center mx-auto text-stone-900 dark:text-[#E6D4B0]">
                 <Package size={28} />
               </div>
-              <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-base">
+              <h3 className="font-bold text-stone-900 dark:text-white text-base">
                 {showArchived
                   ? 'Nenhum item arquivado'
                   : 'Nenhum insumo ou produto cadastrado'}
               </h3>
-              <p className="text-xs text-[#796758] dark:text-[#CDB196] max-w-sm mx-auto">
+              <p className="text-xs text-stone-500 dark:text-slate-400 max-w-sm mx-auto">
                 {showArchived
                   ? 'Você não possui itens arquivados no momento.'
                   : 'Cadastre os insumos e materiais utilizados nos seus atendimentos para controlar reposição e custos.'}
@@ -576,7 +576,7 @@ export const ProductsPage: React.FC = () => {
               {!showArchived && isFeatureAllowed && (
                 <button
                   onClick={handleOpenCreateModal}
-                  className="px-5 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
                 >
                   <Plus size={15} />
                   <span>Cadastrar Primeiro Item</span>
@@ -592,24 +592,24 @@ export const ProductsPage: React.FC = () => {
                 return (
                   <div
                     key={item.id}
-                    className={`bg-white dark:bg-[#261E18] rounded-2xl p-4 border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${
+                    className={`bg-white dark:bg-slate-800 rounded-2xl p-4 border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${
                       isLow
                         ? 'border-amber-300 dark:border-amber-800/80 bg-amber-50/20 dark:bg-amber-950/10'
-                        : 'border-[#E2D9CC] dark:border-[#3D2C22]'
+                        : 'border-[#EAE1D2] dark:border-slate-800'
                     }`}
                   >
                     {/* Left: Icon & Info */}
                     <div className="flex items-start sm:items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-[#FAF5ED] dark:bg-[#1E1713] border border-[#E5D7C5] dark:border-[#3D2C22] flex items-center justify-center text-[#6B3E26] dark:text-[#E2CEBC] shrink-0">
+                      <div className="w-12 h-12 rounded-2xl bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-900 dark:text-[#E6D4B0] shrink-0">
                         <Package size={22} />
                       </div>
 
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-[#2B1D15] dark:text-[#F8F5EE] text-sm">
+                          <h3 className="font-bold text-stone-900 dark:text-white text-sm">
                             {item.name}
                           </h3>
-                          <span className="px-2.5 py-0.5 bg-[#FAF5ED] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-full text-[10px] font-bold text-[#6B3E26] dark:text-[#CDB196]">
+                          <span className="px-2.5 py-0.5 bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-full text-[10px] font-bold text-stone-900 dark:text-[#E6D4B0]">
                             {item.type || 'Insumo de atendimento'}
                           </span>
                           {isLow && (
@@ -619,7 +619,7 @@ export const ProductsPage: React.FC = () => {
                             </span>
                           )}
                           {item.isArchived && (
-                            <span className="px-2 py-0.5 bg-[#E2D9CC] dark:bg-[#3D2C22] text-[#796758] dark:text-[#CDB196] rounded-full text-[10px] font-bold">
+                            <span className="px-2 py-0.5 bg-[#EAE1D2] dark:bg-[#1E293B] text-stone-500 dark:text-slate-400 rounded-full text-[10px] font-bold">
                               Arquivado
                             </span>
                           )}
@@ -627,14 +627,14 @@ export const ProductsPage: React.FC = () => {
 
                         <div className="flex items-center gap-4 text-xs flex-wrap">
                           <div className="flex items-baseline gap-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
                               SALDO:
                             </span>
                             <span
                               className={`font-black text-sm ${
                                 isLow
                                   ? 'text-amber-700 dark:text-amber-400'
-                                  : 'text-[#2B1D15] dark:text-[#F8F5EE]'
+                                  : 'text-stone-900 dark:text-white'
                               }`}
                             >
                               {item.stock} {item.unit || 'un'}
@@ -642,26 +642,26 @@ export const ProductsPage: React.FC = () => {
                           </div>
 
                           {item.minStock > 0 && (
-                            <span className="text-[#796758] dark:text-[#CDB196]">
+                            <span className="text-stone-500 dark:text-slate-400">
                               Mínimo: <strong>{item.minStock} {item.unit}</strong>
                             </span>
                           )}
 
                           {costNumber > 0 && (
-                            <span className="text-[#796758] dark:text-[#CDB196]">
+                            <span className="text-stone-500 dark:text-slate-400">
                               Custo: <strong>R$ {costNumber.toFixed(2)}</strong>
                             </span>
                           )}
 
                           {item.sku && (
-                            <span className="text-[#796758] dark:text-[#CDB196] font-mono text-[11px]">
+                            <span className="text-stone-500 dark:text-slate-400 font-mono text-[11px]">
                               SKU: {item.sku}
                             </span>
                           )}
                         </div>
 
                         {item.notes && (
-                          <p className="text-[11px] text-[#796758] dark:text-[#CDB196] italic">
+                          <p className="text-[11px] text-stone-500 dark:text-slate-400 italic">
                             Nota: {item.notes}
                           </p>
                         )}
@@ -669,7 +669,7 @@ export const ProductsPage: React.FC = () => {
                     </div>
 
                     {/* Right: Actions */}
-                    <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-[#E2D9CC] dark:border-[#3D2C22] shrink-0 justify-end flex-wrap">
+                    <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-[#EAE1D2] dark:border-slate-800 shrink-0 justify-end flex-wrap">
                       {isLow && (
                         <button
                           type="button"
@@ -690,7 +690,7 @@ export const ProductsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenMovementModal(item)}
-                        className="px-3.5 py-1.5 bg-[#FAF5ED] hover:bg-[#F5EFE6] dark:bg-[#201812] dark:hover:bg-[#2C211A] text-[#6B3E26] dark:text-[#E2CEBC] border border-[#E2D9CC] dark:border-[#4A3728] rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                        className="px-3.5 py-1.5 bg-[#E6D4B0]/25 hover:bg-[#FAF8F5] dark:bg-[#201812] dark:hover:bg-[#2C211A] text-stone-900 dark:text-[#E6D4B0] border border-[#EAE1D2] dark:border-[#4A3728] rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
                       >
                         <ArrowUpDown size={13} />
                         <span>Movimentar</span>
@@ -699,7 +699,7 @@ export const ProductsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenEditModal(item)}
-                        className="px-3 py-1.5 bg-white hover:bg-[#FAF8F5] dark:bg-[#261E18] dark:hover:bg-[#1E1713] text-[#2B1D15] dark:text-[#F8F5EE] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1"
+                        className="px-3 py-1.5 bg-white hover:bg-[#FAF8F5] dark:bg-slate-800 dark:hover:bg-[#1E1713] text-stone-900 dark:text-white border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1"
                       >
                         <Edit2 size={13} />
                         <span>Editar</span>
@@ -709,7 +709,7 @@ export const ProductsPage: React.FC = () => {
                         type="button"
                         onClick={() => handleToggleArchive(item)}
                         title={item.isArchived ? 'Desarquivar item' : 'Arquivar item'}
-                        className="p-2 text-[#796758] hover:text-[#2B1D15] dark:text-[#CDB196] dark:hover:text-white rounded-xl hover:bg-[#FAF8F5] dark:hover:bg-[#1E1713] transition-all cursor-pointer"
+                        className="p-2 text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-[#FAF8F5] dark:hover:bg-[#1E1713] transition-all cursor-pointer"
                       >
                         {item.isArchived ? <RotateCcw size={15} /> : <Archive size={15} />}
                       </button>
@@ -733,32 +733,32 @@ export const ProductsPage: React.FC = () => {
 
       {/* TAB 2: HISTÓRICO DE MOVIMENTAÇÕES */}
       {activeTab === 'history' && (
-        <div className="bg-white dark:bg-[#261E18] rounded-3xl border border-[#E2D9CC] dark:border-[#3D2C22] shadow-xs overflow-hidden">
-          <div className="p-4 sm:p-6 border-b border-[#E2D9CC] dark:border-[#3D2C22] flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-[#EAE1D2] dark:border-slate-800 shadow-xs overflow-hidden">
+          <div className="p-4 sm:p-6 border-b border-[#EAE1D2] dark:border-slate-800 flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+              <h2 className="text-base font-bold text-stone-900 dark:text-white">
                 Histórico de Movimentações
               </h2>
-              <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+              <p className="text-xs text-stone-500 dark:text-slate-400">
                 Registro de todas as entradas, saídas e ajustes de saldo realizados no estoque.
               </p>
             </div>
             <button
               onClick={fetchMovements}
-              className="text-xs font-bold text-[#6B3E26] dark:text-[#CDB196] hover:underline cursor-pointer"
+              className="text-xs font-bold text-stone-900 dark:text-[#E6D4B0] hover:underline cursor-pointer"
             >
               Atualizar
             </button>
           </div>
 
           {movements.length === 0 ? (
-            <div className="p-12 text-center text-xs text-[#796758] dark:text-[#CDB196]">
+            <div className="p-12 text-center text-xs text-stone-500 dark:text-slate-400">
               Nenhuma movimentação registrada até o momento.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#FAF8F5] dark:bg-[#1E1713] text-[#796758] dark:text-[#CDB196] uppercase text-[10px] tracking-wider border-b border-[#E2D9CC] dark:border-[#3D2C22]">
+                <thead className="bg-[#FAF8F5] dark:bg-[#1E1713] text-stone-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#EAE1D2] dark:border-slate-800">
                   <tr>
                     <th className="py-3 px-4">Data / Hora</th>
                     <th className="py-3 px-4">Insumo / Item</th>
@@ -768,7 +768,7 @@ export const ProductsPage: React.FC = () => {
                     <th className="py-3 px-4">Motivo / Observação</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E2D9CC] dark:divide-[#3D2C22] text-[#2B1D15] dark:text-[#F8F5EE]">
+                <tbody className="divide-y divide-[#EAE1D2] dark:divide-[#1E293B] text-stone-900 dark:text-white">
                   {movements.map((m) => {
                     const isEntry = m.type === 'ENTRY';
                     const isExit = m.type === 'EXIT';
@@ -779,7 +779,7 @@ export const ProductsPage: React.FC = () => {
 
                     return (
                       <tr key={m.id} className="hover:bg-[#FAF8F5] dark:hover:bg-[#1E1713]/60 transition-colors">
-                        <td className="py-3 px-4 text-[#796758] dark:text-[#CDB196] font-mono text-[11px] whitespace-nowrap">
+                        <td className="py-3 px-4 text-stone-500 dark:text-slate-400 font-mono text-[11px] whitespace-nowrap">
                           {dateFormatted}
                         </td>
                         <td className="py-3 px-4 font-bold">
@@ -815,10 +815,10 @@ export const ProductsPage: React.FC = () => {
                             {isEntry ? `+${m.quantity}` : isExit ? `-${m.quantity}` : `=${m.quantity}`}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-center text-[#796758] dark:text-[#CDB196] font-mono">
-                          {m.previousStock} → <strong className="text-[#2B1D15] dark:text-[#F8F5EE]">{m.newStock}</strong>
+                        <td className="py-3 px-4 text-center text-stone-500 dark:text-slate-400 font-mono">
+                          {m.previousStock} → <strong className="text-stone-900 dark:text-white">{m.newStock}</strong>
                         </td>
-                        <td className="py-3 px-4 text-[#796758] dark:text-[#CDB196]">
+                        <td className="py-3 px-4 text-stone-500 dark:text-slate-400">
                           {m.reason || '-'}
                         </td>
                       </tr>
@@ -834,14 +834,14 @@ export const ProductsPage: React.FC = () => {
       {/* MODAL 1: NOVO ITEM / EDITAR ITEM (Matches media_1790196496721.png) */}
       {itemModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-[#261E18] rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#E2D9CC] dark:border-[#3D2C22] max-h-[90vh] overflow-y-auto space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2D9CC] dark:border-[#3D2C22]">
-              <h2 className="text-lg font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-[#EAE1D2] dark:border-slate-800 max-h-[90vh] overflow-y-auto space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EAE1D2] dark:border-slate-800">
+              <h2 className="text-lg font-bold text-stone-900 dark:text-white">
                 {editingItem ? 'Editar item' : 'Novo item'}
               </h2>
               <button
                 onClick={() => setItemModalOpen(false)}
-                className="text-[#796758] hover:text-[#2B1D15] dark:hover:text-white p-1 cursor-pointer"
+                className="text-stone-500 hover:text-stone-900 dark:hover:text-white p-1 cursor-pointer"
               >
                 <X size={20} />
               </button>
@@ -850,12 +850,12 @@ export const ProductsPage: React.FC = () => {
             <form onSubmit={handleSaveItem} className="space-y-5">
               {/* SECTION: IDENTIFICAÇÃO */}
               <div className="space-y-3">
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+                <span className="text-[10px] font-black uppercase tracking-wider text-stone-500 dark:text-slate-400">
                   IDENTIFICAÇÃO
                 </span>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                  <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                     Nome *
                   </label>
                   <input
@@ -864,19 +864,19 @@ export const ProductsPage: React.FC = () => {
                     placeholder="Ex.: Gel base"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-semibold"
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-semibold"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                    <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                       Tipo
                     </label>
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none cursor-pointer font-medium"
+                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none cursor-pointer font-medium"
                     >
                       <option value="Insumo atendimento">Insumo atendimento</option>
                       <option value="Revenda">Revenda</option>
@@ -886,13 +886,13 @@ export const ProductsPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                    <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                       Unidade
                     </label>
                     <select
                       value={formData.unit}
                       onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none cursor-pointer font-medium"
+                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none cursor-pointer font-medium"
                     >
                       <option value="un">un (Unidade)</option>
                       <option value="ml">ml (Mililitros)</option>
@@ -908,7 +908,7 @@ export const ProductsPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                  <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                     SKU opcional
                   </label>
                   <input
@@ -916,20 +916,20 @@ export const ProductsPage: React.FC = () => {
                     placeholder="Código interno"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-mono"
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-mono"
                   />
                 </div>
               </div>
 
               {/* SECTION: CONTROLE */}
-              <div className="space-y-3 pt-2 border-t border-[#E2D9CC] dark:border-[#3D2C22]">
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#796758] dark:text-[#CDB196]">
+              <div className="space-y-3 pt-2 border-t border-[#EAE1D2] dark:border-slate-800">
+                <span className="text-[10px] font-black uppercase tracking-wider text-stone-500 dark:text-slate-400">
                   CONTROLE
                 </span>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                    <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                       {editingItem ? 'Saldo atual' : 'Saldo inicial'}
                     </label>
                     <input
@@ -937,12 +937,12 @@ export const ProductsPage: React.FC = () => {
                       min="0"
                       value={formData.stock}
                       onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-bold"
+                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-bold"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                    <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                       Estoque mínimo
                     </label>
                     <input
@@ -950,17 +950,17 @@ export const ProductsPage: React.FC = () => {
                       min="0"
                       value={formData.minStock}
                       onChange={(e) => setFormData({ ...formData, minStock: Number(e.target.value) })}
-                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-bold"
+                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-bold"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                  <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                     Custo
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#796758] dark:text-[#CDB196]">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-500 dark:text-slate-400">
                       R$
                     </span>
                     <input
@@ -970,15 +970,15 @@ export const ProductsPage: React.FC = () => {
                       placeholder="0,00"
                       value={formData.cost}
                       onChange={(e) => setFormData({ ...formData, cost: Number(e.target.value) })}
-                      className="w-full pl-10 pr-4 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none font-semibold"
+                      className="w-full pl-10 pr-4 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-semibold"
                     />
                   </div>
                 </div>
               </div>
 
               {/* SECTION: NOTAS */}
-              <div className="space-y-2 pt-2 border-t border-[#E2D9CC] dark:border-[#3D2C22]">
-                <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+              <div className="space-y-2 pt-2 border-t border-[#EAE1D2] dark:border-slate-800">
+                <label className="block text-xs font-bold text-stone-900 dark:text-white">
                   Notas
                 </label>
                 <textarea
@@ -986,23 +986,23 @@ export const ProductsPage: React.FC = () => {
                   placeholder="Fornecedor, referência ou observação interna"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none resize-none"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none resize-none"
                 />
               </div>
 
               {/* Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E2D9CC] dark:border-[#3D2C22]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EAE1D2] dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setItemModalOpen(false)}
-                  className="px-4 py-2.5 text-xs font-bold text-[#796758] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer"
+                  className="px-4 py-2.5 text-xs font-bold text-stone-500 hover:text-stone-900 dark:hover:text-white cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
                 >
                   {submitting && <Loader2 size={14} className="animate-spin" />}
                   <span>{editingItem ? 'Salvar alterações' : 'Salvar item'}</span>
@@ -1016,13 +1016,13 @@ export const ProductsPage: React.FC = () => {
       {/* MODAL 2: MOVIMENTAR ESTOQUE (Entrada, Saída, Ajuste) */}
       {movementModalOpen && selectedItemForMovement && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white dark:bg-[#261E18] rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E2D9CC] dark:border-[#3D2C22] space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2D9CC] dark:border-[#3D2C22]">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EAE1D2] dark:border-slate-800">
               <div>
-                <h2 className="text-base font-bold text-[#2B1D15] dark:text-[#F8F5EE]">
+                <h2 className="text-base font-bold text-stone-900 dark:text-white">
                   Movimentar Estoque
                 </h2>
-                <p className="text-xs text-[#796758] dark:text-[#CDB196]">
+                <p className="text-xs text-stone-500 dark:text-slate-400">
                   {selectedItemForMovement.name} (Saldo atual:{' '}
                   <strong>
                     {selectedItemForMovement.stock} {selectedItemForMovement.unit}
@@ -1032,7 +1032,7 @@ export const ProductsPage: React.FC = () => {
               </div>
               <button
                 onClick={() => setMovementModalOpen(false)}
-                className="text-[#796758] hover:text-[#2B1D15] dark:hover:text-white p-1 cursor-pointer"
+                className="text-stone-500 hover:text-stone-900 dark:hover:text-white p-1 cursor-pointer"
               >
                 <X size={20} />
               </button>
@@ -1041,7 +1041,7 @@ export const ProductsPage: React.FC = () => {
             <form onSubmit={handleSaveMovement} className="space-y-4">
               {/* Type Selection */}
               <div>
-                <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-2">
+                <label className="block text-xs font-bold text-stone-900 dark:text-white mb-2">
                   Tipo de Movimentação
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -1051,7 +1051,7 @@ export const ProductsPage: React.FC = () => {
                     className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center gap-1 ${
                       movementData.type === 'ENTRY'
                         ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-800 dark:text-emerald-200'
-                        : 'border-[#E2D9CC] dark:border-[#3D2C22] text-[#796758] dark:text-[#CDB196]'
+                        : 'border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400'
                     }`}
                   >
                     <ArrowUpRight size={16} />
@@ -1064,7 +1064,7 @@ export const ProductsPage: React.FC = () => {
                     className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center gap-1 ${
                       movementData.type === 'EXIT'
                         ? 'bg-red-50 dark:bg-red-950/60 border-red-500 text-red-800 dark:text-red-200'
-                        : 'border-[#E2D9CC] dark:border-[#3D2C22] text-[#796758] dark:text-[#CDB196]'
+                        : 'border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400'
                     }`}
                   >
                     <ArrowDownRight size={16} />
@@ -1077,7 +1077,7 @@ export const ProductsPage: React.FC = () => {
                     className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center gap-1 ${
                       movementData.type === 'ADJUSTMENT'
                         ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 text-blue-800 dark:text-blue-200'
-                        : 'border-[#E2D9CC] dark:border-[#3D2C22] text-[#796758] dark:text-[#CDB196]'
+                        : 'border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400'
                     }`}
                   >
                     <SlidersHorizontal size={16} />
@@ -1088,7 +1088,7 @@ export const ProductsPage: React.FC = () => {
 
               {/* Quantity */}
               <div>
-                <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                   {movementData.type === 'ADJUSTMENT'
                     ? 'Novo Saldo Total'
                     : 'Quantidade a Movimentar'}
@@ -1102,9 +1102,9 @@ export const ProductsPage: React.FC = () => {
                     onChange={(e) =>
                       setMovementData({ ...movementData, quantity: Number(e.target.value) })
                     }
-                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-sm font-bold text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                   />
-                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-[#796758] dark:text-[#CDB196]">
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-500 dark:text-slate-400">
                     {selectedItemForMovement.unit}
                   </span>
                 </div>
@@ -1112,7 +1112,7 @@ export const ProductsPage: React.FC = () => {
 
               {/* Reason */}
               <div>
-                <label className="block text-xs font-bold text-[#2B1D15] dark:text-[#F8F5EE] mb-1">
+                <label className="block text-xs font-bold text-stone-900 dark:text-white mb-1">
                   Motivo / Observação
                 </label>
                 <input
@@ -1122,7 +1122,7 @@ export const ProductsPage: React.FC = () => {
                   onChange={(e) =>
                     setMovementData({ ...movementData, reason: e.target.value })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#E2D9CC] dark:border-[#3D2C22] rounded-xl text-xs text-[#2B1D15] dark:text-[#F8F5EE] focus:ring-2 focus:ring-[#6B3E26] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                 />
               </div>
 
@@ -1156,18 +1156,18 @@ export const ProductsPage: React.FC = () => {
               })()}
 
               {/* Submit Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E2D9CC] dark:border-[#3D2C22]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#EAE1D2] dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setMovementModalOpen(false)}
-                  className="px-4 py-2.5 text-xs font-bold text-[#796758] hover:text-[#2B1D15] dark:hover:text-white cursor-pointer"
+                  className="px-4 py-2.5 text-xs font-bold text-stone-500 hover:text-stone-900 dark:hover:text-white cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 bg-[#6B3E26] hover:bg-[#54311E] text-white text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
                 >
                   {submitting && <Loader2 size={14} className="animate-spin" />}
                   <span>Confirmar Movimentação</span>
