@@ -114,38 +114,12 @@ export class WhatsAppService {
 
     const text = `Olá, *${appointment.client.name}*. Seu agendamento de *${appointment.service.name}* com *${appointment.professional.name}* para *${dateFormatted}* foi *cancelado*.\n\n${reason ? `Motivo: ${reason}\n` : ''}${refundNotice}\nCaso queira reagendar um novo horário, acesse:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/empresa/${appointment.company.slug}`;
 
-    const result = await this.provider.sendMessage({
-      toPhone: appointment.client.phone,
-      text,
-    });
-
-    await this.prisma.notificationLog.create({
-      data: {
-        companyId: appointment.companyId,
-        appointmentId: appointment.id,
-        channel: 'WHATSAPP',
-        recipientPhone: appointment.client.phone,
-        messageType: 'CANCELLATION',
-        status: result.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
-        providerMessageId: result.providerMessageId || null,
-        errorPayload: result.error || null,
-        sentAt: result.success ? new Date() : null,
-      },
-    });
-
-    // 2. Enviar notificação de cancelamento para o PROFISSIONAL (ou fallback para telefone da Empresa)
-    const profPhone = appointment.professional?.phone || appointment.company?.phone;
-    if (profPhone) {
-      const isClientAction = reason?.toLowerCase().includes('cliente') || reason?.toLowerCase().includes('autoatendimento');
-      const originNotice = isClientAction
-        ? '👤 *Cancelado por:* Cliente (autoatendimento online)\n'
-        : '🏢 *Cancelado por:* Estabelecimento / Painel\n';
-
-      const profText = `⚠️ *Agendamento Cancelado!*\n\nOlá, *${appointment.professional?.name || appointment.company.name}*, informamos que um agendamento na sua agenda foi cancelado:\n\n${originNotice}👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Horário:* ${dateFormatted}\n${reason ? `📝 *Motivo:* ${reason}\n` : ''}\nEsse horário já foi liberado na sua agenda para novos atendimentos.`;
-
-      const profResult = await this.provider.sendMessage({
-        toPhone: profPhone,
-        text: profText,
+    // 1. Notificação para o CLIENTE
+    try {
+      this.logger.log(`Enviando notificação de cancelamento para o cliente: ${appointment.client.phone}`);
+      const clientResult = await this.provider.sendMessage({
+        toPhone: appointment.client.phone,
+        text,
       });
 
       await this.prisma.notificationLog.create({
@@ -153,14 +127,51 @@ export class WhatsAppService {
           companyId: appointment.companyId,
           appointmentId: appointment.id,
           channel: 'WHATSAPP',
-          recipientPhone: profPhone,
-          messageType: 'CANCELLATION_PROFESSIONAL',
-          status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
-          providerMessageId: profResult.providerMessageId || null,
-          errorPayload: profResult.error || null,
-          sentAt: profResult.success ? new Date() : null,
+          recipientPhone: appointment.client.phone,
+          messageType: 'CANCELLATION',
+          status: clientResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+          providerMessageId: clientResult.providerMessageId || null,
+          errorPayload: clientResult.error || null,
+          sentAt: clientResult.success ? new Date() : null,
         },
       });
+    } catch (clientErr: any) {
+      this.logger.error(`Erro ao disparar cancelamento para o cliente: ${clientErr.message}`);
+    }
+
+    // 2. Enviar notificação de cancelamento para o PROFISSIONAL (ou fallback para telefone da Empresa)
+    const profPhone = appointment.professional?.phone || appointment.company?.phone;
+    if (profPhone) {
+      try {
+        this.logger.log(`Enviando notificação de cancelamento para o profissional: ${profPhone}`);
+        const isClientAction = reason?.toLowerCase().includes('cliente') || reason?.toLowerCase().includes('autoatendimento');
+        const originNotice = isClientAction
+          ? '👤 *Cancelado por:* Cliente (autoatendimento online)\n'
+          : '🏢 *Cancelado por:* Estabelecimento / Painel\n';
+
+        const profText = `⚠️ *Agendamento Cancelado!*\n\nOlá, *${appointment.professional?.name || appointment.company.name}*, informamos que um agendamento na sua agenda foi cancelado:\n\n${originNotice}👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Horário:* ${dateFormatted}\n${reason ? `📝 *Motivo:* ${reason}\n` : ''}\nEsse horário já foi liberado na sua agenda para novos atendimentos.`;
+
+        const profResult = await this.provider.sendMessage({
+          toPhone: profPhone,
+          text: profText,
+        });
+
+        await this.prisma.notificationLog.create({
+          data: {
+            companyId: appointment.companyId,
+            appointmentId: appointment.id,
+            channel: 'WHATSAPP',
+            recipientPhone: profPhone,
+            messageType: 'CANCELLATION_PROFESSIONAL',
+            status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+            providerMessageId: profResult.providerMessageId || null,
+            errorPayload: profResult.error || null,
+            sentAt: profResult.success ? new Date() : null,
+          },
+        });
+      } catch (profErr: any) {
+        this.logger.error(`Erro ao disparar cancelamento para o profissional: ${profErr.message}`);
+      }
     }
   }
 
@@ -185,32 +196,11 @@ export class WhatsAppService {
 
     const text = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi *reagendado* com sucesso!\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n${addressLine}\nVocê pode consultar seus detalhes a qualquer momento em:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
 
-    const result = await this.provider.sendMessage({
-      toPhone: appointment.client.phone,
-      text,
-    });
-
-    await this.prisma.notificationLog.create({
-      data: {
-        companyId: appointment.companyId,
-        appointmentId: appointment.id,
-        channel: 'WHATSAPP',
-        recipientPhone: appointment.client.phone,
-        messageType: 'RESCHEDULE',
-        status: result.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
-        providerMessageId: result.providerMessageId || null,
-        errorPayload: result.error || null,
-        sentAt: result.success ? new Date() : null,
-      },
-    });
-
-    // Enviar notificação de reagendamento para o PROFISSIONAL
-    if (appointment.professional?.phone) {
-      const profText = `🔄 *Agendamento Reagendado!*\n\nOlá, *${appointment.professional.name}*, um atendimento foi reagendado:\n\n👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n\nConsulte sua agenda atualizada no painel!`;
-
-      const profResult = await this.provider.sendMessage({
-        toPhone: appointment.professional.phone,
-        text: profText,
+    try {
+      this.logger.log(`Enviando notificação de reagendamento para o cliente: ${appointment.client.phone}`);
+      const result = await this.provider.sendMessage({
+        toPhone: appointment.client.phone,
+        text,
       });
 
       await this.prisma.notificationLog.create({
@@ -218,14 +208,46 @@ export class WhatsAppService {
           companyId: appointment.companyId,
           appointmentId: appointment.id,
           channel: 'WHATSAPP',
-          recipientPhone: appointment.professional.phone,
-          messageType: 'RESCHEDULE_PROFESSIONAL',
-          status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
-          providerMessageId: profResult.providerMessageId || null,
-          errorPayload: profResult.error || null,
-          sentAt: profResult.success ? new Date() : null,
+          recipientPhone: appointment.client.phone,
+          messageType: 'RESCHEDULE',
+          status: result.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+          providerMessageId: result.providerMessageId || null,
+          errorPayload: result.error || null,
+          sentAt: result.success ? new Date() : null,
         },
       });
+    } catch (clientErr: any) {
+      this.logger.error(`Erro ao disparar reagendamento para o cliente: ${clientErr.message}`);
+    }
+
+    // Enviar notificação de reagendamento para o PROFISSIONAL (ou fallback para telefone da Empresa)
+    const profPhone = appointment.professional?.phone || appointment.company?.phone;
+    if (profPhone) {
+      try {
+        this.logger.log(`Enviando notificação de reagendamento para o profissional: ${profPhone}`);
+        const profText = `🔄 *Agendamento Reagendado!*\n\nOlá, *${appointment.professional?.name || appointment.company.name}*, um atendimento foi reagendado:\n\n👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n\nConsulte sua agenda atualizada no painel!`;
+
+        const profResult = await this.provider.sendMessage({
+          toPhone: profPhone,
+          text: profText,
+        });
+
+        await this.prisma.notificationLog.create({
+          data: {
+            companyId: appointment.companyId,
+            appointmentId: appointment.id,
+            channel: 'WHATSAPP',
+            recipientPhone: profPhone,
+            messageType: 'RESCHEDULE_PROFESSIONAL',
+            status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+            providerMessageId: profResult.providerMessageId || null,
+            errorPayload: profResult.error || null,
+            sentAt: profResult.success ? new Date() : null,
+          },
+        });
+      } catch (profErr: any) {
+        this.logger.error(`Erro ao disparar reagendamento para o profissional: ${profErr.message}`);
+      }
     }
   }
 
