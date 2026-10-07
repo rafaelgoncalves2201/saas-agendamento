@@ -129,12 +129,18 @@ export class WhatsAppService {
       },
     });
 
-    // 2. Enviar notificação de cancelamento para o PROFISSIONAL
-    if (appointment.professional?.phone) {
-      const profText = `⚠️ *Agendamento Cancelado!*\n\nOlá, *${appointment.professional.name}*, informamos que um agendamento na sua agenda foi cancelado:\n\n👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Horário:* ${dateFormatted}\n${reason ? `📝 *Motivo:* ${reason}\n` : ''}\nEsse horário já foi liberado na sua agenda para novos atendimentos.`;
+    // 2. Enviar notificação de cancelamento para o PROFISSIONAL (ou fallback para telefone da Empresa)
+    const profPhone = appointment.professional?.phone || appointment.company?.phone;
+    if (profPhone) {
+      const isClientAction = reason?.toLowerCase().includes('cliente') || reason?.toLowerCase().includes('autoatendimento');
+      const originNotice = isClientAction
+        ? '👤 *Cancelado por:* Cliente (autoatendimento online)\n'
+        : '🏢 *Cancelado por:* Estabelecimento / Painel\n';
+
+      const profText = `⚠️ *Agendamento Cancelado!*\n\nOlá, *${appointment.professional?.name || appointment.company.name}*, informamos que um agendamento na sua agenda foi cancelado:\n\n${originNotice}👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Horário:* ${dateFormatted}\n${reason ? `📝 *Motivo:* ${reason}\n` : ''}\nEsse horário já foi liberado na sua agenda para novos atendimentos.`;
 
       const profResult = await this.provider.sendMessage({
-        toPhone: appointment.professional.phone,
+        toPhone: profPhone,
         text: profText,
       });
 
@@ -143,73 +149,7 @@ export class WhatsAppService {
           companyId: appointment.companyId,
           appointmentId: appointment.id,
           channel: 'WHATSAPP',
-          recipientPhone: appointment.professional.phone,
-          messageType: 'CANCELLATION_PROFESSIONAL',
-          status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
-          providerMessageId: profResult.providerMessageId || null,
-          errorPayload: profResult.error || null,
-          sentAt: profResult.success ? new Date() : null,
-        },
-      });
-    }
-  }
-
-    async sendCancellationNotification(appointmentId: string, reason?: string) {
-    const appointment = await this.prisma.appointment.findUnique({
-      where: { id: appointmentId },
-      include: {
-        company: true,
-        professional: true,
-        service: true,
-        client: true,
-      },
-    });
-
-    if (!appointment) return;
-
-    const dateFormatted = format(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
-
-    const hasRefund = reason?.includes('Estorno') || appointment.cancellationReason?.includes('Estorno');
-    const refundNotice = hasRefund
-      ? '\n💳 *Reembolso / Estorno:* O valor pago foi estornado integralmente para a mesma forma de pagamento utilizada (Pix ou Cartão de Crédito).\n'
-      : '';
-
-    const text = `Olá, *${appointment.client.name}*. Seu agendamento de *${appointment.service.name}* com *${appointment.professional.name}* para *${dateFormatted}* foi *cancelado*.\n\n${reason ? `Motivo: ${reason}\n` : ''}${refundNotice}\nCaso queira reagendar um novo horário, acesse:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/empresa/${appointment.company.slug}`;
-
-    const result = await this.provider.sendMessage({
-      toPhone: appointment.client.phone,
-      text,
-    });
-
-    await this.prisma.notificationLog.create({
-      data: {
-        companyId: appointment.companyId,
-        appointmentId: appointment.id,
-        channel: 'WHATSAPP',
-        recipientPhone: appointment.client.phone,
-        messageType: 'CANCELLATION',
-        status: result.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
-        providerMessageId: result.providerMessageId || null,
-        errorPayload: result.error || null,
-        sentAt: result.success ? new Date() : null,
-      },
-    });
-
-    // 2. Enviar notificação de cancelamento para o PROFISSIONAL
-    if (appointment.professional?.phone) {
-      const profText = `⚠️ *Agendamento Cancelado!*\n\nOlá, *${appointment.professional.name}*, informamos que um agendamento na sua agenda foi cancelado:\n\n👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Horário:* ${dateFormatted}\n${reason ? `📝 *Motivo:* ${reason}\n` : ''}\nEsse horário já foi liberado na sua agenda para novos atendimentos.`;
-
-      const profResult = await this.provider.sendMessage({
-        toPhone: appointment.professional.phone,
-        text: profText,
-      });
-
-      await this.prisma.notificationLog.create({
-        data: {
-          companyId: appointment.companyId,
-          appointmentId: appointment.id,
-          channel: 'WHATSAPP',
-          recipientPhone: appointment.professional.phone,
+          recipientPhone: profPhone,
           messageType: 'CANCELLATION_PROFESSIONAL',
           status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
           providerMessageId: profResult.providerMessageId || null,
