@@ -18,7 +18,7 @@ import {
   CreditCard,
   ExternalLink,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export const AppointmentTrackingPage: React.FC = () => {
@@ -109,8 +109,19 @@ export const AppointmentTrackingPage: React.FC = () => {
     }
   };
 
+  const isSameDayOrPast = appointment?.startDateTime
+    ? startOfDay(new Date(appointment.startDateTime)).getTime() <= startOfDay(new Date()).getTime()
+    : false;
+
   const handleCancel = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSameDayOrPast) {
+      alert(
+        'Cancelamentos no dia do agendamento não são permitidos pelo sistema para evitar estornos de última hora. Entre em contato diretamente com o estabelecimento.',
+      );
+      setCancelModalOpen(false);
+      return;
+    }
     setCancelling(true);
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -613,12 +624,22 @@ export const AppointmentTrackingPage: React.FC = () => {
         {/* Cancel Action */}
         {appointment.status === 'CONFIRMED' && (
           <div className="pt-2 text-center">
-            <button
-              onClick={() => setCancelModalOpen(true)}
-              className="text-xs text-red-600 hover:underline font-semibold cursor-pointer"
-            >
-              Cancelar este agendamento
-            </button>
+            {isSameDayOrPast ? (
+              <div className="p-3.5 bg-[#FAF8F5] border border-[#E2D9CC] rounded-2xl text-left flex items-start gap-2.5">
+                <AlertCircle className="text-amber-600 shrink-0 mt-0.5" size={16} />
+                <div className="text-[11px] text-[#796758] leading-relaxed">
+                  <span className="font-bold text-[#2B1D15] block">Cancelamento online indisponível hoje</span>
+                  Cancelamentos no dia do agendamento não podem ser feitos pelo sistema para evitar estornos de última hora. Fale diretamente com o estabelecimento pelo WhatsApp.
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setCancelModalOpen(true)}
+                className="text-xs text-red-600 hover:underline font-semibold cursor-pointer"
+              >
+                Cancelar este agendamento
+              </button>
+            )}
           </div>
         )}
       </div>

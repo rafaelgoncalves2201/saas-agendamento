@@ -14,7 +14,8 @@ import {
   UpdateAppointmentStatusDto,
 } from './dto/appointment.dto';
 import { AppointmentStatus, DepositType, Prisma } from '@prisma/client';
-import { addMinutes, differenceInHours, isBefore } from 'date-fns';
+import { addMinutes, differenceInHours, isBefore, startOfDay } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
 import { MercadoPagoService } from '../mercadopago/mercadopago.service';
 import { PlanTier, getPlanConfig } from '../../common/config/plans.config';
 
@@ -587,8 +588,19 @@ export class AppointmentsService {
       throw new BadRequestException('Atendimento já foi concluído e não pode ser cancelado');
     }
 
-    // Validar política de cancelamento da empresa (ex: antecedência mínima de 2 horas)
+    // Bloquear cancelamento no dia do agendamento (ou datas passadas) para não haver estorno automático pelo sistema
     const settings = (appointment.company.settings as Record<string, any>) || {};
+    const timezone = settings.timezone || 'America/Sao_Paulo';
+    const nowInZone = toZonedTime(new Date(), timezone);
+    const appointmentStartInZone = toZonedTime(appointment.startDateTime, timezone);
+
+    if (startOfDay(appointmentStartInZone) <= startOfDay(nowInZone)) {
+      throw new BadRequestException(
+        'Cancelamentos no dia do agendamento não são permitidos pelo sistema para evitar estornos de última hora. Entre em contato diretamente com o estabelecimento.',
+      );
+    }
+
+    // Validar política de cancelamento da empresa (ex: antecedência mínima de 2 horas)
     const cancellationPolicyHours = settings.cancellationPolicyHours || 2;
     const hoursNotice = differenceInHours(appointment.startDateTime, new Date());
 
