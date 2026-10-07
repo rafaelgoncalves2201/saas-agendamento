@@ -128,6 +128,30 @@ export class WhatsAppService {
         sentAt: result.success ? new Date() : null,
       },
     });
+
+    // 2. Enviar notificação de cancelamento para o PROFISSIONAL
+    if (appointment.professional?.phone) {
+      const profText = `⚠️ *Agendamento Cancelado!*\n\nOlá, *${appointment.professional.name}*, informamos que um agendamento na sua agenda foi cancelado:\n\n👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Horário:* ${dateFormatted}\n${reason ? `📝 *Motivo:* ${reason}\n` : ''}\nEsse horário já foi liberado na sua agenda para novos atendimentos.`;
+
+      const profResult = await this.provider.sendMessage({
+        toPhone: appointment.professional.phone,
+        text: profText,
+      });
+
+      await this.prisma.notificationLog.create({
+        data: {
+          companyId: appointment.companyId,
+          appointmentId: appointment.id,
+          channel: 'WHATSAPP',
+          recipientPhone: appointment.professional.phone,
+          messageType: 'CANCELLATION_PROFESSIONAL',
+          status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+          providerMessageId: profResult.providerMessageId || null,
+          errorPayload: profResult.error || null,
+          sentAt: profResult.success ? new Date() : null,
+        },
+      });
+    }
   }
 
   async sendRescheduleNotification(appointmentId: string) {
@@ -165,6 +189,30 @@ export class WhatsAppService {
         sentAt: result.success ? new Date() : null,
       },
     });
+
+    // Enviar notificação de reagendamento para o PROFISSIONAL
+    if (appointment.professional?.phone) {
+      const profText = `🔄 *Agendamento Reagendado!*\n\nOlá, *${appointment.professional.name}*, um atendimento foi reagendado:\n\n👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n\nConsulte sua agenda atualizada no painel!`;
+
+      const profResult = await this.provider.sendMessage({
+        toPhone: appointment.professional.phone,
+        text: profText,
+      });
+
+      await this.prisma.notificationLog.create({
+        data: {
+          companyId: appointment.companyId,
+          appointmentId: appointment.id,
+          channel: 'WHATSAPP',
+          recipientPhone: appointment.professional.phone,
+          messageType: 'RESCHEDULE_PROFESSIONAL',
+          status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+          providerMessageId: profResult.providerMessageId || null,
+          errorPayload: profResult.error || null,
+          sentAt: profResult.success ? new Date() : null,
+        },
+      });
+    }
   }
 
   /**
