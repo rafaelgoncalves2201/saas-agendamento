@@ -41,7 +41,7 @@ export class WhatsAppService {
     const dateFormatted = format(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
 
     // 3. Enviar mensagem para o CLIENTE
-    const clientText = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi confirmado com sucesso! ✅\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Data e Horário:* ${dateFormatted}\n💰 *Valor:* R$ ${Number(appointment.priceAtBooking).toFixed(2)}\n\nCaso precise consultar ou cancelar, utilize seu link exclusivo de autoatendimento:\n${process.env.APP_URL || 'http://localhost:5173'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
+    const clientText = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi confirmado com sucesso! ✅\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Data e Horário:* ${dateFormatted}\n💰 *Valor:* R$ ${Number(appointment.priceAtBooking).toFixed(2)}\n\nCaso precise consultar ou cancelar, utilize seu link exclusivo de autoatendimento:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
 
     const clientResult = await this.provider.sendMessage({
       toPhone: appointment.client.phone,
@@ -108,7 +108,73 @@ export class WhatsAppService {
       ? '\n💳 *Reembolso / Estorno:* O valor pago foi estornado integralmente para a mesma forma de pagamento utilizada (Pix ou Cartão de Crédito).\n'
       : '';
 
-    const text = `Olá, *${appointment.client.name}*. Seu agendamento de *${appointment.service.name}* com *${appointment.professional.name}* para *${dateFormatted}* foi *cancelado*.\n\n${reason ? `Motivo: ${reason}\n` : ''}${refundNotice}\nCaso queira reagendar um novo horário, acesse:\n${process.env.APP_URL || 'http://localhost:5173'}/empresa/${appointment.company.slug}`;
+    const text = `Olá, *${appointment.client.name}*. Seu agendamento de *${appointment.service.name}* com *${appointment.professional.name}* para *${dateFormatted}* foi *cancelado*.\n\n${reason ? `Motivo: ${reason}\n` : ''}${refundNotice}\nCaso queira reagendar um novo horário, acesse:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/empresa/${appointment.company.slug}`;
+
+    const result = await this.provider.sendMessage({
+      toPhone: appointment.client.phone,
+      text,
+    });
+
+    await this.prisma.notificationLog.create({
+      data: {
+        companyId: appointment.companyId,
+        appointmentId: appointment.id,
+        channel: 'WHATSAPP',
+        recipientPhone: appointment.client.phone,
+        messageType: 'CANCELLATION',
+        status: result.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+        providerMessageId: result.providerMessageId || null,
+        errorPayload: result.error || null,
+        sentAt: result.success ? new Date() : null,
+      },
+    });
+
+    // 2. Enviar notificação de cancelamento para o PROFISSIONAL
+    if (appointment.professional?.phone) {
+      const profText = `⚠️ *Agendamento Cancelado!*\n\nOlá, *${appointment.professional.name}*, informamos que um agendamento na sua agenda foi cancelado:\n\n👤 *Cliente:* ${appointment.client.name}\n📌 *Serviço:* ${appointment.service.name}\n🗓️ *Horário:* ${dateFormatted}\n${reason ? `📝 *Motivo:* ${reason}\n` : ''}\nEsse horário já foi liberado na sua agenda para novos atendimentos.`;
+
+      const profResult = await this.provider.sendMessage({
+        toPhone: appointment.professional.phone,
+        text: profText,
+      });
+
+      await this.prisma.notificationLog.create({
+        data: {
+          companyId: appointment.companyId,
+          appointmentId: appointment.id,
+          channel: 'WHATSAPP',
+          recipientPhone: appointment.professional.phone,
+          messageType: 'CANCELLATION_PROFESSIONAL',
+          status: profResult.success ? NotificationStatus.SENT : NotificationStatus.FAILED,
+          providerMessageId: profResult.providerMessageId || null,
+          errorPayload: profResult.error || null,
+          sentAt: profResult.success ? new Date() : null,
+        },
+      });
+    }
+  }
+
+    async sendCancellationNotification(appointmentId: string, reason?: string) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        company: true,
+        professional: true,
+        service: true,
+        client: true,
+      },
+    });
+
+    if (!appointment) return;
+
+    const dateFormatted = format(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+
+    const hasRefund = reason?.includes('Estorno') || appointment.cancellationReason?.includes('Estorno');
+    const refundNotice = hasRefund
+      ? '\n💳 *Reembolso / Estorno:* O valor pago foi estornado integralmente para a mesma forma de pagamento utilizada (Pix ou Cartão de Crédito).\n'
+      : '';
+
+    const text = `Olá, *${appointment.client.name}*. Seu agendamento de *${appointment.service.name}* com *${appointment.professional.name}* para *${dateFormatted}* foi *cancelado*.\n\n${reason ? `Motivo: ${reason}\n` : ''}${refundNotice}\nCaso queira reagendar um novo horário, acesse:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/empresa/${appointment.company.slug}`;
 
     const result = await this.provider.sendMessage({
       toPhone: appointment.client.phone,
@@ -169,7 +235,7 @@ export class WhatsAppService {
 
     const dateFormatted = format(appointment.startDateTime, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
 
-    const text = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi *reagendado* com sucesso!\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n\nVocê pode consultar seus detalhes a qualquer momento em:\n${process.env.APP_URL || 'http://localhost:5173'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
+    const text = `Olá, *${appointment.client.name}*! 👋\n\nSeu agendamento em *${appointment.company.name}* foi *reagendado* com sucesso!\n\n📌 *Serviço:* ${appointment.service.name}\n👤 *Profissional:* ${appointment.professional.name}\n🗓️ *Novo Horário:* ${dateFormatted}\n\nVocê pode consultar seus detalhes a qualquer momento em:\n${process.env.APP_URL || 'https://saas-agendamento-f3jo.onrender.com'}/agendamento/${appointment.clientManagementCode}\n\nTe esperamos! ✨`;
 
     const result = await this.provider.sendMessage({
       toPhone: appointment.client.phone,
