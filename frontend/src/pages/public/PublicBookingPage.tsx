@@ -1,47 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import {
-  Calendar as CalendarIcon,
-  Clock,
+  Flower2,
   User,
-  Scissors,
-  CheckCircle2,
-  ChevronLeft,
-  Phone,
-  ArrowRight,
-  Loader2,
-  Sparkles,
-  MapPin,
-  Copy,
+  CalendarDays,
+  Clock,
   Check,
-  AlertCircle,
+  ChevronRight,
+  ChevronLeft,
+  Loader2,
+  CheckCircle2,
+  UserRound,
+  Copy,
+  ArrowRight,
+  Sparkles,
+  Phone,
+  MapPin,
   Tag,
-  X,
-  Star,
   CreditCard,
+  QrCode,
   ExternalLink,
+  MessageCircle,
 } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Avatar } from '../../components/ui/Avatar';
+import { ThemeToggle } from '../../components/ThemeToggle';
+import { DatePicker } from '../../components/site/DatePicker';
 
-const InstagramIcon = ({ size = 14, className = '' }: { size?: number; className?: string }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-  </svg>
-);
+const STEPS = [
+  { title: 'Procedimento', icon: Flower2 },
+  { title: 'Profissional', icon: User },
+  { title: 'Data', icon: CalendarDays },
+  { title: 'Horário', icon: Clock },
+  { title: 'Seus dados', icon: UserRound },
+  { title: 'Confirmação', icon: Check },
+];
 
 export const PublicBookingPage: React.FC = () => {
   const { companySlug, professionalSlug } = useParams<{
@@ -53,64 +48,47 @@ export const PublicBookingPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Stepper
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  // Stepper: 0 a 5 (Procedimento, Profissional, Data, Horário, Seus dados, Confirmação)
+  const [step, setStep] = useState<number>(0);
 
-  // Selections
-  const [selectedService, setSelectedService] = useState<any | null>(null);
-  const [selectedProfessional, setSelectedProfessional] = useState<any | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>(format(addDays(new Date(), 1), 'yyyy-MM-dd'));
-  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  // Seleções do fluxo Alvore
+  const [serviceId, setServiceId] = useState<string>('');
+  const [professionalSel, setProfessionalSel] = useState<string>('any');
+  const [date, setDate] = useState<string>(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return format(tomorrow, 'yyyy-MM-dd');
+  });
+  const [slots, setSlots] = useState<any[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
-  // Client info
-  const [clientName, setClientName] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [clientEmail, setClientEmail] = useState('');
-  const [notes, setNotes] = useState('');
+  // Formulário do cliente
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    notes: '',
+  });
 
   // Cupom de Desconto
-  const [couponCodeInput, setCouponCodeInput] = useState('');
+  const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  // Booking Result & Pix Copy feedback
-  const [bookingSuccess, setBookingSuccess] = useState<any | null>(null);
+  // Submissão & Resultado
   const [submitting, setSubmitting] = useState(false);
+  const [bookingResult, setBookingResult] = useState<any | null>(null);
   const [copiedPix, setCopiedPix] = useState(false);
-  const [bookingPaymentMethod, setBookingPaymentMethod] = useState<'pix' | 'card'>('pix');
+  const [copiedLink, setCopiedLink] = useState(false);
 
-  // Avaliações Públicas
-  const [publicReviews, setPublicReviews] = useState<{
-    averageRating: number;
-    totalCount: number;
-    reviews: any[];
-  } | null>(null);
-
-  // Lista de Espera Modal & Formulário
-  const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
-  const [waitlistName, setWaitlistName] = useState('');
-  const [waitlistPhone, setWaitlistPhone] = useState('');
-  const [waitlistEmail, setWaitlistEmail] = useState('');
-  const [waitlistServiceId, setWaitlistServiceId] = useState('');
-  const [waitlistProfessionalId, setWaitlistProfessionalId] = useState('');
-  const [waitlistPreferredDate, setWaitlistPreferredDate] = useState('');
-  const [waitlistPreferredPeriod, setWaitlistPreferredPeriod] = useState<
-    'QUALQUER' | 'MANHA' | 'TARDE' | 'NOITE'
-  >('QUALQUER');
-  const [waitlistNotes, setWaitlistNotes] = useState('');
-  const [submittingWaitlist, setSubmittingWaitlist] = useState(false);
-  const [waitlistSuccess, setWaitlistSuccess] = useState(false);
-  const [waitlistError, setWaitlistError] = useState<string | null>(null);
-
-  // 1. Carregar dados públicos da empresa e avaliações
+  // 1. Carregar dados da empresa
   useEffect(() => {
     if (!companySlug) return;
     setLoading(true);
-
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
     axios
       .get(`${apiUrl}/public/companies/${companySlug}`)
       .then((res) => {
@@ -120,89 +98,96 @@ export const PublicBookingPage: React.FC = () => {
         if (professionalSlug && res.data.professionals) {
           const prof = res.data.professionals.find((p: any) => p.slug === professionalSlug);
           if (prof) {
-            setSelectedProfessional(prof);
+            setProfessionalSel(prof.id);
           }
         }
       })
       .catch(() => setError('Estabelecimento não encontrado ou temporariamente inativo.'))
       .finally(() => setLoading(false));
-
-    // Carregar avaliações aprovadas
-    axios
-      .get(`${apiUrl}/public/companies/${companySlug}/reviews`)
-      .then((res) => setPublicReviews(res.data))
-      .catch((err) => console.error('Erro ao buscar avaliações:', err));
   }, [companySlug, professionalSlug]);
 
-  const handleJoinWaitlist = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!company || !waitlistName.trim() || !waitlistPhone.trim()) return;
-    setSubmittingWaitlist(true);
-    setWaitlistError(null);
+  const services = useMemo(() => company?.services || [], [company]);
+  const professionals = useMemo(() => company?.professionals || [], [company]);
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-    try {
-      await axios.post(`${apiUrl}/public/companies/${company.slug}/waitlist`, {
-        clientName: waitlistName.trim(),
-        clientPhone: waitlistPhone.trim(),
-        clientEmail: waitlistEmail.trim() || undefined,
-        serviceId: waitlistServiceId || undefined,
-        professionalId: waitlistProfessionalId || undefined,
-        preferredDate: waitlistPreferredDate || undefined,
-        preferredPeriod: waitlistPreferredPeriod,
-        notes: waitlistNotes.trim() || undefined,
-      });
-      setWaitlistSuccess(true);
-    } catch (err: any) {
-      setWaitlistError(err.response?.data?.message || 'Erro ao registrar na lista de espera.');
-    } finally {
-      setSubmittingWaitlist(false);
+  const service = useMemo(
+    () => services.find((s: any) => s.id === serviceId),
+    [services, serviceId]
+  );
+
+  const effectiveProfessional = useMemo(() => {
+    if (professionalSel === 'any') {
+      return professionals[0] || null;
     }
-  };
+    return professionals.find((b: any) => b.id === professionalSel) || null;
+  }, [professionals, professionalSel]);
 
-  // 2. Carregar horários disponíveis sempre que data/serviço/profissional mudar
-  useEffect(() => {
-    if (!company || !selectedService || !selectedProfessional || !selectedDate) return;
+  // Navegar entre etapas
+  function go(next: number) {
+    setError(null);
+    setStep(next);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
 
+  // Validação para habilitar o botão Continuar
+  const canNext = useMemo(() => {
+    if (step === 0) return !!serviceId;
+    if (step === 1) return true;
+    if (step === 2) return !!date;
+    if (step === 3) return !!selectedSlot;
+    if (step === 4) return form.name.trim().length >= 3 && form.phone.trim().length >= 8;
+    return true;
+  }, [step, serviceId, date, selectedSlot, form]);
+
+  // 2. Carregar horários disponíveis da etapa 3
+  async function loadSlots() {
+    if (!company || !serviceId || !date) return;
     setLoadingSlots(true);
     setSelectedSlot(null);
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-    axios
-      .get(`${apiUrl}/public/companies/${company.slug}/availability`, {
+    const targetProfId = professionalSel === 'any' ? effectiveProfessional?.id : professionalSel;
+    if (!targetProfId) {
+      setSlots([]);
+      setLoadingSlots(false);
+      return;
+    }
+
+    try {
+      const res = await axios.get(`${apiUrl}/public/companies/${company.slug}/availability`, {
         params: {
-          professionalId: selectedProfessional.id,
-          serviceId: selectedService.id,
-          date: selectedDate,
+          professionalId: targetProfId,
+          serviceId,
+          date,
         },
-      })
-      .then((res) => {
-        setAvailableSlots(res.data.availableSlots || []);
-      })
-      .catch((err) => {
-        console.error(err);
-        setAvailableSlots([]);
-      })
-      .finally(() => setLoadingSlots(false));
-  }, [company, selectedService, selectedProfessional, selectedDate]);
+      });
+      setSlots(res.data.availableSlots || []);
+    } catch {
+      setSlots([]);
+    } finally {
+      setLoadingSlots(false);
+    }
+  }
 
-  // Resetar cupom se mudar serviço ou profissional
   useEffect(() => {
-    setAppliedCoupon(null);
-    setCouponError(null);
-  }, [selectedService, selectedProfessional]);
+    if (step === 3) {
+      loadSlots();
+    }
+  }, [step, date, professionalSel, serviceId]);
 
+  // Validação do Cupom
   const handleApplyCoupon = async () => {
-    if (!couponCodeInput.trim() || !company || !selectedService || !selectedProfessional) return;
+    if (!couponCode.trim() || !company || !service) return;
     setValidatingCoupon(true);
     setCouponError(null);
-
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
     try {
       const res = await axios.post(`${apiUrl}/public/companies/${company.slug}/validate-coupon`, {
-        code: couponCodeInput.trim(),
-        serviceId: selectedService.id,
-        professionalId: selectedProfessional.id,
+        code: couponCode.trim(),
+        serviceId: service.id,
+        professionalId: effectiveProfessional?.id,
       });
       setAppliedCoupon(res.data);
     } catch (err: any) {
@@ -213,49 +198,47 @@ export const PublicBookingPage: React.FC = () => {
     }
   };
 
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponCodeInput('');
-    setCouponError(null);
-  };
-
-  const handleConfirmBooking = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Submeter Agendamento
+  const handleSubmitBooking = async () => {
+    if (!company || !service || !selectedSlot) return;
     setSubmitting(true);
     setError(null);
-
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+    const targetProfId = professionalSel === 'any' ? effectiveProfessional?.id : professionalSel;
 
     try {
       const res = await axios.post(`${apiUrl}/public/companies/${company.slug}/appointments`, {
-        professionalId: selectedProfessional.id,
-        serviceId: selectedService.id,
+        professionalId: targetProfId,
+        serviceId: service.id,
         startDateTime: selectedSlot.start,
-        clientName,
-        clientPhone,
-        clientEmail: clientEmail || undefined,
-        notes: notes || undefined,
+        clientName: form.name.trim(),
+        clientPhone: form.phone.trim(),
+        clientEmail: form.email.trim() || undefined,
+        notes: form.notes.trim() || undefined,
         couponCode: appliedCoupon?.coupon?.code || undefined,
       });
 
-      setBookingSuccess(res.data);
-      setStep(5);
+      setBookingResult(res.data);
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
-          'Este horário acabou de ser reservado por outro cliente. Por favor, selecione outro horário.',
+          'Este horário acabou de ser reservado por outro cliente. Por favor, selecione outro horário.'
       );
+      if (err.response?.status === 409) {
+        go(3);
+      }
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Auto-polling para confirmação automática do Pix do Mercado Pago em tempo real
+  // Polling em tempo real para pagamentos Pix
   useEffect(() => {
-    const mgmtCode = bookingSuccess?.appointment?.clientManagementCode;
-    const currentStatus = bookingSuccess?.appointment?.status;
+    const mgmtCode = bookingResult?.appointment?.clientManagementCode;
+    const currentStatus = bookingResult?.appointment?.status;
 
-    if (step !== 5 || !mgmtCode || currentStatus === 'CONFIRMED') {
+    if (!bookingResult || !mgmtCode || currentStatus === 'CONFIRMED') {
       return;
     }
 
@@ -264,7 +247,7 @@ export const PublicBookingPage: React.FC = () => {
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
         const res = await axios.get(`${apiUrl}/public/appointments/${mgmtCode}`);
         if (res.data?.status === 'CONFIRMED') {
-          setBookingSuccess((prev: any) => ({
+          setBookingResult((prev: any) => ({
             ...prev,
             requiresDeposit: false,
             appointment: {
@@ -274,1582 +257,652 @@ export const PublicBookingPage: React.FC = () => {
             },
           }));
         }
-      } catch (err) {
-        // Silencioso em caso de oscilação momentânea de rede
+      } catch {
+        // Silencioso
       }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [step, bookingSuccess?.appointment?.clientManagementCode, bookingSuccess?.appointment?.status]);
-
-  const handleCopyPixKey = (key: string) => {
-    if (!key) return;
-    navigator.clipboard.writeText(key);
-    setCopiedPix(true);
-    setTimeout(() => setCopiedPix(false), 2500);
-  };
+  }, [bookingResult]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
-        <Loader2 className="animate-spin text-stone-900 dark:text-[#E6D4B0]" size={36} />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="animate-spin text-accent" size={36} />
       </div>
     );
   }
 
   if (error && !company) {
     return (
-      <div className="min-h-screen bg-[#FAF8F5] dark:bg-slate-900 flex items-center justify-center p-4 text-center">
-        <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 max-w-md shadow-sm">
-          <h2 className="text-xl font-bold text-stone-900 dark:text-white mb-2">Ops!</h2>
-          <p className="text-sm text-stone-900 dark:text-[#E6D4B0]">{error}</p>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 text-center">
+        <div className="card p-8 max-w-md shadow-elevated">
+          <h2 className="text-xl font-bold text-foreground mb-2">Ops!</h2>
+          <p className="text-sm text-foreground-muted">{error}</p>
+          <Link to="/" className="btn-outline mt-6">
+            Voltar ao Início
+          </Link>
         </div>
       </div>
     );
   }
 
-  const rawColor = company?.settings?.primaryColor;
-  const isBrown = rawColor && (
-    rawColor.toLowerCase() === '#4a2e18' ||
-    rawColor.toLowerCase() === '#5c3826' ||
-    rawColor.toLowerCase() === '#5c341e' ||
-    rawColor.toLowerCase() === '#6d381e' ||
-    rawColor.toLowerCase() === '#7a4422' ||
-    rawColor.toLowerCase() === '#8a4b28' ||
-    rawColor.toLowerCase() === '#6366f1' ||
-    rawColor.toLowerCase() === '#381e0f' ||
-    rawColor.toLowerCase() === '#61361b'
-  );
-  const primaryColor = isBrown || !rawColor ? '#E6D4B0' : rawColor;
-  const companySettings = company?.settings || {};
-  const nextDays = Array.from({ length: 7 }).map((_, i) => addDays(new Date(), i + 1));
+  const finalPrice = appliedCoupon ? appliedCoupon.finalPrice : Number(service?.price || 0);
 
-  // Modelo de pagamento configurado pela empresa
-  const activePaymentModel: 'MERCADO_PAGO' | 'DEPOSIT_PIX' | 'NONE' =
-    companySettings.paymentModel || (companySettings.requireDeposit ? 'DEPOSIT_PIX' : 'MERCADO_PAGO');
+  // TELA DE SUCESSO (Confirmado)
+  if (bookingResult) {
+    const app = bookingResult.appointment;
+    const trackingUrl = `${window.location.origin}/agendamento/${app.clientManagementCode}`;
 
-  // Preço do serviço com ou sem cupom
-  const currentServicePrice = appliedCoupon ? appliedCoupon.finalPrice : Number(selectedService?.price || 0);
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
+        {/* Header público */}
+        <header className="border-b border-border bg-surface/80 backdrop-blur-xl sticky top-0 z-40">
+          <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5 sm:px-8">
+            <div className="flex items-center gap-3">
+              {company?.logoUrl ? (
+                <img src={company.logoUrl} alt={company.name} className="h-9 w-9 rounded-xl object-cover ring-1 ring-border" />
+              ) : (
+                <Avatar name={company?.name || 'Inovae Agenda'} size="sm" />
+              )}
+              <span className="font-display font-bold text-base text-foreground tracking-tight">
+                {company?.name}
+              </span>
+            </div>
+            <ThemeToggle />
+          </div>
+        </header>
 
-  // Cálculo prévio do sinal para o Passo 4 (Resumo)
-  let step4DepositVal = currentServicePrice;
-  const hasProfCustomDeposit = Boolean(
-    selectedProfessional?.requiresDeposit &&
-    selectedProfessional?.depositValue !== null &&
-    selectedProfessional?.depositValue !== undefined
-  );
-  const rawDepositConfig = (
-    hasProfCustomDeposit
-      ? String(selectedProfessional.depositValue)
-      : (companySettings.depositValue || '')
-  ).toString().trim();
-  const isPercentage = hasProfCustomDeposit
-    ? (selectedProfessional?.depositType === 'PERCENTAGE' || rawDepositConfig.includes('%'))
-    : rawDepositConfig.includes('%');
+        <main className="mx-auto max-w-lg px-5 py-12 text-center sm:px-8 flex-1 animate-scale-in">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-success/15 text-success mb-6 shadow-soft">
+            <CheckCircle2 className="h-10 w-10" />
+          </div>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            {bookingResult.requiresDeposit ? 'Reserva Realizada!' : 'Agendamento Confirmado!'}
+          </h1>
+          <p className="mt-2 text-sm text-foreground-muted">
+            {bookingResult.requiresDeposit
+              ? 'Efetue o pagamento do sinal para confirmar o horário instantaneamente.'
+              : 'Enviamos todos os dados e a confirmação para seu WhatsApp.'}
+          </p>
 
-  if (isPercentage) {
-    const pct = parseFloat(rawDepositConfig.replace('%', '').replace(',', '.'));
-    if (!isNaN(pct) && pct > 0) {
-      step4DepositVal = Math.round(((currentServicePrice * pct) / 100) * 100) / 100;
-    }
-  } else if (rawDepositConfig) {
-    const fixed = parseFloat(rawDepositConfig.replace(/[^\d.,]/g, '').replace(',', '.'));
-    if (!isNaN(fixed) && fixed > 0) {
-      step4DepositVal = Math.min(fixed, currentServicePrice);
-    }
+          <div className="card mt-6 p-6 text-left space-y-4">
+            <div className="flex items-center gap-3 border-b border-border pb-4">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-soft">
+                <Flower2 className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-semibold text-foreground text-sm">{service?.name}</p>
+                <p className="text-xs text-foreground-muted">
+                  {service?.durationMinutes} min · R$ {Number(finalPrice).toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+            <dl className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between">
+                <dt className="text-foreground-muted">Profissional:</dt>
+                <dd className="font-semibold text-foreground">
+                  {effectiveProfessional?.name || 'Primeiro disponível'}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-foreground-muted">Data:</dt>
+                <dd className="font-semibold text-foreground">
+                  {format(parseISO(date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                </dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-foreground-muted">Horário:</dt>
+                <dd className="font-semibold text-foreground">{selectedSlot?.time}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-foreground-muted">Cliente:</dt>
+                <dd className="font-semibold text-foreground">{form.name}</dd>
+              </div>
+              <div className="flex items-center justify-between">
+                <dt className="text-foreground-muted">Código de Consulta:</dt>
+                <dd className="font-mono font-bold text-accent">{app.clientManagementCode}</dd>
+              </div>
+            </dl>
+
+            {/* Se houver cobrança de sinal Pix */}
+            {bookingResult.requiresDeposit && (app.pixQrCodeBase64 || app.pixCopiaECola) && (
+              <div className="mt-4 pt-4 border-t border-border space-y-3">
+                <div className="bg-surface-2 p-3 rounded-xl border border-border text-center">
+                  <span className="text-[11px] font-semibold text-foreground-muted block mb-1">
+                    Sinal de Reserva
+                  </span>
+                  <span className="text-xl font-black text-accent block">
+                    R$ {Number(app.depositAmount || finalPrice).toFixed(2)}
+                  </span>
+                </div>
+
+                {app.pixQrCodeBase64 && (
+                  <div className="bg-white p-3 rounded-2xl border border-border inline-block mx-auto shadow-soft text-center w-full">
+                    <img
+                      src={`data:image/png;base64,${app.pixQrCodeBase64}`}
+                      alt="Pix QR Code"
+                      className="w-44 h-44 mx-auto"
+                    />
+                    <span className="text-[11px] text-stone-500 font-medium block mt-1">
+                      Escaneie no app do seu banco
+                    </span>
+                  </div>
+                )}
+
+                {app.pixCopiaECola && (
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(app.pixCopiaECola);
+                      setCopiedPix(true);
+                      setTimeout(() => setCopiedPix(false), 2500);
+                    }}
+                    className="btn-outline w-full py-2.5 text-xs font-semibold"
+                  >
+                    {copiedPix ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+                    <span>{copiedPix ? 'Chave Pix Copiada!' : 'Copiar Chave Pix Copia e Cola'}</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(trackingUrl);
+                setCopiedLink(true);
+                setTimeout(() => setCopiedLink(false), 2500);
+              }}
+              className="btn-outline text-xs"
+            >
+              {copiedLink ? <Check size={14} className="text-success" /> : <Copy size={14} />}
+              <span>{copiedLink ? 'Link copiado!' : 'Copiar link de confirmação'}</span>
+            </button>
+
+            <Link to={`/agendamento/${app.clientManagementCode}`} className="btn-primary text-xs">
+              <span>Acompanhar agendamento</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          <button
+            onClick={() => {
+              setBookingResult(null);
+              setStep(0);
+              setServiceId('');
+              setSelectedSlot(null);
+            }}
+            className="mt-6 inline-block text-xs font-medium text-accent hover:underline cursor-pointer"
+          >
+            Fazer outro agendamento
+          </button>
+        </main>
+      </div>
+    );
   }
-  const step4RemainingVal = Math.max(0, currentServicePrice - step4DepositVal);
-
-  // WhatsApp link preparation for Step 5
-  const companyPhoneRaw = (bookingSuccess?.depositInfo?.companyPhone || company?.phone || '').replace(/\D/g, '');
-  const cleanPhone = companyPhoneRaw.startsWith('55') ? companyPhoneRaw : `55${companyPhoneRaw}`;
-  const totalValFormatted = bookingSuccess?.depositInfo?.depositValue || (`R$ ${currentServicePrice.toFixed(2)}`);
-  const dateFormatted = format(new Date(selectedDate + 'T12:00:00'), 'dd/MM/yyyy');
-  const timeLabel = selectedSlot?.endTime
-    ? `${selectedSlot.time} até ${selectedSlot.endTime}`
-    : selectedSlot?.time;
-
-  const isDepositPixSuccess = bookingSuccess?.depositInfo?.paymentModel === 'DEPOSIT_PIX';
-  const whatsappMessage = encodeURIComponent(
-    `Olá! Realizei o agendamento no *${company?.name}*:\n\n` +
-      `*Serviço:* ${selectedService?.name}\n` +
-      `*Profissional:* ${selectedProfessional?.name}\n` +
-      `*Horário:* ${timeLabel} de ${dateFormatted}\n` +
-      `*Cliente:* ${clientName}\n` +
-      (bookingSuccess?.requiresDeposit
-        ? (isDepositPixSuccess
-            ? `*Valor do Sinal via Pix:* ${bookingSuccess?.depositInfo?.depositValue}\n*Restante no Atendimento:* ${bookingSuccess?.depositInfo?.remainingValue}\n*Total:* R$ ${Number(bookingSuccess?.appointment?.priceAtBooking || currentServicePrice).toFixed(2)}\n\nEstou enviando o comprovante do sinal via Pix para confirmar minha reserva!`
-            : `*Valor Total via Pix:* ${totalValFormatted}\n\nEstou enviando o comprovante do pagamento via Pix para confirmação da minha vaga!`)
-        : `\nGostaria de confirmar que meu agendamento foi realizado com sucesso!`),
-  );
-
-  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${whatsappMessage}`;
-  const whatsappButtonLabel = companySettings.whatsappButtonText || 'Enviar Comprovante pelo WhatsApp';
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] dark:bg-slate-900 text-stone-900 dark:text-white flex flex-col items-center justify-start p-3 sm:p-6 lg:p-8 transition-colors">
-      <div className="w-full max-w-6xl bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col">
-        {/* Banner de Capa + Header da Empresa */}
-        <div
-          className="relative text-white p-6 sm:p-10 bg-cover bg-center overflow-hidden"
-          style={{
-            backgroundColor: primaryColor,
-            backgroundImage: company?.coverUrl
-              ? `linear-gradient(to bottom, rgba(20, 15, 10, 0.45), rgba(20, 15, 10, 0.85)), url(${company.coverUrl})`
-              : undefined,
-          }}
-        >
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 relative z-10">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white font-bold text-3xl shadow-xl shrink-0 overflow-hidden">
-              {company?.logoUrl ? (
-                <img
-                  src={company.logoUrl}
-                  alt={company.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
-                />
-              ) : (
-                company?.name?.charAt(0) || 'A'
-              )}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-white inline-block mb-1.5">
-                Agendamento Online
-              </span>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white leading-tight">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
+      {/* Top Navbar Luxury */}
+      <header className="border-b border-border bg-surface/80 backdrop-blur-xl sticky top-0 z-40">
+        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-5 sm:px-8">
+          <div className="flex items-center gap-3">
+            {company?.logoUrl ? (
+              <img
+                src={company.logoUrl}
+                alt={company.name}
+                className="h-10 w-10 rounded-xl object-cover ring-1 ring-border shadow-xs"
+              />
+            ) : (
+              <Avatar name={company?.name || 'Inovae Agenda'} size="md" className="rounded-xl shadow-xs" />
+            )}
+            <div>
+              <h1 className="font-display font-bold text-base text-foreground leading-tight">
                 {company?.name}
               </h1>
-              {companySettings.bio && (
-                <p className="text-xs sm:text-sm text-white/85 mt-1.5 max-w-2xl leading-relaxed">{companySettings.bio}</p>
-              )}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-3 text-xs text-white/90">
-                {company?.phone && (
-                  <span className="flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-2.5 py-1 rounded-lg">
-                    <Phone size={13} /> {company?.phone}
-                  </span>
-                )}
-                {companySettings.instagram && (
-                  <span className="flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-2.5 py-1 rounded-lg">
-                    <InstagramIcon size={13} /> {companySettings.instagram}
-                  </span>
-                )}
-                {companySettings.address && (
-                  <span className="flex items-center gap-1.5 bg-black/20 backdrop-blur-xs px-2.5 py-1 rounded-lg">
-                    <MapPin size={13} /> {companySettings.address}
-                  </span>
-                )}
-                {/* Avaliações Públicas */}
-                <span className="flex items-center gap-1.5 bg-black/25 backdrop-blur-xs px-2.5 py-1 rounded-lg text-amber-300 font-bold">
-                  <Star size={13} className="fill-amber-300" />
-                  <span>{publicReviews?.averageRating ? publicReviews.averageRating.toFixed(1) : '5.0'}</span>
-                  <span className="text-white/80 font-normal">
-                    ({publicReviews?.totalCount || 0} {publicReviews?.totalCount === 1 ? 'avaliação' : 'avaliações'})
-                  </span>
+              {company?.phone && (
+                <span className="text-[11px] text-foreground-muted flex items-center gap-1">
+                  <Phone size={11} className="text-accent" /> {company.phone}
                 </span>
-                {/* Botão Entrar na Lista de Espera */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setWaitlistServiceId(selectedService?.id || '');
-                    setWaitlistProfessionalId(selectedProfessional?.id || '');
-                    setWaitlistPreferredDate(selectedDate || '');
-                    setWaitlistSuccess(false);
-                    setWaitlistModalOpen(true);
-                  }}
-                  className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-xs px-3 py-1 rounded-lg text-white font-bold transition-all cursor-pointer shadow-xs"
-                >
-                  <Clock size={13} />
-                  <span>Lista de Espera</span>
-                </button>
-              </div>
+              )}
             </div>
           </div>
 
-          {selectedProfessional && (
-            <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white relative z-10 shadow-xs">
-              <User size={14} />
-              <span>Profissional selecionado: <strong>{selectedProfessional.name}</strong></span>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
+      {/* Main Flow Container */}
+      <main className="mx-auto max-w-5xl px-5 py-8 sm:px-8 flex-1 w-full animate-fade-in">
+        {/* Stepper Alvore (6 passos) */}
+        <div className="flex items-center justify-between gap-1 mb-8">
+          {STEPS.map((s, i) => {
+            const Icon = s.icon;
+            const isCompleted = i < step;
+            const isCurrent = i === step;
+
+            return (
+              <div key={s.title} className="flex flex-1 items-center">
+                <div className="flex flex-col items-center gap-1.5 flex-1">
+                  <div
+                    className={`flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition ${
+                      isCompleted
+                        ? 'border-accent bg-accent text-accent-foreground shadow-soft'
+                        : isCurrent
+                        ? 'border-accent bg-accent-soft text-accent ring-2 ring-accent/30'
+                        : 'border-border text-foreground-subtle bg-surface'
+                    }`}
+                  >
+                    {isCompleted ? <Check className="h-4 w-4" /> : <Icon className="h-4 w-4" />}
+                  </div>
+                  <span
+                    className={`hidden text-[11px] font-medium sm:block text-center ${
+                      i <= step ? 'text-foreground font-semibold' : 'text-foreground-subtle'
+                    }`}
+                  >
+                    {s.title}
+                  </span>
+                </div>
+                {i < STEPS.length - 1 && (
+                  <div
+                    className={`mx-1 h-px flex-1 transition ${
+                      i < step ? 'bg-accent' : 'bg-border'
+                    }`}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Mensagem de Boas-Vindas */}
-        {step === 1 && companySettings.welcomeMessage && (
-          <div className="px-6 sm:px-10 py-3.5 text-xs sm:text-sm text-stone-500 dark:text-slate-400 italic bg-[#FAF8F5] dark:bg-slate-800 border-b border-[#EAE1D2] dark:border-slate-800">
-            "{companySettings.welcomeMessage}"
-          </div>
-        )}
+        {/* Step Views */}
+        <div className="mt-8">
+          {/* ETAPA 0: PROCEDIMENTO */}
+          {step === 0 && (
+            <div>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+                Qual procedimento você quer?
+              </h2>
+              <p className="mt-1 text-sm text-foreground-muted">
+                Escolha o atendimento desejado para continuar.
+              </p>
 
-        {/* Barra de Progresso do Agendamento (Stepper Responsivo) */}
-        {step < 5 && (
-          <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 px-4 sm:px-10 py-3 bg-[#FAF8F5] dark:bg-slate-800/80 border-b border-[#EAE1D2] dark:border-slate-800 text-xs font-bold overflow-x-auto scrollbar-none">
-            <button
-              onClick={() => setStep(1)}
-              className={`flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 font-medium ${
-                step === 1 ? 'text-stone-900 dark:text-[#E6D4B0] font-bold' : 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white'
-              }`}
-            >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 1 ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs' : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-slate-400'}`}>1</span>
-              <span>Serviço</span>
-            </button>
-            <span className="text-[#D0C3B2] dark:text-[#334155]">&rarr;</span>
-
-            <button
-              onClick={() => selectedService && setStep(2)}
-              disabled={!selectedService}
-              className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
-                step === 2
-                  ? 'text-stone-900 dark:text-[#E6D4B0] font-bold'
-                  : selectedService
-                  ? 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white cursor-pointer'
-                  : 'text-[#E6D4B0]/60 dark:text-[#334155] cursor-not-allowed'
-              }`}
-            >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 2 ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs' : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-slate-400'}`}>2</span>
-              <span>Profissional</span>
-            </button>
-            <span className="text-[#D0C3B2] dark:text-[#334155]">&rarr;</span>
-
-            <button
-              onClick={() => selectedService && selectedProfessional && setStep(3)}
-              disabled={!selectedService || !selectedProfessional}
-              className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
-                step === 3
-                  ? 'text-stone-900 dark:text-[#E6D4B0] font-bold'
-                  : selectedService && selectedProfessional
-                  ? 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white cursor-pointer'
-                  : 'text-[#E6D4B0]/60 dark:text-[#334155] cursor-not-allowed'
-              }`}
-            >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 3 ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs' : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-slate-400'}`}>3</span>
-              <span>Horário</span>
-            </button>
-            <span className="text-[#D0C3B2] dark:text-[#334155]">&rarr;</span>
-
-            <button
-              onClick={() => selectedSlot && setStep(4)}
-              disabled={!selectedSlot}
-              className={`flex items-center gap-1.5 transition-colors shrink-0 font-medium ${
-                step === 4
-                  ? 'text-stone-900 dark:text-[#E6D4B0] font-bold'
-                  : selectedSlot
-                  ? 'text-stone-500 dark:text-slate-400 hover:text-stone-900 dark:hover:text-white cursor-pointer'
-                  : 'text-[#E6D4B0]/60 dark:text-[#334155] cursor-not-allowed'
-              }`}
-            >
-              <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${step === 4 ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs' : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-slate-400'}`}>4</span>
-              <span>Dados</span>
-            </button>
-          </div>
-        )}
-
-        {error && (
-          <div className="mx-6 sm:mx-10 mt-6 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-xs sm:text-sm rounded-2xl flex items-center gap-2.5">
-            <AlertCircle size={18} className="shrink-0 text-red-600 dark:text-red-400" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <div className="p-6 sm:p-10 flex-1">
-          {/* PASSO 1: SELECIONAR SERVIÇO COM FOTOS (TELA TODA NO COMPUTADOR) */}
-          {step === 1 && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#EAE1D2] dark:border-slate-800 pb-4">
-                <div>
-                  <h2 className="font-extrabold text-stone-900 dark:text-white text-xl sm:text-2xl">
-                    Escolha o Serviço
-                  </h2>
-                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 mt-0.5">
-                    Selecione o procedimento que deseja agendar com nossos especialistas.
-                  </p>
-                </div>
-                <span className="text-xs font-semibold px-3 py-1 bg-[#FAF8F5] dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] border border-[#EAE1D2] dark:border-slate-800 rounded-full w-fit">
-                  {company?.services?.length || 0} serviço(s) disponível(is)
-                </span>
-              </div>
-
-              {/* Grid Responsivo Compacto: 1 no mobile, 2 no tablet, 3-4 no computador */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {company?.services?.map((srv: any) => {
-                  const isSelected = selectedService?.id === srv.id;
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
+                {services.map((s: any) => {
+                  const isSelected = serviceId === s.id;
                   return (
-                    <div
-                      key={srv.id}
-                      onClick={() => {
-                        setSelectedService(srv);
-                        setStep(selectedProfessional ? 3 : 2);
-                      }}
-                      className={`group rounded-2xl border transition-all flex flex-col justify-between cursor-pointer overflow-hidden p-4 w-full max-w-[280px] mx-auto sm:mx-0 ${
-                        isSelected
-                          ? 'border-[#E6D4B0] ring-2 ring-[#E6D4B0]/20 bg-[#FAF8F5] dark:bg-slate-800 shadow-md'
-                          : 'border-[#EAE1D2] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#E6D4B0] hover:shadow-lg hover:-translate-y-0.5'
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setServiceId(s.id)}
+                      className={`card flex flex-col items-start p-5 text-left transition hover:-translate-y-0.5 hover:shadow-elevated cursor-pointer ${
+                        isSelected ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/20' : ''
                       }`}
                     >
-                      <div>
-                        {/* Imagem Quadrada do Serviço */}
-                        {srv.imageUrl ? (
-                          <div className="w-full aspect-square rounded-2xl overflow-hidden mb-4 border border-[#EAE1D2] dark:border-slate-800 bg-[#FAF8F5] dark:bg-[#19120D]">
-                            <img
-                              src={srv.imageUrl}
-                              alt={srv.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              onError={(e) => ((e.target as HTMLElement).style.display = 'none')}
-                            />
-                          </div>
-                        ) : (
-                          <div
-                            className="w-full aspect-square rounded-2xl flex items-center justify-center mb-4 transition-colors"
-                            style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
-                          >
-                            <Scissors size={32} />
-                          </div>
-                        )}
-
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-bold text-stone-900 dark:text-white text-base group-hover:text-stone-900 dark:text-[#E6D4B0] transition-colors">
-                            {srv.name}
-                          </h3>
-                        </div>
-
-                        {srv.description && (
-                          <p className="text-xs text-stone-500 dark:text-slate-400 mt-1.5 line-clamp-2 leading-relaxed">
-                            {srv.description}
-                          </p>
-                        )}
+                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent shadow-xs mb-3">
+                        <Flower2 className="h-5 w-5" />
+                      </span>
+                      <h3 className="font-semibold text-foreground text-base">{s.name}</h3>
+                      {s.description && (
+                        <p className="mt-1 line-clamp-2 text-xs text-foreground-muted leading-relaxed">
+                          {s.description}
+                        </p>
+                      )}
+                      <div className="mt-4 flex w-full items-center justify-between border-t border-border pt-3">
+                        <span className="font-display font-bold text-foreground text-base">
+                          R$ {Number(s.price).toFixed(2)}
+                        </span>
+                        <span className="text-xs text-foreground-subtle">
+                          {s.durationMinutes} min
+                        </span>
                       </div>
-
-                      <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-slate-800 flex items-center justify-between gap-3">
-                        <div>
-                          <span className="flex items-center gap-1.5 text-xs text-stone-500 dark:text-slate-400 font-medium">
-                            <Clock size={13} /> {srv.durationMinutes} minutos
-                          </span>
-                          <span className="font-black text-lg text-stone-900 dark:text-white block mt-0.5">
-                            R$ {Number(srv.price).toFixed(2)}
-                          </span>
-                        </div>
-
-                        <button
-                          type="button"
-                          className="px-4 py-2.5 rounded-xl font-bold text-xs text-white shadow-sm flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          <span>Agendar</span>
-                          <ArrowRight size={13} />
-                        </button>
-                      </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
+            </div>
+          )}
 
-              {/* Banner de Lista de Espera */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-sm font-bold text-stone-900 dark:text-white">
-                    <Clock size={16} className="text-stone-900 dark:text-[#E6D4B0]" />
-                    <span>Não encontrou o horário ideal ou agenda concorrida?</span>
-                  </div>
-                  <p className="text-xs text-stone-500 dark:text-slate-400">
-                    Entre na nossa lista de espera! Caso surja um cancelamento ou novo horário, você será o primeiro a ser chamado.
-                  </p>
-                </div>
+          {/* ETAPA 1: PROFISSIONAL */}
+          {step === 1 && (
+            <div>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+                Com quem você prefere?
+              </h2>
+              <p className="mt-1 text-sm text-foreground-muted">
+                Selecione um profissional ou deixe conosco.
+              </p>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => {
-                    setWaitlistServiceId(selectedService?.id || '');
-                    setWaitlistProfessionalId(selectedProfessional?.id || '');
-                    setWaitlistPreferredDate(selectedDate || '');
-                    setWaitlistSuccess(false);
-                    setWaitlistModalOpen(true);
-                  }}
-                  className="px-4 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs cursor-pointer"
+                  onClick={() => setProfessionalSel('any')}
+                  className={`card flex flex-col items-center justify-center p-6 text-center transition hover:-translate-y-0.5 hover:shadow-elevated cursor-pointer ${
+                    professionalSel === 'any' ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/20' : ''
+                  }`}
                 >
-                  Entrar na Lista de Espera
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-foreground-muted mb-3 shadow-xs">
+                    <Sparkles className="h-5 w-5" />
+                  </span>
+                  <h3 className="font-semibold text-foreground text-sm">Qualquer profissional</h3>
+                  <p className="mt-1 text-xs text-foreground-muted">O primeiro disponível na agenda</p>
                 </button>
-              </div>
 
-              {/* Seção de Avaliações / Depoimentos de Clientes */}
-              {publicReviews && publicReviews.reviews.length > 0 && (
-                <div className="pt-8 border-t border-[#EAE1D2] dark:border-slate-800 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-black text-stone-900 dark:text-white flex items-center gap-2">
-                        <Star size={18} className="text-stone-900 dark:text-[#E6D4B0] fill-[#E6D4B0]" />
-                        <span>O que nossos clientes dizem</span>
-                      </h3>
-                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-0.5">
-                        Média de {publicReviews.averageRating.toFixed(1)} estrelas com base em {publicReviews.totalCount} avaliação(ões)
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {publicReviews.reviews.slice(0, 6).map((rev: any) => (
-                      <div
-                        key={rev.id}
-                        className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 space-y-2.5 flex flex-col justify-between"
-                      >
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-xs text-stone-900 dark:text-white">
-                              {rev.clientName}
-                            </span>
-                            <div className="flex items-center gap-0.5">
-                              {[1, 2, 3, 4, 5].map((s) => (
-                                <Star
-                                  key={s}
-                                  size={12}
-                                  className={
-                                    s <= rev.rating
-                                      ? 'text-amber-500 fill-amber-500'
-                                      : 'text-[#D0C3B2]'
-                                  }
-                                />
-                              ))}
-                            </div>
-                          </div>
-                          {rev.comment ? (
-                            <p className="text-xs text-stone-500 dark:text-slate-400 italic line-clamp-3">
-                              "{rev.comment}"
-                            </p>
-                          ) : (
-                            <p className="text-xs text-stone-500 italic">
-                              Avaliou com {rev.rating} estrelas.
-                            </p>
-                          )}
-                        </div>
-                        {rev.service && (
-                          <div className="pt-2 border-t border-[#EAE1D2]/60 dark:border-slate-800 text-[10px] text-stone-500 dark:text-slate-400">
-                            Serviço: <strong className="text-stone-900 dark:text-white">{rev.service.name}</strong>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* PASSO 2: SELECIONAR PROFISSIONAL (TELA TODA NO COMPUTADOR) */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-4">
-                <div>
-                  <h2 className="font-extrabold text-stone-900 dark:text-white text-xl sm:text-2xl">
-                    Escolha o Profissional
-                  </h2>
-                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 mt-0.5">
-                    Serviço selecionado: <strong className="text-stone-900 dark:text-white">{selectedService?.name}</strong>
-                  </p>
-                </div>
-                <button
-                  onClick={() => setStep(1)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400 cursor-pointer hover:bg-[#FAF8F5]"
-                >
-                  <ChevronLeft size={14} /> Trocar Serviço
-                </button>
-              </div>
-
-              {/* Grid Responsivo de Profissionais */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {company?.professionals?.map((prof: any) => {
-                  const isSelected = selectedProfessional?.id === prof.id;
+                {professionals.map((b: any) => {
+                  const isSelected = professionalSel === b.id;
                   return (
-                    <div
-                      key={prof.id}
-                      onClick={() => {
-                        setSelectedProfessional(prof);
-                        setStep(3);
-                      }}
-                      className={`group p-5 rounded-2xl border transition-all flex flex-col justify-between cursor-pointer ${
-                        isSelected
-                          ? 'border-[#E6D4B0] ring-2 ring-[#E6D4B0]/20 bg-[#FAF8F5] dark:bg-slate-800 shadow-md'
-                          : 'border-[#EAE1D2] dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-[#E6D4B0] hover:shadow-lg hover:-translate-y-0.5'
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setProfessionalSel(b.id)}
+                      className={`card flex flex-col items-center p-5 text-center transition hover:-translate-y-0.5 hover:shadow-elevated cursor-pointer ${
+                        isSelected ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/20' : ''
                       }`}
                     >
-                      <div className="flex items-center gap-4">
-                        {prof.avatarUrl ? (
-                          <img
-                            src={prof.avatarUrl}
-                            alt={prof.name}
-                            className="w-16 h-16 rounded-2xl object-cover shrink-0 border border-[#EAE1D2] dark:border-slate-800 shadow-xs"
-                          />
-                        ) : (
-                          <div
-                            className="w-16 h-16 rounded-2xl font-black text-xl flex items-center justify-center shrink-0 shadow-xs"
-                            style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}
-                          >
-                            {prof.name.charAt(0)}
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-stone-900 dark:text-white text-base group-hover:text-stone-900 dark:text-[#E6D4B0] transition-colors">
-                            {prof.name}
-                          </h3>
-                          <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 line-clamp-2">
-                            {prof.bio || `Especialista em ${company?.name}`}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-slate-800 flex items-center justify-end">
-                        <button
-                          type="button"
-                          className="w-full py-2.5 rounded-xl font-bold text-xs text-white shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          <span>Ver Horários Disponíveis</span>
-                          <ArrowRight size={13} />
-                        </button>
-                      </div>
-                    </div>
+                      <Avatar name={b.name} src={b.photoUrl} size="lg" className="mb-2" />
+                      <h3 className="mt-2 text-sm font-semibold text-foreground">{b.name}</h3>
+                      {b.bio && (
+                        <p className="mt-1 text-xs text-foreground-muted line-clamp-2">
+                          {b.bio}
+                        </p>
+                      )}
+                    </button>
                   );
                 })}
               </div>
             </div>
           )}
 
-          {/* PASSO 3: SELECIONAR DATA E HORÁRIO (2 COLUNAS NO COMPUTADOR) */}
-          {step === 3 && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-4">
-                <div>
-                  <h2 className="font-extrabold text-stone-900 dark:text-white text-xl sm:text-2xl">
-                    Selecione Data e Horário
-                  </h2>
-                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 mt-0.5">
-                    {selectedService?.name} com {selectedProfessional?.name}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setStep(selectedProfessional && !professionalSlug ? 2 : 1)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400 cursor-pointer hover:bg-[#FAF8F5]"
-                >
-                  <ChevronLeft size={14} /> Voltar
-                </button>
-              </div>
+          {/* ETAPA 2: DATA */}
+          {step === 2 && (
+            <div>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+                Escolha a data
+              </h2>
+              <p className="mt-1 text-sm text-foreground-muted">
+                Selecione o melhor dia para o seu atendimento.
+              </p>
 
-              {/* Layout em 2 colunas para Computador / Tablet */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Coluna 1 (Esquerda): Seleção da Data */}
-                <div className="lg:col-span-5 space-y-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                    1. Escolha o Dia
-                  </h3>
-                  <div className="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-4 gap-2">
-                    {nextDays.map((d) => {
-                      const dateStr = format(d, 'yyyy-MM-dd');
-                      const isSelected = selectedDate === dateStr;
+              <div className="mx-auto max-w-sm mt-6">
+                <DatePicker value={date} onChange={setDate} />
+              </div>
+            </div>
+          )}
+
+          {/* ETAPA 3: HORÁRIO */}
+          {step === 3 && (
+            <div>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+                Horários disponíveis
+              </h2>
+              <p className="mt-1 text-sm text-foreground-muted">
+                {service?.name} · {format(parseISO(date), "dd 'de' MMMM", { locale: ptBR })}
+              </p>
+
+              <div className="mt-6">
+                {loadingSlots ? (
+                  <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={i} className="skeleton h-11 rounded-xl" />
+                    ))}
+                  </div>
+                ) : slots.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+                    {slots.map((s: any) => {
+                      const isSelected = selectedSlot?.time === s.time;
                       return (
                         <button
-                          key={dateStr}
-                          onClick={() => setSelectedDate(dateStr)}
-                          className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center ${
+                          key={s.time}
+                          type="button"
+                          onClick={() => setSelectedSlot(s)}
+                          className={`rounded-xl border py-3 text-sm font-semibold transition cursor-pointer ${
                             isSelected
-                              ? 'text-white shadow-md'
-                              : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-900 dark:text-white border-[#EAE1D2] dark:border-slate-800 hover:bg-[#E6D4B0]/25 dark:hover:bg-slate-900'
+                              ? 'border-accent bg-accent text-accent-foreground shadow-soft'
+                              : 'border-border bg-surface text-foreground hover:border-accent hover:text-accent'
                           }`}
-                          style={{
-                            backgroundColor: isSelected ? primaryColor : undefined,
-                            borderColor: isSelected ? primaryColor : undefined,
-                          }}
                         >
-                          <p className="text-[10px] uppercase font-bold tracking-wider opacity-85">
-                            {format(d, 'EEE', { locale: ptBR })}
-                          </p>
-                          <p className="text-lg font-black mt-0.5">{format(d, 'dd')}</p>
+                          {s.time}
                         </button>
                       );
                     })}
                   </div>
-
-                  {/* Card Resumo do Serviço Escolhido */}
-                  <div className="p-4 rounded-2xl bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 text-xs space-y-2 mt-4">
-                    <span className="font-bold text-stone-900 dark:text-white block text-sm">
-                      {selectedService?.name}
-                    </span>
-                    <div className="flex items-center justify-between text-stone-500 dark:text-slate-400">
-                      <span>Profissional:</span>
-                      <strong className="text-stone-900 dark:text-white">{selectedProfessional?.name}</strong>
-                    </div>
-                    <div className="flex items-center justify-between text-stone-500 dark:text-slate-400">
-                      <span>Duração:</span>
-                      <strong className="text-stone-900 dark:text-white">{selectedService?.durationMinutes} minutos</strong>
-                    </div>
-                    <div className="flex items-center justify-between text-stone-500 dark:text-slate-400 pt-2 border-t border-[#EAE1D2] dark:border-slate-800">
-                      <span>Valor:</span>
-                      <strong className="text-base text-stone-900 dark:text-white">
-                        R$ {Number(selectedService?.price).toFixed(2)}
-                      </strong>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Coluna 2 (Direita): Lista de Slots de Horários Vagos */}
-                <div className="lg:col-span-7 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
-                      2. Horários Disponíveis ({dateFormatted})
-                    </h3>
-                    {selectedSlot && (
-                      <span className="text-xs font-bold text-stone-900 dark:text-[#E6D4B0]">
-                        Horário Selecionado: {selectedSlot.time}
-                      </span>
-                    )}
-                  </div>
-
-                  {loadingSlots ? (
-                    <div className="flex flex-col items-center justify-center py-16 bg-[#FAF8F5] dark:bg-slate-800 rounded-2xl border border-[#EAE1D2] dark:border-slate-800">
-                      <Loader2 className="animate-spin text-stone-900 dark:text-[#E6D4B0]" size={32} />
-                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-2 font-medium">Buscando horários disponíveis...</p>
-                    </div>
-                  ) : availableSlots.length === 0 ? (
-                    <div className="p-8 bg-[#E6D4B0]/25 dark:bg-slate-800 rounded-2xl border border-[#EADCC8] dark:border-[#4A3220] text-center space-y-3">
-                      <p className="text-xs text-[#6B584C] dark:text-[#D7C1AC]">
-                        Nenhum horário livre para {dateFormatted}. Selecione outro dia ao lado ou entre na lista de espera deste dia.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setWaitlistServiceId(selectedService?.id || '');
-                          setWaitlistProfessionalId(selectedProfessional?.id || '');
-                          setWaitlistPreferredDate(selectedDate || '');
-                          setWaitlistSuccess(false);
-                          setWaitlistModalOpen(true);
-                        }}
-                        className="px-4 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                      >
-                        <Clock size={14} />
-                        <span>Entrar na Lista de Espera deste Dia</span>
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2.5 max-h-80 overflow-y-auto pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                      {availableSlots.map((slot) => {
-                        const isChosen = selectedSlot?.time === slot.time;
-                        return (
-                          <button
-                            key={slot.time}
-                            onClick={() => setSelectedSlot(slot)}
-                            className={`py-2.5 px-3 rounded-xl border font-bold transition-all cursor-pointer flex flex-col items-center justify-center ${
-                              isChosen
-                                ? 'text-white shadow-md'
-                                : 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-900 dark:text-white border-[#EAE1D2] dark:border-slate-800 hover:border-[#E6D4B0]'
-                            }`}
-                            style={{
-                              backgroundColor: isChosen ? primaryColor : undefined,
-                              borderColor: isChosen ? primaryColor : undefined,
-                            }}
-                          >
-                            <span className="text-sm font-extrabold">{slot.time}</span>
-                            {slot.endTime && (
-                              <span
-                                className={`text-[10px] font-normal tracking-tight ${
-                                  isChosen ? 'text-white/90' : 'text-stone-500 dark:text-slate-400'
-                                }`}
-                              >
-                                até {slot.endTime}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {selectedSlot && (
-                    <button
-                      onClick={() => setStep(4)}
-                      className="w-full py-4 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl transition-all mt-4"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      <span>Continuar para Identificação & Confirmação</span>
-                      <ArrowRight size={16} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* PASSO 4: DADOS DO CLIENTE (2 COLUNAS NO COMPUTADOR) */}
-          {step === 4 && (
-            <form onSubmit={handleConfirmBooking} className="space-y-6">
-              <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-4">
-                <div>
-                  <h2 className="font-extrabold text-stone-900 dark:text-white text-xl sm:text-2xl">
-                    Seus Dados de Contato
-                  </h2>
-                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 mt-0.5">
-                    Preencha seus dados para receber o lembrete e confirmação do seu horário.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  className="text-xs hover:underline flex items-center gap-1 font-semibold px-3 py-1.5 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-stone-500 dark:text-slate-400 cursor-pointer hover:bg-[#FAF8F5]"
-                >
-                  <ChevronLeft size={14} /> Voltar
-                </button>
-              </div>
-
-              {/* Layout em 2 colunas para Computador */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                {/* Coluna 1 (Esquerda): Formulário */}
-                <div className="lg:col-span-7 space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-stone-900 dark:text-white mb-1.5">
-                      Seu Nome Completo *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Como gostaria de ser chamado(a)?"
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-stone-900 dark:text-white mb-1.5">
-                      WhatsApp com DDD (para envio da confirmação e lembretes) *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ex: 17999998888"
-                      value={clientPhone}
-                      onChange={(e) => setClientPhone(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-stone-900 dark:text-white mb-1.5">
-                      E-mail (Opcional)
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={clientEmail}
-                      onChange={(e) => setClientEmail(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-stone-900 dark:text-white mb-1.5">
-                      Observações ou Preferências (Opcional)
-                    </label>
-                    <textarea
-                      rows={2}
-                      placeholder="Alguma observação importante para o profissional?"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      className="w-full px-4 py-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Cupom de Desconto */}
-                  <div className="p-4 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl space-y-2">
-                    <label className="block text-xs font-semibold text-stone-900 dark:text-white">
-                      Possui Cupom de Desconto?
-                    </label>
-                    {appliedCoupon ? (
-                      <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs">
-                        <div className="flex items-center gap-2">
-                          <Tag className="text-emerald-600 dark:text-emerald-400" size={16} />
-                          <div>
-                            <span className="font-black text-emerald-800 dark:text-emerald-200 tracking-wider">
-                              {appliedCoupon.coupon.code}
-                            </span>
-                            <span className="text-emerald-600 dark:text-emerald-400 ml-2 font-semibold">
-                              {appliedCoupon.coupon.discountType === 'PERCENTAGE'
-                                ? `(${appliedCoupon.coupon.discountValue}% OFF)`
-                                : `(-R$ ${appliedCoupon.discountAmount.toFixed(2)})`}
-                            </span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleRemoveCoupon}
-                          className="text-stone-500 hover:text-red-500 font-bold p-1 cursor-pointer transition-colors"
-                          title="Remover cupom"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
-                          <Tag className="absolute left-3.5 top-3 text-stone-500" size={15} />
-                          <input
-                            type="text"
-                            placeholder="DIGITE SEU CUPOM"
-                            value={couponCodeInput}
-                            onChange={(e) => {
-                              setCouponCodeInput(e.target.value.toUpperCase());
-                              setCouponError(null);
-                            }}
-                            className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs uppercase font-mono font-bold focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleApplyCoupon}
-                          disabled={validatingCoupon || !couponCodeInput.trim()}
-                          className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0"
-                        >
-                          {validatingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Aplicar'}
-                        </button>
-                      </div>
-                    )}
-                    {couponError && (
-                      <p className="text-[11px] text-red-500 font-medium">{couponError}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Coluna 2 (Direita): Resumo e Botão de Confirmação */}
-                <div className="lg:col-span-5 space-y-4">
-                  <div className="p-5 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 bg-[#FAF8F5] dark:bg-slate-800 text-xs space-y-3 sticky top-4">
-                    <h3 className="font-bold text-stone-900 dark:text-white text-sm border-b border-[#EAE1D2] dark:border-slate-800 pb-2">
-                      Resumo da Sua Reserva
-                    </h3>
-
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-stone-500 dark:text-slate-400">Serviço:</span>
-                        <strong className="text-stone-900 dark:text-white text-right">{selectedService?.name}</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-stone-500 dark:text-slate-400">Profissional:</span>
-                        <strong className="text-stone-900 dark:text-white">{selectedProfessional?.name}</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-stone-500 dark:text-slate-400">Data e Hora:</span>
-                        <strong className="text-stone-900 dark:text-white text-right">
-                          {dateFormatted} às {selectedSlot?.time}
-                          {selectedSlot?.endTime ? ` até ${selectedSlot.endTime}` : ''}
-                        </strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-stone-500 dark:text-slate-400">Duração estimada:</span>
-                        <strong className="text-stone-900 dark:text-white">{selectedService?.durationMinutes} min</strong>
-                      </div>
-                    </div>
-
-                    {appliedCoupon ? (
-                      <div className="pt-3 border-t border-[#EAE1D2] dark:border-slate-800 flex justify-between items-baseline">
-                        <div className="space-y-0.5">
-                          <span className="text-stone-500 line-through text-xs font-semibold">
-                            R$ {Number(selectedService?.price).toFixed(2)}
-                          </span>
-                          <span className="text-[11px] block font-bold text-emerald-600">
-                            Cupom {appliedCoupon.coupon.code}: -R$ {appliedCoupon.discountAmount.toFixed(2)}
-                          </span>
-                        </div>
-                        <p className="font-black text-xl text-emerald-600 dark:text-emerald-400">
-                          R$ {appliedCoupon.finalPrice.toFixed(2)}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="pt-3 border-t border-[#EAE1D2] dark:border-slate-800 flex justify-between items-baseline">
-                        <span className="text-stone-900 dark:text-white font-bold text-sm">Total:</span>
-                        <p className="font-black text-xl text-stone-900 dark:text-white">
-                          R$ {Number(selectedService?.price).toFixed(2)}
-                        </p>
-                      </div>
-                    )}
-
-                    {activePaymentModel === 'DEPOSIT_PIX' && (
-                      <div className="p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl space-y-1.5 text-xs">
-                        <div className="flex justify-between items-center text-emerald-700 dark:text-emerald-400 font-bold">
-                          <span>Sinal via Pix (agora):</span>
-                          <span className="text-sm font-black">R$ {step4DepositVal.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-stone-500 dark:text-slate-400">
-                          <span>Restante no atendimento:</span>
-                          <span className="font-semibold">R$ {step4RemainingVal.toFixed(2)}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="p-3.5 bg-amber-50/90 dark:bg-slate-800 border border-amber-200/80 dark:border-[#4A3220] rounded-xl text-xs text-stone-500 dark:text-slate-400 flex items-start gap-2.5">
-                      <AlertCircle className="text-stone-900 dark:text-[#E6D4B0] shrink-0 mt-0.5" size={16} />
-                      <div>
-                        {activePaymentModel === 'NONE' ? (
-                          <>
-                            <strong className="block font-bold text-stone-900 dark:text-[#E6D4B0] dark:text-white">
-                              Agendamento com Pagamento no Local
-                            </strong>
-                            <span className="text-[11px] leading-relaxed block mt-0.5">
-                              Sua vaga será reservada de imediato sem custo agora. O valor total de R$ {currentServicePrice.toFixed(2)} será pago presencialmente no dia do atendimento.
-                            </span>
-                          </>
-                        ) : activePaymentModel === 'DEPOSIT_PIX' ? (
-                          <>
-                            <strong className="block font-bold text-stone-900 dark:text-[#E6D4B0] dark:text-white">
-                              Reserva com Sinal via Pix de R$ {step4DepositVal.toFixed(2)}
-                            </strong>
-                            <span className="text-[11px] leading-relaxed block mt-0.5">
-                              Para assegurar seu horário, transfira o sinal via Pix e envie o comprovante no WhatsApp. O restante (R$ {step4RemainingVal.toFixed(2)}) será pago presencialmente no atendimento.
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <strong className="block font-bold text-stone-900 dark:text-[#E6D4B0] dark:text-white">
-                              Pagamento Total via Pix ou Cartão (Até 12x)
-                            </strong>
-                            <span className="text-[11px] leading-relaxed block mt-0.5">
-                              Para garantir sua vaga com segurança, o agendamento é confirmado instantaneamente após o pagamento integral via Mercado Pago.
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="w-full py-4 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-xl disabled:opacity-60 transition-all mt-4"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      {submitting ? (
-                        <Loader2 className="animate-spin" size={18} />
-                      ) : (
-                        <>
-                          <CheckCircle2 size={18} />
-                          <span>
-                            {activePaymentModel === 'NONE'
-                              ? `Confirmar Agendamento (R$ ${currentServicePrice.toFixed(2)})`
-                              : activePaymentModel === 'DEPOSIT_PIX'
-                              ? `Pagar Sinal e Agendar (R$ ${step4DepositVal.toFixed(2)})`
-                              : `Pagar e Agendar (R$ ${currentServicePrice.toFixed(2)})`}
-                          </span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </form>
-          )}
-
-          {/* PASSO 5: TELA DE SUCESSO / PAGAMENTO TOTAL PIX */}
-          {step === 5 && bookingSuccess && (
-            <div className="max-w-2xl mx-auto text-center py-6 space-y-6">
-              {(bookingSuccess.appointment?.status === 'PENDING' ||
-                bookingSuccess.appointment?.status === 'PENDING_PAYMENT' ||
-                (bookingSuccess.requiresDeposit && bookingSuccess.appointment?.status !== 'CONFIRMED')) ? (
-                /* CASO AGUARDANDO PAGAMENTO */
-                bookingSuccess.depositInfo?.paymentModel === 'DEPOSIT_PIX' || !bookingSuccess.depositInfo?.isMercadoPago ? (
-                  /* VISÃO 1: SINAL VIA CHAVE PIX DE PREFERÊNCIA */
-                  <div className="space-y-6">
-                    <div className="w-20 h-20 rounded-3xl bg-amber-50 dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] flex items-center justify-center mx-auto shadow-inner border border-amber-200/80 dark:border-slate-800">
-                      <Clock size={40} className="animate-pulse" />
-                    </div>
-
-                    <div>
-                      <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-amber-100/80 dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] border border-[#E6D4B0] dark:border-[#4A392D] rounded-full mb-2">
-                        Pré-Reserva Garantida (Aguardando Sinal)
-                      </span>
-                      <h2 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white">
-                        Pague o Sinal via Pix para Confirmar
-                      </h2>
-                      <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 max-w-md mx-auto mt-2 leading-relaxed">
-                        Transfira o sinal via Pix e envie o comprovante no WhatsApp do estabelecimento. O restante será pago presencialmente no atendimento!
-                      </p>
-                    </div>
-
-                    {/* Divisão Financeira Transparente */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border-2 border-emerald-400/80 dark:border-emerald-700 rounded-2xl text-center shadow-xs">
-                        <span className="text-[11px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300 block">
-                          Sinal via Pix (Agora)
-                        </span>
-                        <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1">
-                          {bookingSuccess.depositInfo?.depositValue}
-                        </p>
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block mt-0.5">
-                          Garante sua vaga
-                        </span>
-                      </div>
-
-                      <div className="p-4 bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl text-center shadow-xs">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 block">
-                          Restante no Atendimento
-                        </span>
-                        <p className="text-2xl font-black text-stone-900 dark:text-white mt-1">
-                          {bookingSuccess.depositInfo?.remainingValue}
-                        </p>
-                        <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5">
-                          Pague no local
-                        </span>
-                      </div>
-
-                      <div className="p-4 bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl text-center shadow-xs">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400 block">
-                          Valor Total
-                        </span>
-                        <p className="text-2xl font-black text-stone-900 dark:text-white mt-1">
-                          R$ {Number(bookingSuccess.appointment?.priceAtBooking || currentServicePrice).toFixed(2)}
-                        </p>
-                        <span className="text-[10px] text-stone-500 dark:text-slate-400 block mt-0.5">
-                          Serviço completo
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Detalhes da Chave Pix */}
-                    <div className="p-6 bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-3xl text-left text-xs sm:text-sm space-y-4 shadow-sm">
-                      <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-3">
-                        <div>
-                          <span className="text-xs font-black uppercase tracking-wider text-stone-900 dark:text-[#E6D4B0] block">
-                            Dados para Transferência do Sinal
-                          </span>
-                          <span className="text-[11px] text-stone-500 dark:text-slate-400">
-                            Tipo: {bookingSuccess.depositInfo?.pixKeyType || 'Chave Pix'}
-                          </span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[10px] uppercase font-bold text-stone-500 dark:text-slate-400 block">Valor a Transferir</span>
-                          <span className="text-lg font-black text-emerald-700 dark:text-emerald-400">
-                            {bookingSuccess.depositInfo?.depositValue}
-                          </span>
-                        </div>
-                      </div>
-
-                      {bookingSuccess.depositInfo?.pixRecipientName && (
-                        <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-[#EAE1D2] dark:border-slate-800">
-                          <span className="text-[11px] text-stone-500 dark:text-slate-400 block font-medium">Titular / Favorecido:</span>
-                          <strong className="text-stone-900 dark:text-white text-sm block mt-0.5">
-                            {bookingSuccess.depositInfo.pixRecipientName}
-                          </strong>
-                        </div>
-                      )}
-
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs text-stone-500 dark:text-slate-400 font-semibold">
-                            Chave Pix ({bookingSuccess.depositInfo?.pixKeyType || 'Chave'}):
-                          </span>
-                          {copiedPix && (
-                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                              <Check size={14} /> Chave Pix Copiada!
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            readOnly
-                            value={bookingSuccess.depositInfo?.pixKey || ''}
-                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 border-2 border-[#EAE1D2] dark:border-[#4A392D] rounded-xl font-mono text-sm font-bold text-stone-900 dark:text-white select-all truncate"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey)}
-                            className="px-5 py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs sm:text-sm shadow-sm"
-                          >
-                            <Copy size={16} />
-                            <span>Copiar Chave</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {bookingSuccess.depositInfo?.depositInstructions && (
-                        <div className="p-3.5 bg-amber-50/90 dark:bg-slate-900 rounded-xl text-xs text-stone-500 dark:text-slate-400 border border-amber-200/80 dark:border-slate-800">
-                          <strong>Instruções do Estabelecimento:</strong> {bookingSuccess.depositInfo.depositInstructions}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Botão de Enviar Comprovante no WhatsApp */}
-                    <div className="pt-2">
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all cursor-pointer"
-                      >
-                        <Phone size={20} />
-                        <span>{whatsappButtonLabel}</span>
-                      </a>
-                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-2">
-                        Após efetuar a transferência do sinal, envie o comprovante no WhatsApp para que o estabelecimento confirme sua vaga.
-                      </p>
-                    </div>
-                  </div>
                 ) : (
-                  /* VISÃO 2: MERCADO PAGO (PAGAMENTO TOTAL VIA PIX OU CARTÃO EM ATÉ 12X) */
-                  <div className="space-y-6">
-                    <div className="w-20 h-20 rounded-3xl bg-[#FAF8F5] dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] flex items-center justify-center mx-auto shadow-inner border border-[#EAE1D2] dark:border-slate-800">
-                      <Clock size={40} className="animate-pulse" />
-                    </div>
-
-                    <div>
-                      <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-amber-100/80 dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] border border-[#E6D4B0] dark:border-[#4A392D] rounded-full mb-2">
-                        Horário Pré-Reservado (15 minutos)
-                      </span>
-                      <h2 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white">
-                        Aguardando Pagamento do Serviço
-                      </h2>
-                      <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 max-w-md mx-auto mt-2 leading-relaxed">
-                        Seu horário está reservado por 15 minutos! Escolha pagar via Pix ou Cartão de Crédito abaixo para confirmar seu agendamento imediatamente.
-                      </p>
-                    </div>
-
-                    {/* Alternador de Forma de Pagamento */}
-                    <div className="grid grid-cols-2 gap-2 bg-[#FAF8F5] dark:bg-slate-900 p-1.5 rounded-2xl max-w-md mx-auto">
-                      <button
-                        type="button"
-                        onClick={() => setBookingPaymentMethod('pix')}
-                        className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                          bookingPaymentMethod === 'pix'
-                            ? 'bg-white dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] dark:text-white shadow-sm'
-                            : 'text-stone-500 dark:text-slate-400 hover:text-stone-900'
-                        }`}
-                      >
-                        <span>Pix Instantâneo</span>
+                  <div className="card p-10 text-center space-y-3">
+                    <Clock className="mx-auto h-8 w-8 text-foreground-subtle" />
+                    <p className="font-semibold text-foreground text-sm">
+                      Sem horários disponíveis nesta data
+                    </p>
+                    <p className="text-xs text-foreground-muted max-w-sm mx-auto">
+                      Tente escolher outro dia ou selecione outro profissional.
+                    </p>
+                    <div className="flex justify-center gap-2 pt-2">
+                      <button onClick={() => go(2)} className="btn-outline text-xs">
+                        Trocar data
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setBookingPaymentMethod('card')}
-                        className={`py-2.5 px-4 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                          bookingPaymentMethod === 'card'
-                            ? 'bg-white dark:bg-slate-800 text-stone-900 dark:text-[#E6D4B0] dark:text-white shadow-sm'
-                            : 'text-stone-500 dark:text-slate-400 hover:text-stone-900'
-                        }`}
-                      >
-                        <CreditCard size={15} />
-                        <span>Cartão (Até 12x)</span>
+                      <button onClick={() => go(1)} className="btn-ghost text-xs">
+                        Trocar profissional
                       </button>
                     </div>
-
-                    {/* Card com Detalhes do Pagamento */}
-                    <div className="p-6 bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-3xl text-left text-xs sm:text-sm space-y-5 shadow-sm">
-                      <div className="flex items-center justify-between border-b border-[#EAE1D2] dark:border-slate-800 pb-3">
-                        <span className="text-stone-900 dark:text-[#E6D4B0] font-bold uppercase tracking-wider text-xs">
-                          Valor Total do Atendimento
-                        </span>
-                        <span className="text-2xl font-black text-stone-900 dark:text-[#E6D4B0]">
-                          {bookingSuccess.depositInfo?.depositValue || (`R$ ${Number(bookingSuccess.appointment?.priceAtBooking || currentServicePrice).toFixed(2)}`)}
-                        </span>
-                      </div>
-
-                      {/* OPÇÃO 1: PIX */}
-                      {bookingPaymentMethod === 'pix' && (
-                        <div className="space-y-4">
-                          {/* Exibição do QR Code Mercado Pago caso gerado */}
-                          {bookingSuccess.depositInfo?.pixQrCodeBase64 && (
-                            <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 text-center space-y-3 shadow-xs">
-                              <span className="text-xs font-black uppercase tracking-wider text-stone-900 dark:text-[#E6D4B0] block">
-                                Pague pelo QR Code do seu Banco
-                              </span>
-                              <div className="inline-block p-2 bg-white rounded-2xl border-2 border-[#EAE1D2] dark:border-[#4A392D] shadow-sm">
-                                <img
-                                  src={`data:image/png;base64,${bookingSuccess.depositInfo.pixQrCodeBase64}`}
-                                  alt="QR Code Pix Mercado Pago"
-                                  className="w-48 h-48 mx-auto rounded-xl object-contain"
-                                />
-                              </div>
-                              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-full text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                <span>Aguardando Pix... Confirmação 100% automática em tempo real</span>
-                              </div>
-                            </div>
-                          )}
-
-                          {bookingSuccess.depositInfo?.pixRecipientName && (
-                            <div>
-                              <span className="text-xs text-stone-500 dark:text-slate-400 block">Titular / Recebedor:</span>
-                              <strong className="text-stone-900 dark:text-white text-sm">
-                                {bookingSuccess.depositInfo.pixRecipientName}
-                              </strong>
-                            </div>
-                          )}
-
-                          <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-xs text-stone-500 dark:text-slate-400 font-semibold">
-                                Código Pix Copia e Cola:
-                              </span>
-                              {copiedPix && (
-                                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                                  <Check size={14} /> Código Pix Copiado!
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                readOnly
-                                value={bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola || ''}
-                                className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border-2 border-[#EAE1D2] dark:border-[#4A392D] rounded-xl font-mono text-xs font-bold text-stone-900 dark:text-white select-all truncate"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleCopyPixKey(bookingSuccess.depositInfo?.pixKey || bookingSuccess.depositInfo?.pixCopiaECola)}
-                                className="px-4 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-sm"
-                              >
-                                <Copy size={14} />
-                                <span>Copiar Pix</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {bookingSuccess.depositInfo?.depositInstructions && (
-                            <div className="p-3 bg-white/80 dark:bg-slate-900 rounded-xl text-xs text-stone-500 dark:text-slate-400 border border-[#EAE1D2] dark:border-slate-800">
-                              <strong>Orientações:</strong> {bookingSuccess.depositInfo.depositInstructions}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* OPÇÃO 2: CARTÃO DE CRÉDITO */}
-                      {bookingPaymentMethod === 'card' && (
-                        <div className="p-5 bg-white dark:bg-slate-900 rounded-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-4 text-center">
-                          <div className="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-950/50 text-[#009EE3] flex items-center justify-center mx-auto">
-                            <CreditCard size={28} />
-                          </div>
-                          <div>
-                            <h4 className="font-extrabold text-stone-900 dark:text-white text-base">
-                              Pague no Cartão pelo Mercado Pago
-                            </h4>
-                            <p className="text-xs text-stone-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-                              Parcele em até 12x no cartão de crédito ou utilize débito com a proteção e tecnologia do Mercado Pago.
-                            </p>
-                          </div>
-
-                          <div className="p-3.5 bg-[#FAF8F5] dark:bg-slate-800 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-left text-xs space-y-2 text-stone-500 dark:text-slate-400">
-                            <p className="flex items-center gap-2 font-bold text-stone-900 dark:text-white">
-                              <Check size={14} className="text-emerald-600" />
-                              <span>Aceita Visa, Mastercard, Elo, Hipercard e American Express</span>
-                            </p>
-                            <p className="flex items-center gap-2 font-bold text-stone-900 dark:text-white">
-                              <Check size={14} className="text-emerald-600" />
-                              <span>Confirmação imediata do seu horário após aprovação</span>
-                            </p>
-                          </div>
-
-                          {(bookingSuccess.depositInfo?.cardPaymentUrl || bookingSuccess.appointment?.cardPaymentUrl) ? (
-                            <a
-                              href={bookingSuccess.depositInfo?.cardPaymentUrl || bookingSuccess.appointment?.cardPaymentUrl}
-                              className="w-full py-4 bg-[#009EE3] hover:bg-[#0086c2] text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-sky-500/20 hover:shadow-xl transition-all cursor-pointer"
-                            >
-                              <CreditCard size={18} />
-                              <span>Pagar com Cartão de Crédito</span>
-                              <ExternalLink size={16} />
-                            </a>
-                          ) : (
-                            <p className="text-xs text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-200 dark:border-amber-800">
-                              Gerando link de pagamento com cartão... Caso não apareça, utilize o Pix acima.
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Botão de Enviar Comprovante no WhatsApp */}
-                    <div className="pt-2">
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white font-black text-sm rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/20 hover:shadow-xl transition-all cursor-pointer"
-                      >
-                        <Phone size={18} />
-                        <span>{whatsappButtonLabel}</span>
-                      </a>
-                      <p className="text-xs text-stone-500 dark:text-slate-400 mt-2">
-                        Ao clicar, o WhatsApp abrirá com mensagem pré-formatada com todos os dados da sua reserva.
-                      </p>
-                    </div>
-                  </div>
-                )
-              ) : (
-                /* CASO NÃO EXIJA SINAL (CONFIRMAÇÃO DIRETA) */
-                <div className="space-y-4">
-                  <div className="w-20 h-20 rounded-3xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-inner">
-                    <CheckCircle2 size={40} />
-                  </div>
-
-                  <h2 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white">
-                    Agendamento Confirmado!
-                  </h2>
-                  <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 max-w-md mx-auto">
-                    Seu horário foi agendado com sucesso no <strong>{company?.name}</strong>. Te esperamos com muito carinho!
-                  </p>
-                </div>
-              )}
-
-              {/* Resumo do Agendamento */}
-              <div className="p-5 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl text-left text-xs sm:text-sm space-y-2 text-stone-900 dark:text-white">
-                <p>
-                  <strong className="text-stone-500 dark:text-slate-400">Serviço:</strong> {selectedService?.name}
-                </p>
-                <p>
-                  <strong className="text-stone-500 dark:text-slate-400">Profissional:</strong> {selectedProfessional?.name}
-                </p>
-                <p>
-                  <strong className="text-stone-500 dark:text-slate-400">Horário:</strong> {selectedSlot?.time}
-                  {selectedSlot?.endTime ? ` até ${selectedSlot.endTime}` : ''} ({dateFormatted})
-                </p>
-                <p>
-                  <strong className="text-stone-500 dark:text-slate-400">Local:</strong> {company?.name}
-                </p>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <Link
-                  to={`/agendamento/${bookingSuccess.appointment?.clientManagementCode}`}
-                  className="block w-full py-4 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md text-center"
-                >
-                  Consultar ou Cancelar Agendamento
-                </Link>
-
-                <button
-                  onClick={() => {
-                    setStep(1);
-                    setSelectedService(null);
-                    setSelectedSlot(null);
-                    setBookingSuccess(null);
-                  }}
-                  className="block w-full py-3 text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] dark:hover:bg-slate-900 rounded-xl text-xs font-semibold cursor-pointer transition-colors"
-                >
-                  Fazer Outro Agendamento
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Rodapé Oficial Inovae Agenda */}
-        <div className="py-4 px-6 border-t border-[#EAE1D2] dark:border-slate-800 bg-[#FAF8F5] dark:bg-slate-900 text-center">
-          <p className="text-[11px] text-stone-500 dark:text-slate-400">
-            Plataforma de Agendamentos por <strong className="text-stone-900 dark:text-white">Inovae Agenda</strong>
-          </p>
-        </div>
-      </div>
-
-      {/* Modal Lista de Espera */}
-      {waitlistModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-3xl w-full max-w-lg p-6 sm:p-8 space-y-5 shadow-2xl relative my-8">
-            <button
-              type="button"
-              onClick={() => setWaitlistModalOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl text-stone-500 hover:text-stone-900 dark:hover:text-white hover:bg-[#FAF8F5] dark:hover:bg-slate-900 transition-colors cursor-pointer"
-            >
-              <X size={20} />
-            </button>
-
-            {waitlistSuccess ? (
-              <div className="text-center py-6 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-inner">
-                  <CheckCircle2 size={36} />
-                </div>
-                <h3 className="text-xl font-black text-stone-900 dark:text-white">
-                  Você está na Lista de Espera!
-                </h3>
-                <p className="text-xs sm:text-sm text-stone-500 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
-                  Registramos seu interesse com sucesso. Assim que um horário compatível surgir na agenda de {company?.name}, entraremos em contato imediatamente pelo WhatsApp: <strong>{waitlistPhone}</strong>.
-                </p>
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setWaitlistModalOpen(false);
-                      setWaitlistSuccess(false);
-                    }}
-                    className="w-full py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
-                  >
-                    Entendido, Voltar aos Agendamentos
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleJoinWaitlist} className="space-y-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="p-2 rounded-xl bg-[#E6D4B0]/25 dark:bg-[#E6D4B0]/15 text-stone-900 dark:text-[#E6D4B0]">
-                      <Clock size={20} />
-                    </span>
-                    <div>
-                      <h3 className="text-lg font-black text-stone-900 dark:text-white">
-                        Lista de Espera VIP
-                      </h3>
-                      <p className="text-xs text-stone-500 dark:text-slate-400">
-                        Não encontrou vaga? Seja notificado caso surja uma desistência!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {waitlistError && (
-                  <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 rounded-xl text-xs flex items-center gap-2">
-                    <AlertCircle size={14} className="shrink-0" />
-                    <span>{waitlistError}</span>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
 
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="block font-bold text-stone-900 dark:text-white mb-1">
-                      Seu Nome Completo *
-                    </label>
+          {/* ETAPA 4: SEUS DADOS */}
+          {step === 4 && (
+            <div>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+                Seus dados
+              </h2>
+              <p className="mt-1 text-sm text-foreground-muted">
+                Para confirmarmos e enviarmos lembretes pelo WhatsApp.
+              </p>
+
+              <div className="mx-auto max-w-md space-y-4 mt-6">
+                <div>
+                  <label className="label">Nome completo *</label>
+                  <input
+                    className="input"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Como prefere ser chamado(a)?"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Telefone / WhatsApp *</label>
+                  <input
+                    className="input font-mono"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    placeholder="(11) 99999-0000"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="label">E-mail (opcional)</label>
+                  <input
+                    type="email"
+                    className="input"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    placeholder="voce@email.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Observações (opcional)</label>
+                  <input
+                    className="input"
+                    value={form.notes}
+                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    placeholder="Alguma preferência ou detalhe específico?"
+                  />
+                </div>
+
+                {/* Cupom de desconto */}
+                <div className="pt-2">
+                  <label className="label">Cupom de Desconto</label>
+                  <div className="flex gap-2">
                     <input
-                      type="text"
-                      required
-                      value={waitlistName}
-                      onChange={(e) => setWaitlistName(e.target.value)}
-                      placeholder="Como gostaria de ser chamado(a)?"
-                      className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
+                      className="input uppercase font-mono text-xs"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="INSIRA SEU CUPOM"
                     />
+                    <button
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={validatingCoupon || !couponCode.trim()}
+                      className="btn-outline text-xs px-4"
+                    >
+                      {validatingCoupon ? <Loader2 size={13} className="animate-spin" /> : 'Aplicar'}
+                    </button>
                   </div>
+                  {appliedCoupon && (
+                    <p className="text-xs text-success font-medium mt-1.5 flex items-center gap-1">
+                      <Check size={12} /> Cupom aplicado! Desconto de R$ {Number(appliedCoupon.discountValue || 0).toFixed(2)}
+                    </p>
+                  )}
+                  {couponError && (
+                    <p className="text-xs text-danger font-medium mt-1.5">
+                      {couponError}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
-                        WhatsApp com DDD *
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        value={waitlistPhone}
-                        onChange={(e) => setWaitlistPhone(e.target.value)}
-                        placeholder="(11) 99999-9999"
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
-                        E-mail (opcional)
-                      </label>
-                      <input
-                        type="email"
-                        value={waitlistEmail}
-                        onChange={(e) => setWaitlistEmail(e.target.value)}
-                        placeholder="seu@email.com"
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
-                      />
-                    </div>
-                  </div>
+          {/* ETAPA 5: CONFIRMAÇÃO */}
+          {step === 5 && service && (
+            <div>
+              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+                Confira seu agendamento
+              </h2>
+              <p className="mt-1 text-sm text-foreground-muted">
+                Tudo certo antes de confirmar.
+              </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="mx-auto max-w-md mt-6">
+                <div className="card p-6 shadow-soft">
+                  <div className="flex items-center gap-3 border-b border-border pb-4">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-soft">
+                      <Flower2 className="h-5 w-5" />
+                    </span>
                     <div>
-                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
-                        Serviço Desejado
-                      </label>
-                      <select
-                        value={waitlistServiceId}
-                        onChange={(e) => setWaitlistServiceId(e.target.value)}
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
-                      >
-                        <option value="">Qualquer serviço</option>
-                        {company?.services?.map((s: any) => (
-                          <option key={s.id} value={s.id}>
-                            {s.name} (R$ {Number(s.price).toFixed(2)})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
-                        Profissional Preferido
-                      </label>
-                      <select
-                        value={waitlistProfessionalId}
-                        onChange={(e) => setWaitlistProfessionalId(e.target.value)}
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
-                      >
-                        <option value="">Qualquer profissional</option>
-                        {company?.professionals?.map((p: any) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name}
-                          </option>
-                        ))}
-                      </select>
+                      <p className="font-semibold text-foreground text-sm">{service.name}</p>
+                      <p className="text-xs text-foreground-muted">
+                        {service.durationMinutes} min · R$ {Number(finalPrice).toFixed(2)}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
-                        Data Preferida
-                      </label>
-                      <input
-                        type="date"
-                        value={waitlistPreferredDate}
-                        onChange={(e) => setWaitlistPreferredDate(e.target.value)}
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
-                      />
+                  <dl className="mt-4 space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <dt className="text-foreground-muted">Profissional:</dt>
+                      <dd className="font-semibold text-foreground">
+                        {effectiveProfessional?.name || 'Primeiro disponível'}
+                      </dd>
                     </div>
-
-                    <div>
-                      <label className="block font-bold text-stone-900 dark:text-white mb-1">
-                        Período de Preferência
-                      </label>
-                      <select
-                        value={waitlistPreferredPeriod}
-                        onChange={(e) => setWaitlistPreferredPeriod(e.target.value as any)}
-                        className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295]"
-                      >
-                        <option value="QUALQUER">Qualquer horário</option>
-                        <option value="MANHA">Manhã (08h às 12h)</option>
-                        <option value="TARDE">Tarde (12h às 18h)</option>
-                        <option value="NOITE">Noite (18h às 22h)</option>
-                      </select>
+                    <div className="flex items-center justify-between">
+                      <dt className="text-foreground-muted">Data:</dt>
+                      <dd className="font-semibold text-foreground">
+                        {format(parseISO(date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      </dd>
                     </div>
-                  </div>
+                    <div className="flex items-center justify-between">
+                      <dt className="text-foreground-muted">Horário:</dt>
+                      <dd className="font-semibold text-foreground">{selectedSlot?.time}</dd>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <dt className="text-foreground-muted">Cliente:</dt>
+                      <dd className="font-semibold text-foreground">{form.name}</dd>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <dt className="text-foreground-muted">WhatsApp:</dt>
+                      <dd className="font-semibold text-foreground font-mono">{form.phone}</dd>
+                    </div>
+                  </dl>
 
-                  <div>
-                    <label className="block font-bold text-stone-900 dark:text-white mb-1">
-                      Observações / Dias Específicos
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={waitlistNotes}
-                      onChange={(e) => setWaitlistNotes(e.target.value)}
-                      placeholder="Ex: Tenho preferência para sexta-feira à tarde..."
-                      className="w-full p-3 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-white focus:outline-none focus:border-[#DAC295] resize-none"
-                    />
-                  </div>
+                  {company?.settings?.address && (
+                    <div className="mt-4 pt-3 border-t border-border flex items-start gap-2 text-[11px] text-foreground-muted">
+                      <MapPin size={13} className="text-accent shrink-0 mt-0.5" />
+                      <span>{company.settings.address}</span>
+                    </div>
+                  )}
                 </div>
 
-                <div className="pt-2 flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setWaitlistModalOpen(false)}
-                    className="px-4 py-3 rounded-xl border border-[#EAE1D2] dark:border-slate-800 text-xs font-semibold text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] dark:hover:bg-slate-900 transition-colors cursor-pointer"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingWaitlist}
-                    className="flex-1 py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                  >
-                    {submittingWaitlist ? (
-                      <>
-                        <Loader2 size={16} className="animate-spin" />
-                        <span>Cadastrando...</span>
-                      </>
-                    ) : (
-                      <span>Confirmar Entrada na Lista</span>
-                    )}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
+                {error && (
+                  <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-xs text-danger font-medium text-center">
+                    {error}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Bottom Navigation Buttons */}
+        <div className="mt-10 flex items-center justify-between border-t border-border pt-6">
+          <button
+            type="button"
+            onClick={() => go(Math.max(0, step - 1))}
+            className={`btn-ghost text-xs ${step === 0 ? 'invisible pointer-events-none' : ''}`}
+          >
+            <ChevronLeft className="h-4 w-4" /> Voltar
+          </button>
+
+          {step < 5 ? (
+            <button
+              type="button"
+              onClick={() => go(step + 1)}
+              disabled={!canNext}
+              className="btn-primary px-6 text-xs"
+            >
+              <span>Continuar</span>
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSubmitBooking}
+              disabled={submitting}
+              className="btn-primary px-6 text-xs"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Confirmando...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4" />
+                  <span>Confirmar Agendamento</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      </main>
+
+      {/* Public Footer */}
+      <footer className="border-t border-border bg-surface mt-16 py-8">
+        <div className="mx-auto max-w-5xl px-5 sm:px-8 text-center text-xs text-foreground-muted space-y-2">
+          <p className="font-semibold text-foreground">{company?.name}</p>
+          {company?.settings?.address && <p>{company.settings.address}</p>}
+          <p className="text-[11px] text-foreground-subtle">
+            Sistema de Agendamento Online powered by Inovae Agenda
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

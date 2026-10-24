@@ -66,8 +66,15 @@ export function App() {
 
         {/* Rotas Públicas do Cliente (Sem login) */}
         <Route path="/empresa/:companySlug" element={<PublicBookingPage />} />
+        <Route path="/empresa/:companySlug/:professionalSlug" element={<PublicBookingPage />} />
         <Route
           path="/empresa/:companySlug/profissional/:professionalSlug"
+          element={<PublicBookingPage />}
+        />
+        <Route path="/agenda/:companySlug" element={<PublicBookingPage />} />
+        <Route path="/agenda/:companySlug/:professionalSlug" element={<PublicBookingPage />} />
+        <Route
+          path="/agenda/:companySlug/profissional/:professionalSlug"
           element={<PublicBookingPage />}
         />
         <Route path="/agendamento/:code" element={<AppointmentTrackingPage />} />
