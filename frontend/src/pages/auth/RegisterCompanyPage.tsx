@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../services/api';
 import { useAuthStore } from '../../store/useAuthStore';
-import { Building2, User, Mail, Lock, Phone, ArrowRight, Loader2, Check, Sparkles, X } from 'lucide-react';
+import { User, Mail, Lock, Phone, ArrowRight, Loader2, Check, Sparkles, X } from 'lucide-react';
+import { Logo } from '../../components/brand/Logo';
+import { ThemeToggle } from '../../components/ThemeToggle';
 
 const PLAN_OPTIONS = [
   {
@@ -108,11 +110,17 @@ export const RegisterCompanyPage: React.FC = () => {
 
     try {
       const payload = {
-        ...formData,
-        plan: selectedPlan,
+        name: formData.companyName,
+        slug: formData.companySlug,
+        phone: formData.companyPhone,
+        document: formData.companyDocument || undefined,
+        ownerName: formData.ownerName,
+        ownerEmail: formData.ownerEmail,
+        ownerPassword: formData.ownerPassword,
+        planId: selectedPlan,
       };
 
-      const { data } = await api.post('/auth/register-company', payload);
+      const { data } = await api.post('/auth/register', payload);
       setAuth(data.user, data.accessToken, data.refreshToken);
       navigate('/dashboard');
     } catch (err: any) {
@@ -125,23 +133,29 @@ export const RegisterCompanyPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 py-12 transition-colors">
-      <div className="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-6 sm:p-10">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 py-12 relative animate-fade-in">
+      <div className="absolute top-5 right-5">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-4xl card p-6 sm:p-10 shadow-elevated">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#E6D4B0] text-stone-900 shadow-sm mb-3">
-            <Building2 size={24} />
+          <div className="inline-flex justify-center mb-3">
+            <Logo size={32} showWord={false} />
           </div>
-          <p className="text-xs font-bold uppercase tracking-widest text-stone-800 dark:text-[#E6D4B0] mb-1">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-accent mb-1">
             Inovae Agenda
           </p>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100">Cadastre seu Estabelecimento</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            Cadastre seu Estabelecimento
+          </h1>
+          <p className="text-sm text-foreground-muted mt-1">
             Escolha seu plano e comece hoje mesmo com 5 dias de teste grátis. Sem fidelidade.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 text-sm">
+          <div className="mb-6 p-3.5 rounded-xl bg-danger/10 border border-danger/30 text-danger text-xs font-medium">
             {error}
           </div>
         )}
@@ -149,11 +163,11 @@ export const RegisterCompanyPage: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* ETAPA 1: ESCOLHA DO PLANO */}
           <div>
-            <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+            <div className="border-b border-border pb-3 mb-4 flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-accent">
                 1. Escolha o Plano Desejado
               </h3>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="text-xs text-foreground-subtle">
                 Selecione apenas 1 plano
               </span>
             </div>
@@ -165,80 +179,72 @@ export const RegisterCompanyPage: React.FC = () => {
                   <div
                     key={plan.id}
                     onClick={() => setSelectedPlan(plan.id as any)}
-                    className={`relative rounded-2xl p-5 border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                    className={`relative rounded-2xl p-5 border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
-                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/30 ring-2 ring-indigo-500/20 shadow-md'
-                        : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-850'
+                        ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/30 shadow-soft'
+                        : 'border-border hover:border-border-strong bg-surface'
                     }`}
                   >
                     {plan.popular && (
-                      <span className="absolute -top-3 right-4 px-3 py-0.5 bg-indigo-600 text-white text-[10px] font-black uppercase tracking-wider rounded-full shadow-sm">
+                      <span className="absolute -top-3 right-4 px-3 py-0.5 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-wider rounded-full shadow-xs">
                         Mais Escolhido
                       </span>
                     )}
 
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-extrabold text-base text-slate-900 dark:text-white">
-                          {plan.name}
-                        </h4>
-                        <div
-                          className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all ${
-                            isSelected
-                              ? 'bg-indigo-600 border-indigo-600 text-white'
-                              : 'border-slate-300 dark:border-slate-600'
-                          }`}
-                        >
-                          {isSelected && <Check size={12} strokeWidth={3} />}
-                        </div>
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-bold text-base text-foreground">{plan.name}</h4>
+                        {isSelected && (
+                          <div className="w-5 h-5 rounded-full bg-accent text-accent-foreground flex items-center justify-center">
+                            <Check size={12} strokeWidth={3} />
+                          </div>
+                        )}
                       </div>
 
-                      <div className="mb-3">
-                        <span className="text-2xl font-black text-slate-900 dark:text-white">
+                      <div className="mt-2 mb-3">
+                        <span className="text-2xl font-black text-foreground">
                           R$ {plan.price}
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                          /mês
-                        </span>
+                        <span className="text-xs text-foreground-subtle"> /mês</span>
                       </div>
 
-                      <p className="text-xs text-slate-600 dark:text-slate-400 mb-3 min-h-[32px]">
+                      <p className="text-xs text-foreground-muted mb-3 leading-relaxed">
                         {plan.description}
                       </p>
 
-                      <div className="space-y-1.5 py-2.5 my-2 border-y border-slate-200/60 dark:border-slate-800 text-xs">
-                        <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                          <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                      <div className="space-y-1 mb-4 p-2 bg-surface-2 rounded-xl text-[11px] font-medium text-foreground-muted border border-border">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles size={12} className="text-accent shrink-0" />
                           <span>{plan.professionalsLimit}</span>
                         </div>
-                        <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                          <Check size={14} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles size={12} className="text-accent shrink-0" />
                           <span>{plan.appointmentsLimit}</span>
                         </div>
                       </div>
 
-                      <ul className="space-y-1.5 text-[11px] text-slate-700 dark:text-slate-300 mt-3">
-                        {plan.features.map((feat, idx) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <Check size={13} className="text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                      <ul className="space-y-1.5 text-xs text-foreground-muted">
+                        {plan.features.map((feat, i) => (
+                          <li key={i} className="flex items-start gap-1.5">
+                            <Check size={13} className="text-success shrink-0 mt-0.5" />
                             <span>{feat}</span>
                           </li>
                         ))}
-                        {plan.notIncluded.map((notFeat, idx) => (
-                          <li key={`not-${idx}`} className="flex items-start gap-1.5 text-slate-400 dark:text-slate-500">
-                            <X size={13} className="text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" />
+                        {plan.notIncluded.map((notFeat, i) => (
+                          <li key={i} className="flex items-start gap-1.5 text-foreground-subtle/70">
+                            <X size={13} className="shrink-0 mt-0.5" />
                             <span>{notFeat}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div className="mt-4 pt-3 border-t border-border">
                       <span
-                        className={`text-xs font-bold block text-center py-1.5 rounded-lg transition-colors ${
+                        className={`text-xs font-semibold block text-center py-2 rounded-xl transition ${
                           isSelected
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                            ? 'bg-accent text-accent-foreground shadow-soft'
+                            : 'bg-surface-2 text-foreground-muted'
                         }`}
                       >
                         {isSelected ? '✓ Plano Selecionado' : 'Selecionar'}
@@ -252,15 +258,15 @@ export const RegisterCompanyPage: React.FC = () => {
 
           {/* ETAPA 2: DADOS DO ESTABELECIMENTO */}
           <div>
-            <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+            <div className="border-b border-border pb-3 mb-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-accent">
                 2. Dados do Estabelecimento
               </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="label">
                   Nome da Empresa *
                 </label>
                 <input
@@ -270,12 +276,12 @@ export const RegisterCompanyPage: React.FC = () => {
                   onChange={handleChange}
                   required
                   placeholder="Ex: Inovae Agenda"
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="label">
                   Identificador (Link público) *
                 </label>
                 <input
@@ -285,16 +291,16 @@ export const RegisterCompanyPage: React.FC = () => {
                   onChange={handleChange}
                   required
                   placeholder="inovae-agenda"
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="label">
                   WhatsApp Comercial *
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <Phone className="absolute left-3.5 top-3 text-foreground-subtle" size={16} />
                   <input
                     type="text"
                     name="companyPhone"
@@ -302,13 +308,13 @@ export const RegisterCompanyPage: React.FC = () => {
                     onChange={handleChange}
                     required
                     placeholder="11999998888"
-                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                    className="input pl-10"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="label">
                   CNPJ ou CPF (Opcional)
                 </label>
                 <input
@@ -317,7 +323,7 @@ export const RegisterCompanyPage: React.FC = () => {
                   value={formData.companyDocument}
                   onChange={handleChange}
                   placeholder="00.000.000/0001-00"
-                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                  className="input"
                 />
               </div>
             </div>
@@ -325,19 +331,19 @@ export const RegisterCompanyPage: React.FC = () => {
 
           {/* ETAPA 3: DADOS DO RESPONSÁVEL */}
           <div>
-            <div className="border-b border-slate-100 dark:border-slate-800 pb-3 mb-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-[#E6D4B0]">
+            <div className="border-b border-border pb-3 mb-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-accent">
                 3. Dados do Responsável (Acesso)
               </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="label">
                   Nome Completo *
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <User className="absolute left-3.5 top-3 text-foreground-subtle" size={16} />
                   <input
                     type="text"
                     name="ownerName"
@@ -345,17 +351,17 @@ export const RegisterCompanyPage: React.FC = () => {
                     onChange={handleChange}
                     required
                     placeholder="Nome do proprietário"
-                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                    className="input pl-10"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="label">
                   E-mail de Login *
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <Mail className="absolute left-3.5 top-3 text-foreground-subtle" size={16} />
                   <input
                     type="email"
                     name="ownerEmail"
@@ -363,52 +369,63 @@ export const RegisterCompanyPage: React.FC = () => {
                     onChange={handleChange}
                     required
                     placeholder="contato@inovaeagenda.com.br"
-                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                    className="input pl-10"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="label">
                   Senha de Acesso *
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                  <Lock className="absolute left-3.5 top-3 text-foreground-subtle" size={16} />
                   <input
                     type="password"
                     name="ownerPassword"
                     value={formData.ownerPassword}
                     onChange={handleChange}
                     required
-                    placeholder="Mínimo 6 caracteres"
-                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                    placeholder="••••••••"
+                    className="input pl-10"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold rounded-xl text-sm shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
-          >
-            {loading ? (
-              <Loader2 className="animate-spin" size={18} />
-            ) : (
-              <>
-                <span>Cadastrar com Plano {PLAN_OPTIONS.find(p => p.id === selectedPlan)?.name} e Iniciar Teste Grátis</span>
-                <ArrowRight size={16} />
-              </>
-            )}
-          </button>
+          {/* SUBMIT BUTTON */}
+          <div className="pt-4 border-t border-border">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full py-3.5 text-sm"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} />
+                  <span>Criando seu Estabelecimento...</span>
+                </>
+              ) : (
+                <>
+                  <span>Cadastrar com Plano {PLAN_OPTIONS.find(p => p.id === selectedPlan)?.name} e Iniciar Teste Grátis</span>
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+            <p className="text-center text-[11px] text-foreground-subtle mt-3">
+              Ao cadastrar, você concorda com nossos Termos de Uso e Política de Privacidade.
+            </p>
+          </div>
         </form>
 
-        <div className="mt-6 text-center text-xs text-slate-500">
-          Já possui conta?{' '}
-          <Link to="/login" className="text-stone-900 dark:text-[#E6D4B0] font-bold hover:underline">
-            Fazer login
-          </Link>
+        <div className="mt-8 pt-6 border-t border-border text-center">
+          <p className="text-xs text-foreground-muted">
+            Já tem uma conta cadastrada?{' '}
+            <Link to="/login" className="font-bold text-accent hover:underline">
+              Fazer Login no Painel
+            </Link>
+          </p>
         </div>
       </div>
     </div>

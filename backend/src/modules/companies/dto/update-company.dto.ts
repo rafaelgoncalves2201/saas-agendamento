@@ -39,7 +39,7 @@ export class UpdateCompanyDto {
       minBookingNoticeMinutes: 60,
       maxBookingFutureDays: 30,
       cancellationPolicyHours: 2,
-      primaryColor: '#6366f1',
+      primaryColor: '#E6D4B0',
       welcomeMessage: 'Bem-vindo ao nosso espaço de beleza e bem-estar!',
     },
   })

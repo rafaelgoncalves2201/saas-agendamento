@@ -166,7 +166,19 @@ export const AppointmentTrackingPage: React.FC = () => {
   const timeFormatted = format(start, 'HH:mm');
   const endTimeFormatted = format(end, 'HH:mm');
   const isDark = appointment.company?.settings?.publicTheme !== 'light';
-  const primaryColor = appointment.company?.settings?.primaryColor || '#E6D4B0';
+  const rawColor = appointment.company?.settings?.primaryColor;
+  const isBrown = rawColor && (
+    rawColor.toLowerCase() === '#4a2e18' ||
+    rawColor.toLowerCase() === '#5c3826' ||
+    rawColor.toLowerCase() === '#5c341e' ||
+    rawColor.toLowerCase() === '#6d381e' ||
+    rawColor.toLowerCase() === '#7a4422' ||
+    rawColor.toLowerCase() === '#8a4b28' ||
+    rawColor.toLowerCase() === '#6366f1' ||
+    rawColor.toLowerCase() === '#381e0f' ||
+    rawColor.toLowerCase() === '#61361b'
+  );
+  const primaryColor = isBrown || !rawColor ? 'hsl(var(--accent))' : rawColor;
 
   const isMercadoPago = Boolean(
     appointment.pixQrCodeBase64 ||

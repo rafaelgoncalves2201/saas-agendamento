@@ -1,104 +1,141 @@
 /** @type {import('tailwindcss').Config} */
+const withAlpha = (variable) => `hsl(var(${variable}) / <alpha-value>)`;
+
 export default {
-  darkMode: ['class'],
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
-        },
-        accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
+        background: withAlpha('--background'),
+        surface: withAlpha('--surface'),
+        'surface-2': withAlpha('--surface-2'),
+        'surface-3': withAlpha('--surface-3'),
+        border: withAlpha('--border'),
+        'border-strong': withAlpha('--border-strong'),
+        muted: withAlpha('--muted'),
+        foreground: withAlpha('--foreground'),
+        'foreground-muted': withAlpha('--foreground-muted'),
+        'foreground-subtle': withAlpha('--foreground-subtle'),
+        accent: withAlpha('--accent'),
+        'accent-soft': withAlpha('--accent-soft'),
+        'accent-foreground': withAlpha('--accent-foreground'),
+        success: withAlpha('--success'),
+        warning: withAlpha('--warning'),
+        info: withAlpha('--info'),
+        danger: withAlpha('--danger'),
+        ring: withAlpha('--ring'),
+        card: {
+          DEFAULT: withAlpha('--surface'),
+          foreground: withAlpha('--foreground'),
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
+          DEFAULT: withAlpha('--surface'),
+          foreground: withAlpha('--foreground'),
         },
-        card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+        primary: {
+          DEFAULT: withAlpha('--accent'),
+          foreground: withAlpha('--accent-foreground'),
         },
-        // Mapeamento elegante de 'slate' para Marfim Limpo e Grafite Neutro (sem marrom)
+        secondary: {
+          DEFAULT: withAlpha('--surface-2'),
+          foreground: withAlpha('--foreground'),
+        },
+        destructive: {
+          DEFAULT: withAlpha('--danger'),
+          foreground: '#ffffff',
+        },
+        // Mapeamentos de segurança para componentes que ainda usam slate/indigo/beige/brown:
+        // Todos alinhados com a paleta luxuosa e sem marrom
         slate: {
-          50: '#FAF8F5',   // Fundo marfim/creme suave
-          100: '#F5EFE6',  // Marfim/creme suave para botões e cards secundários
-          200: '#EAE1D1',  // Bordas suaves creme
-          300: '#D8CCA6',  // Divisórias e bordas mais definidas
-          400: '#94A3B8',  // Texto secundário neutro
-          500: '#64748B',  // Texto de apoio neutro
-          600: '#475569',  // Texto de leitura nítido
-          700: '#334155',  // Texto forte
-          750: '#1E293B',  // Divisórias no modo escuro
-          800: '#1E293B',  // Cards e superfícies no modo escuro
-          850: '#162032',  // Superfície intermediária de cards
-          900: '#0F172A',  // Containers escuros
-          950: '#090D16',  // Fundo principal no modo escuro
+          50: 'hsl(var(--surface-2))',
+          100: 'hsl(var(--surface-3))',
+          200: 'hsl(var(--border))',
+          300: 'hsl(var(--border-strong))',
+          400: 'hsl(var(--foreground-subtle))',
+          500: 'hsl(var(--foreground-muted))',
+          600: 'hsl(var(--foreground-muted))',
+          700: 'hsl(var(--foreground))',
+          750: 'hsl(var(--border))',
+          800: 'hsl(var(--surface-2))',
+          850: 'hsl(var(--surface-3))',
+          900: 'hsl(var(--surface))',
+          950: 'hsl(var(--background))',
         },
-        // Mapeamento de 'indigo' para a cor da imagem Bege Inovae Agenda (#E6D4B0)
+        stone: {
+          50: 'hsl(var(--surface-2))',
+          100: 'hsl(var(--surface-3))',
+          200: 'hsl(var(--border))',
+          300: 'hsl(var(--border-strong))',
+          400: 'hsl(var(--foreground-subtle))',
+          500: 'hsl(var(--foreground-muted))',
+          600: 'hsl(var(--foreground-muted))',
+          700: 'hsl(var(--foreground))',
+          800: 'hsl(var(--foreground))',
+          900: 'hsl(var(--foreground))',
+        },
         indigo: {
-          50: '#FAF7F0',
-          100: '#F5EFE0',
-          200: '#EFE4CE',
-          300: '#E6D4B0',   // Cor exata da imagem do usuário
-          400: '#D8C296',
-          500: '#C7AC7B',
-          600: '#B59358',   // Bege/Dourado nobre para botões
-          700: '#9E7E45',   // Hover
-          800: '#826532',
-          900: '#5F4820',
-          950: '#3D2D10',
+          50: 'hsl(var(--accent-soft))',
+          100: 'hsl(var(--accent-soft))',
+          200: 'hsl(var(--accent-soft))',
+          500: 'hsl(var(--accent))',
+          600: 'hsl(var(--accent))',
+          700: 'hsl(var(--accent))',
         },
-        // Mapeamento de 'brown' também para a paleta Bege da imagem (#E6D4B0) para eliminar marrom
         brown: {
-          50: '#FAF7F0',
-          100: '#F5EFE0',
-          200: '#EFE4CE',
-          300: '#E6D4B0',   // #E6D4B0
-          400: '#D8C296',
-          500: '#C7AC7B',
-          600: '#B59358',
-          700: '#9E7E45',
-          800: '#826532',
-          900: '#5F4820',
-          950: '#3D2D10',
+          50: 'hsl(var(--accent-soft))',
+          100: 'hsl(var(--accent-soft))',
+          200: 'hsl(var(--accent-soft))',
+          500: 'hsl(var(--accent))',
+          600: 'hsl(var(--accent))',
+          700: 'hsl(var(--accent))',
         },
         beige: {
-          50: '#FAF8F4',
-          100: '#F5EFE0',
-          200: '#EFE4CD',
-          300: '#E6D4B0',   // Cor exata da imagem
-          400: '#D8C296',
-          500: '#C7AC7B',
-          600: '#B59358',
-          700: '#9E7E45',
-          800: '#826532',
-          900: '#5F4820',
+          50: 'hsl(var(--background))',
+          100: 'hsl(var(--surface-2))',
+          200: 'hsl(var(--border))',
+          300: 'hsl(var(--accent))',
+          400: 'hsl(var(--accent))',
+          500: 'hsl(var(--accent))',
         },
       },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Sora', 'Inter', 'system-ui', 'sans-serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+      },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        xl: '1rem',
+        '2xl': '1.25rem',
+        '3xl': '1.75rem',
+      },
+      boxShadow: {
+        soft: '0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -12px rgba(0,0,0,0.12)',
+        elevated: '0 2px 4px rgba(0,0,0,0.04), 0 18px 40px -18px rgba(0,0,0,0.22)',
+        glow: '0 0 0 1px hsl(var(--accent) / 0.25), 0 12px 40px -12px hsl(var(--accent) / 0.45)',
+      },
+      keyframes: {
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        'scale-in': {
+          from: { opacity: '0', transform: 'scale(0.96)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        shimmer: {
+          '100%': { transform: 'translateX(100%)' },
+        },
+        'slide-up': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.3s ease forwards',
+        'scale-in': 'scale-in 0.2s ease forwards',
+        shimmer: 'shimmer 1.6s infinite',
+        'slide-up': 'slide-up 0.3s ease forwards',
       },
     },
   },

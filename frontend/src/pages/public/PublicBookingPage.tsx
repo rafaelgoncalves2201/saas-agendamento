@@ -308,7 +308,19 @@ export const PublicBookingPage: React.FC = () => {
     );
   }
 
-  const primaryColor = company?.settings?.primaryColor || '#E6D4B0';
+  const rawColor = company?.settings?.primaryColor;
+  const isBrown = rawColor && (
+    rawColor.toLowerCase() === '#4a2e18' ||
+    rawColor.toLowerCase() === '#5c3826' ||
+    rawColor.toLowerCase() === '#5c341e' ||
+    rawColor.toLowerCase() === '#6d381e' ||
+    rawColor.toLowerCase() === '#7a4422' ||
+    rawColor.toLowerCase() === '#8a4b28' ||
+    rawColor.toLowerCase() === '#6366f1' ||
+    rawColor.toLowerCase() === '#381e0f' ||
+    rawColor.toLowerCase() === '#61361b'
+  );
+  const primaryColor = isBrown || !rawColor ? 'hsl(var(--accent))' : rawColor;
   const companySettings = company?.settings || {};
   const nextDays = Array.from({ length: 7 }).map((_, i) => addDays(new Date(), i + 1));
 
