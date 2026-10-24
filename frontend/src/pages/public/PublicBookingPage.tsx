@@ -320,7 +320,7 @@ export const PublicBookingPage: React.FC = () => {
     rawColor.toLowerCase() === '#381e0f' ||
     rawColor.toLowerCase() === '#61361b'
   );
-  const primaryColor = isBrown || !rawColor ? 'hsl(var(--accent))' : rawColor;
+  const primaryColor = isBrown || !rawColor ? '#E6D4B0' : rawColor;
   const companySettings = company?.settings || {};
   const nextDays = Array.from({ length: 7 }).map((_, i) => addDays(new Date(), i + 1));
 

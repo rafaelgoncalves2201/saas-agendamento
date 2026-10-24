@@ -34,69 +34,84 @@ export default {
           foreground: withAlpha('--foreground'),
         },
         primary: {
-          DEFAULT: withAlpha('--accent'),
-          foreground: withAlpha('--accent-foreground'),
+          DEFAULT: withAlpha('--primary'),
+          foreground: withAlpha('--primary-foreground'),
         },
         secondary: {
-          DEFAULT: withAlpha('--surface-2'),
-          foreground: withAlpha('--foreground'),
+          DEFAULT: withAlpha('--secondary'),
+          foreground: withAlpha('--secondary-foreground'),
         },
         destructive: {
           DEFAULT: withAlpha('--danger'),
           foreground: '#ffffff',
         },
-        // Mapeamentos de segurança para componentes que ainda usam slate/indigo/beige/brown:
-        // Todos alinhados com a paleta luxuosa e sem marrom
+        // Mapeamento elegante de 'slate' para Marfim Limpo e Grafite Neutro (sem marrom)
         slate: {
-          50: 'hsl(var(--surface-2))',
-          100: 'hsl(var(--surface-3))',
-          200: 'hsl(var(--border))',
-          300: 'hsl(var(--border-strong))',
-          400: 'hsl(var(--foreground-subtle))',
-          500: 'hsl(var(--foreground-muted))',
-          600: 'hsl(var(--foreground-muted))',
-          700: 'hsl(var(--foreground))',
-          750: 'hsl(var(--border))',
-          800: 'hsl(var(--surface-2))',
-          850: 'hsl(var(--surface-3))',
-          900: 'hsl(var(--surface))',
-          950: 'hsl(var(--background))',
+          50: '#FAF8F5',   // Fundo marfim/creme suave
+          100: '#F5EFE6',  // Marfim/creme suave para botões e cards secundários
+          200: '#EAE1D1',  // Bordas suaves creme
+          300: '#D8CCA6',  // Divisórias e bordas mais definidas
+          400: '#94A3B8',  // Texto secundário neutro
+          500: '#64748B',  // Texto de apoio neutro
+          600: '#475569',  // Texto de leitura nítido
+          700: '#334155',  // Texto forte
+          750: '#1E293B',  // Divisórias no modo escuro
+          800: '#1E293B',  // Cards e superfícies no modo escuro
+          850: '#162032',  // Superfície intermediária de cards
+          900: '#0F172A',  // Containers escuros
+          950: '#090D16',  // Fundo principal no modo escuro
         },
         stone: {
-          50: 'hsl(var(--surface-2))',
-          100: 'hsl(var(--surface-3))',
-          200: 'hsl(var(--border))',
-          300: 'hsl(var(--border-strong))',
-          400: 'hsl(var(--foreground-subtle))',
-          500: 'hsl(var(--foreground-muted))',
-          600: 'hsl(var(--foreground-muted))',
-          700: 'hsl(var(--foreground))',
-          800: 'hsl(var(--foreground))',
-          900: 'hsl(var(--foreground))',
+          50: '#FAF8F5',
+          100: '#F5EFE6',
+          200: '#EAE1D1',
+          300: '#D8CCA6',
+          400: '#94A3B8',
+          500: '#78716C',
+          600: '#57534E',
+          700: '#44403C',
+          800: '#292524',
+          900: '#1C1917',
         },
+        // Mapeamento de 'indigo' para a cor da imagem Bege Inovae Agenda (#E6D4B0)
         indigo: {
-          50: 'hsl(var(--accent-soft))',
-          100: 'hsl(var(--accent-soft))',
-          200: 'hsl(var(--accent-soft))',
-          500: 'hsl(var(--accent))',
-          600: 'hsl(var(--accent))',
-          700: 'hsl(var(--accent))',
+          50: '#FAF7F0',
+          100: '#F5EFE0',
+          200: '#EFE4CE',
+          300: '#E6D4B0',   // Cor exata da imagem do usuário
+          400: '#D8C296',
+          500: '#C7AC7B',
+          600: '#B59358',   // Bege/Dourado nobre para botões
+          700: '#9E7E45',   // Hover
+          800: '#826532',
+          900: '#5F4820',
+          950: '#3D2D10',
         },
+        // Mapeamento de 'brown' também para a paleta Bege da imagem (#E6D4B0) para eliminar marrom
         brown: {
-          50: 'hsl(var(--accent-soft))',
-          100: 'hsl(var(--accent-soft))',
-          200: 'hsl(var(--accent-soft))',
-          500: 'hsl(var(--accent))',
-          600: 'hsl(var(--accent))',
-          700: 'hsl(var(--accent))',
+          50: '#FAF7F0',
+          100: '#F5EFE0',
+          200: '#EFE4CE',
+          300: '#E6D4B0',
+          400: '#D8C296',
+          500: '#C7AC7B',
+          600: '#B59358',
+          700: '#9E7E45',
+          800: '#826532',
+          900: '#5F4820',
+          950: '#3D2D10',
         },
         beige: {
-          50: 'hsl(var(--background))',
-          100: 'hsl(var(--surface-2))',
-          200: 'hsl(var(--border))',
-          300: 'hsl(var(--accent))',
-          400: 'hsl(var(--accent))',
-          500: 'hsl(var(--accent))',
+          50: '#FAF8F4',
+          100: '#F5EFE0',
+          200: '#EFE4CD',
+          300: '#E6D4B0',   // Cor exata da imagem
+          400: '#D8C296',
+          500: '#C7AC7B',
+          600: '#B59358',
+          700: '#9E7E45',
+          800: '#826532',
+          900: '#5F4820',
         },
       },
       fontFamily: {

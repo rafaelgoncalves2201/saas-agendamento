@@ -178,7 +178,7 @@ export const AppointmentTrackingPage: React.FC = () => {
     rawColor.toLowerCase() === '#381e0f' ||
     rawColor.toLowerCase() === '#61361b'
   );
-  const primaryColor = isBrown || !rawColor ? 'hsl(var(--accent))' : rawColor;
+  const primaryColor = isBrown || !rawColor ? '#E6D4B0' : rawColor;
 
   const isMercadoPago = Boolean(
     appointment.pixQrCodeBase64 ||

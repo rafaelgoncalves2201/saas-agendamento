@@ -3,8 +3,9 @@
 @tailwind utilities;
 
 /* ============================================================
-   INOVAE AGENDA (ALVORE DESIGN SYSTEM)
-   Paleta premium sofisticada: neutral-warm marfim claro & obsidian-emerald escuro.
+   INOVAE AGENDA (LAYOUT ALVORE + CORES ORIGINAIS INOVAE AGENDA)
+   Cores originais do usuário: Bege/Creme #E6D4B0 da imagem,
+   Fundo Marfim #FAF8F5 no modo claro e Preto/Grafite Neutro #090D16 no modo escuro.
    Zero marrom.
    ============================================================ */
 
@@ -13,61 +14,65 @@
     Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: "Sora", "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  /* Modo Claro Alvore: Marfim Nobre, Superfície Pura, Acentos Dourados/Champagne */
-  --background: 38 36% 95%;
-  --surface: 0 0% 100%;
-  --surface-2: 38 28% 93%;
-  --surface-3: 38 20% 89%;
-  --border: 36 18% 84%;
-  --border-strong: 36 16% 72%;
-  --muted: 38 22% 92%;
-  --foreground: 30 20% 10%;
-  --foreground-muted: 30 10% 36%;
-  --foreground-subtle: 30 8% 52%;
-  --accent: 38 65% 52%;             /* Dourado Nobre / Champagne */
-  --accent-soft: 38 55% 92%;
-  --accent-foreground: 30 25% 12%;
+  /* Modo Claro: Marfim Neutro Suave & Bege/Creme Inovae Agenda (#E6D4B0) */
+  --background: 40 30% 98%;          /* #FAF8F5 - Fundo marfim limpo e suave */
+  --surface: 0 0% 100%;              /* #FFFFFF - Branco puro para cards */
+  --surface-2: 40 35% 94%;           /* #F5EFE6 - Superfície secundária marfim */
+  --surface-3: 40 25% 90%;           /* #EAE1D1 - Bordas e divisórias suaves */
+  --border: 40 25% 86%;              /* #EAE1D1 - Borda creme suave */
+  --border-strong: 40 20% 75%;       /* #D8CCA6 - Borda creme definida */
+  --muted: 40 30% 94%;               /* #F5EFE6 */
+  --foreground: 0 0% 13%;            /* #212121 - Texto escuro nítido */
+  --foreground-muted: 0 0% 45%;      /* #737373 - Texto de apoio legível */
+  --foreground-subtle: 0 0% 60%;     /* #999999 */
+  --accent: 40 53% 80%;              /* #E6D4B0 - Bege/Creme da imagem do usuário */
+  --accent-soft: 40 45% 94%;         /* #FAF7F0 - Bege marfim suave */
+  --accent-foreground: 0 0% 13%;     /* #212121 - Texto escuro contrastante sobre o bege */
   --success: 152 46% 32%;
   --warning: 36 86% 44%;
   --info: 205 72% 40%;
   --danger: 358 66% 46%;
-  --ring: 38 65% 52%;
+  --ring: 40 53% 80%;                /* #E6D4B0 */
 
   /* Backwards-compatibility */
-  --primary: 38 65% 52%;
-  --primary-foreground: 30 25% 12%;
+  --primary: 40 53% 80%;
+  --primary-foreground: 0 0% 13%;
+  --secondary: 40 35% 94%;
+  --secondary-foreground: 0 0% 13%;
   --card: 0 0% 100%;
-  --card-foreground: 30 20% 10%;
+  --card-foreground: 0 0% 13%;
   --radius: 1rem;
   color-scheme: light;
 }
 
 .dark {
-  /* Modo Escuro Alvore: Obsidian Emerald Profundo, Bordas Precisas, Dourado Refinado */
-  --background: 160 24% 4%;
-  --surface: 160 18% 7%;
-  --surface-2: 160 15% 9%;
-  --surface-3: 160 13% 12%;
-  --border: 38 18% 17%;
-  --border-strong: 38 22% 27%;
-  --muted: 160 13% 10%;
-  --foreground: 38 40% 94%;
-  --foreground-muted: 36 12% 68%;
-  --foreground-subtle: 36 9% 50%;
-  --accent: 38 75% 62%;             /* Ouro luminoso no escuro */
-  --accent-soft: 38 35% 16%;
-  --accent-foreground: 38 50% 98%;
+  /* Modo Escuro: Preto/Grafite Neutro & Acentos Bege #E6D4B0 */
+  --background: 240 10% 8%;          /* #090D16 - Preto/Grafite neutro e elegante */
+  --surface: 240 10% 12%;            /* #111827 - Grafite refinado para cards */
+  --surface-2: 240 8% 18%;           /* #1F2937 - Superfície secundária */
+  --surface-3: 240 8% 22%;           /* #374151 */
+  --border: 240 8% 20%;              /* #1F2937 - Borda discreta */
+  --border-strong: 240 8% 28%;       /* #374151 */
+  --muted: 240 8% 18%;               /* #1F2937 */
+  --foreground: 40 30% 95%;          /* #FAF8F5 - Marfim claro para leitura nítida */
+  --foreground-muted: 240 5% 65%;    /* #94A3B8 */
+  --foreground-subtle: 240 5% 45%;   /* #64748B */
+  --accent: 40 53% 80%;              /* #E6D4B0 - Bege/Creme Inovae Agenda */
+  --accent-soft: 40 30% 18%;         /* Bege suave translúcido para botões e chips */
+  --accent-foreground: 0 0% 10%;     /* #1A1A1A - Texto escuro legível sobre o bege */
   --success: 152 50% 46%;
   --warning: 38 90% 58%;
   --info: 205 78% 56%;
   --danger: 358 72% 60%;
-  --ring: 38 75% 62%;
+  --ring: 40 53% 80%;
 
   /* Backwards-compatibility */
-  --primary: 38 75% 62%;
-  --primary-foreground: 38 50% 98%;
-  --card: 160 18% 7%;
-  --card-foreground: 38 40% 94%;
+  --primary: 40 53% 80%;
+  --primary-foreground: 0 0% 10%;
+  --secondary: 240 8% 18%;
+  --secondary-foreground: 40 30% 95%;
+  --card: 240 10% 12%;
+  --card-foreground: 40 30% 95%;
   color-scheme: dark;
 }
 

@@ -27,7 +27,7 @@ export function Avatar({
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-soft font-semibold text-accent-foreground ring-1 ring-accent/30 shadow-xs ${sizes[size]} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E6D4B0] font-bold text-stone-900 ring-1 ring-[#D8C296]/60 shadow-xs ${sizes[size]} ${className}`}
     >
       {src ? (
         <img src={src} alt={name} className="h-full w-full object-cover" />
@@ -37,3 +37,4 @@ export function Avatar({
     </span>
   );
 }
+

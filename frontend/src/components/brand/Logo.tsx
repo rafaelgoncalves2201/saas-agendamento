@@ -13,7 +13,7 @@ export function Logo({
 }) {
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      <span className="relative inline-flex items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-soft p-1.5 shrink-0">
+      <span className="relative inline-flex items-center justify-center rounded-xl bg-[#E6D4B0] text-stone-900 shadow-xs p-1.5 shrink-0">
         <svg
           width={size}
           height={size}
@@ -37,3 +37,4 @@ export function Logo({
     </span>
   );
 }
+
