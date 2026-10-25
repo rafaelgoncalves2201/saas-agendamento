@@ -529,7 +529,7 @@ export class AppointmentsService {
           select: { name: true, phone: true, avatarUrl: true, mpAccessToken: true },
         },
         service: {
-          select: { name: true, durationMinutes: true, price: true },
+          select: { name: true, durationMinutes: true, price: true, imageUrl: true },
         },
         client: {
           select: { name: true, phone: true },

@@ -328,9 +328,17 @@ export const PublicBookingPage: React.FC = () => {
 
           <div className="card mt-6 p-6 text-left space-y-4">
             <div className="flex items-center gap-3 border-b border-border pb-4">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-soft">
-                <Flower2 className="h-5 w-5" />
-              </span>
+              {service?.imageUrl ? (
+                <img
+                  src={service.imageUrl}
+                  alt={service.name}
+                  className="h-12 w-12 rounded-xl object-cover ring-1 ring-border shadow-xs shrink-0"
+                />
+              ) : (
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-soft shrink-0">
+                  <Flower2 className="h-5 w-5" />
+                </span>
+              )}
               <div>
                 <p className="font-semibold text-foreground text-sm">{service?.name}</p>
                 <p className="text-xs text-foreground-muted">
@@ -539,26 +547,68 @@ export const PublicBookingPage: React.FC = () => {
                       key={s.id}
                       type="button"
                       onClick={() => setServiceId(s.id)}
-                      className={`card flex flex-col items-start p-5 text-left transition hover:-translate-y-0.5 hover:shadow-elevated cursor-pointer ${
-                        isSelected ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/20' : ''
+                      className={`card group flex flex-col overflow-hidden text-left transition hover:-translate-y-0.5 hover:shadow-elevated cursor-pointer ${
+                        isSelected ? 'border-accent ring-2 ring-accent/40 bg-accent-soft/20 shadow-soft' : ''
                       }`}
                     >
-                      <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent shadow-xs mb-3">
-                        <Flower2 className="h-5 w-5" />
-                      </span>
-                      <h3 className="font-semibold text-foreground text-base">{s.name}</h3>
-                      {s.description && (
-                        <p className="mt-1 line-clamp-2 text-xs text-foreground-muted leading-relaxed">
-                          {s.description}
-                        </p>
+                      {/* Foto do Serviço */}
+                      {s.imageUrl ? (
+                        <div className="relative w-full aspect-[16/10] bg-muted overflow-hidden">
+                          <img
+                            src={s.imageUrl}
+                            alt={s.name}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = 'none';
+                            }}
+                          />
+                          {s.category && (
+                            <span className="absolute top-2.5 left-2.5 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-950/75 text-white backdrop-blur-xs">
+                              {s.category}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="p-5 pb-0">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent shadow-xs">
+                              <Flower2 className="h-5 w-5" />
+                            </span>
+                            {s.category && (
+                              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted text-foreground-muted border border-border">
+                                {s.category}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       )}
-                      <div className="mt-4 flex w-full items-center justify-between border-t border-border pt-3">
-                        <span className="font-display font-bold text-foreground text-base">
-                          R$ {Number(s.price).toFixed(2)}
-                        </span>
-                        <span className="text-xs text-foreground-subtle">
-                          {s.durationMinutes} min
-                        </span>
+
+                      <div className="p-5 flex-1 flex flex-col justify-between w-full">
+                        <div>
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="font-semibold text-foreground text-base leading-snug">{s.name}</h3>
+                            {isSelected && (
+                              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-accent-foreground text-xs shrink-0">
+                                <Check size={12} className="stroke-[3]" />
+                              </span>
+                            )}
+                          </div>
+                          {s.description && (
+                            <p className="mt-1.5 line-clamp-2 text-xs text-foreground-muted leading-relaxed">
+                              {s.description}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="mt-4 flex w-full items-center justify-between border-t border-border pt-3">
+                          <span className="font-display font-bold text-foreground text-base">
+                            R$ {Number(s.price).toFixed(2)}
+                          </span>
+                          <span className="text-xs text-foreground-subtle flex items-center gap-1 font-medium">
+                            <Clock className="h-3.5 w-3.5" />
+                            {s.durationMinutes} min
+                          </span>
+                        </div>
                       </div>
                     </button>
                   );
@@ -603,7 +653,7 @@ export const PublicBookingPage: React.FC = () => {
                         isSelected ? 'border-accent ring-2 ring-accent/30 bg-accent-soft/20' : ''
                       }`}
                     >
-                      <Avatar name={b.name} src={b.photoUrl} size="lg" className="mb-2" />
+                      <Avatar name={b.name} src={b.avatarUrl || b.photoUrl} size="lg" className="mb-2" />
                       <h3 className="mt-2 text-sm font-semibold text-foreground">{b.name}</h3>
                       {b.bio && (
                         <p className="mt-1 text-xs text-foreground-muted line-clamp-2">
@@ -794,9 +844,17 @@ export const PublicBookingPage: React.FC = () => {
               <div className="mx-auto max-w-md mt-6">
                 <div className="card p-6 shadow-soft">
                   <div className="flex items-center gap-3 border-b border-border pb-4">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-soft">
-                      <Flower2 className="h-5 w-5" />
-                    </span>
+                    {service.imageUrl ? (
+                      <img
+                        src={service.imageUrl}
+                        alt={service.name}
+                        className="h-12 w-12 rounded-xl object-cover ring-1 ring-border shadow-xs shrink-0"
+                      />
+                    ) : (
+                      <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent text-accent-foreground shadow-soft shrink-0">
+                        <Flower2 className="h-5 w-5" />
+                      </span>
+                    )}
                     <div>
                       <p className="font-semibold text-foreground text-sm">{service.name}</p>
                       <p className="text-xs text-foreground-muted">

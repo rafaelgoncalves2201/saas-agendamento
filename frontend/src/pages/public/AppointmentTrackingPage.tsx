@@ -459,9 +459,17 @@ export const AppointmentTrackingPage: React.FC = () => {
         {/* Detalhes do Atendimento */}
         <div className="p-5 bg-[#FAF8F5] rounded-2xl border border-[#EAE1D2] space-y-3.5 text-xs">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#E6D4B0]/30 text-stone-900 flex items-center justify-center shrink-0">
-              <Scissors size={16} />
-            </div>
+            {appointment.service?.imageUrl ? (
+              <img
+                src={appointment.service.imageUrl}
+                alt={appointment.service.name}
+                className="w-10 h-10 rounded-xl object-cover ring-1 ring-border shadow-xs shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-xl bg-[#E6D4B0]/30 text-stone-900 flex items-center justify-center shrink-0">
+                <Scissors size={16} />
+              </div>
+            )}
             <div>
               <p className="text-stone-500 text-[10px] uppercase font-bold tracking-wider">Serviço</p>
               <p className="font-bold text-stone-900 text-sm">{appointment.service.name}</p>
@@ -469,9 +477,17 @@ export const AppointmentTrackingPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#E6D4B0]/30 text-stone-900 flex items-center justify-center shrink-0">
-              <User size={16} />
-            </div>
+            {appointment.professional?.avatarUrl ? (
+              <img
+                src={appointment.professional.avatarUrl}
+                alt={appointment.professional.name}
+                className="w-10 h-10 rounded-xl object-cover ring-1 ring-border shadow-xs shrink-0"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-xl bg-[#E6D4B0]/30 text-stone-900 flex items-center justify-center shrink-0">
+                <User size={16} />
+              </div>
+            )}
             <div>
               <p className="text-stone-500 text-[10px] uppercase font-bold tracking-wider">Profissional</p>
               <p className="font-bold text-stone-900">{appointment.professional.name}</p>

@@ -244,7 +244,7 @@ export const ServicesPage: React.FC = () => {
                     <div className="absolute top-2 right-2 flex items-center gap-1">
                       <button
                         onClick={() => handleOpenEditModal(srv)}
-                        className="p-1.5 bg-slate-950/75 hover:bg-[#E6D4B0] text-stone-900 font-bold shadow-xs rounded-lg backdrop-blur-xs transition-colors cursor-pointer"
+                        className="p-1.5 bg-slate-950/75 hover:bg-[#E6D4B0] text-white hover:text-stone-900 font-bold shadow-xs rounded-lg backdrop-blur-xs transition-colors cursor-pointer"
                         title="Editar Serviço"
                       >
                         <Pencil size={12} />
