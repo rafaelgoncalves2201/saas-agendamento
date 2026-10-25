@@ -258,7 +258,7 @@ export const AvailabilityPage: React.FC = () => {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-sm font-bold rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-60"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs text-sm font-bold rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-60"
         >
           {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
           <span>Salvar Horários</span>
@@ -291,7 +291,7 @@ export const AvailabilityPage: React.FC = () => {
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4">
-          <div className="text-xs text-[#6B584C] dark:text-slate-400 bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 p-3.5 rounded-xl flex items-center gap-2.5">
+          <div className="text-xs text-[#94A3B8] dark:text-slate-400 bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-slate-800 p-3.5 rounded-xl flex items-center gap-2.5">
             <Clock size={16} className="text-stone-900 dark:text-[#E6D4B0] shrink-0" />
             <span>
               <strong>Dica de horários fracionados:</strong> Você pode adicionar múltiplos turnos em um mesmo dia, por exemplo: 
@@ -308,7 +308,7 @@ export const AvailabilityPage: React.FC = () => {
               className={`p-4 rounded-xl border transition-all ${
                 dayItem.isActive
                   ? 'border-[#EAE1D2] dark:border-slate-800 bg-[#FAF8F5] dark:bg-slate-800'
-                  : 'border-[#EAE1D2] dark:border-[#2D221A] bg-[#FAF8F5]/40 dark:bg-slate-900/50 opacity-60'
+                  : 'border-[#EAE1D2] dark:border-[#1F2937] bg-[#FAF8F5]/40 dark:bg-slate-900/50 opacity-60'
               }`}
             >
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -347,7 +347,7 @@ export const AvailabilityPage: React.FC = () => {
                           onChange={(e) =>
                             handleUpdateShift(dayIdx, shiftIdx, 'startTime', e.target.value)
                           }
-                          className="px-2.5 py-1 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-[#E6D4B0]"
+                          className="px-2.5 py-1 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-[#E6D4B0]"
                         />
 
                         <span className="text-stone-500 font-medium">até</span>
@@ -358,7 +358,7 @@ export const AvailabilityPage: React.FC = () => {
                           onChange={(e) =>
                             handleUpdateShift(dayIdx, shiftIdx, 'endTime', e.target.value)
                           }
-                          className="px-2.5 py-1 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-[#E6D4B0]"
+                          className="px-2.5 py-1 bg-[#FAF8F5] dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-lg text-xs font-mono font-bold focus:ring-1 focus:ring-[#E6D4B0]"
                         />
 
                         {dayItem.shifts.length > 1 && (
@@ -383,7 +383,7 @@ export const AvailabilityPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleAddShift(dayIdx)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-900 dark:text-[#E6D4B0] bg-[#FAF8F5] dark:bg-slate-800 hover:bg-[#EFE4D6] dark:hover:bg-[#433024] border border-[#EAE1D2] dark:border-slate-800 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-900 dark:text-[#E6D4B0] bg-[#FAF8F5] dark:bg-slate-800 hover:bg-[#F5EFE6] dark:hover:bg-[#334155] border border-[#EAE1D2] dark:border-slate-800 transition-colors cursor-pointer"
                     >
                       <Plus size={14} />
                       <span>Adicionar Turno / Intervalo</span>

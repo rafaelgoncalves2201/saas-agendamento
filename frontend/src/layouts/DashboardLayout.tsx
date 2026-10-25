@@ -171,7 +171,7 @@ export const DashboardLayout: React.FC = () => {
           <h2 className="font-bold text-foreground text-sm truncate leading-snug">
             {companyData?.name || 'Inovae Agenda'}
           </h2>
-          <span className="text-xs font-semibold text-accent block truncate">
+          <span className="text-xs font-medium text-foreground-muted block truncate">
             Plano {planName}
           </span>
         </div>

@@ -176,7 +176,8 @@ export const AppointmentTrackingPage: React.FC = () => {
     rawColor.toLowerCase() === '#8a4b28' ||
     rawColor.toLowerCase() === '#6366f1' ||
     rawColor.toLowerCase() === '#381e0f' ||
-    rawColor.toLowerCase() === '#61361b'
+    rawColor.toLowerCase() === '#61361b' ||
+    rawColor.toLowerCase() === '#6b3e26'
   );
   const primaryColor = isBrown || !rawColor ? '#E6D4B0' : rawColor;
 
@@ -290,7 +291,7 @@ export const AppointmentTrackingPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleCopyPix(appointment.company.settings.pixKey)}
-                        className="px-3.5 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-xs"
+                        className="px-3.5 py-2 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-xs"
                       >
                         {copiedPix ? <Check size={14} /> : <Copy size={14} />}
                         <span>{copiedPix ? 'Copiado!' : 'Copiar'}</span>
@@ -398,7 +399,7 @@ export const AppointmentTrackingPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleCopyPix(appointment.pixCopiaECola || appointment.company.settings?.pixKey)}
-                          className="px-3.5 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-xs"
+                          className="px-3.5 py-2 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 rounded-xl font-bold flex items-center gap-1.5 shrink-0 transition-all cursor-pointer text-xs shadow-xs"
                         >
                           {copiedPix ? <Check size={14} /> : <Copy size={14} />}
                           <span>{copiedPix ? 'Copiado!' : 'Copiar'}</span>
@@ -592,14 +593,14 @@ export const AppointmentTrackingPage: React.FC = () => {
                   onChange={(e) => setReviewComment(e.target.value)}
                   placeholder="Escreva um comentário sobre o atendimento (opcional)..."
                   rows={2}
-                  className="w-full text-xs p-3 bg-white border border-[#EAE1D2] rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-[#DAC295] focus:ring-1 focus:ring-[#E6D4B0] transition-all resize-none"
+                  className="w-full text-xs p-3 bg-white border border-[#EAE1D2] rounded-xl text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-[#D8C296] focus:ring-1 focus:ring-[#E6D4B0] transition-all resize-none"
                 />
 
                 <button
                   type="button"
                   onClick={handleSubmitReview}
                   disabled={submittingReview}
-                  className="w-full py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
                 >
                   {submittingReview ? (
                     <>

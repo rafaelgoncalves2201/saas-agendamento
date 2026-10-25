@@ -173,7 +173,7 @@ export const ServicesPage: React.FC = () => {
 
         <button
           onClick={handleOpenCreateModal}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold transition-all shadow-sm shadow-[#E6D4B0]/20 cursor-pointer"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs rounded-xl text-xs font-bold transition-all shadow-sm shadow-[#E6D4B0]/20 cursor-pointer"
         >
           <Plus size={16} />
           <span>Novo Serviço</span>
@@ -212,7 +212,7 @@ export const ServicesPage: React.FC = () => {
           </p>
           <button
             onClick={handleOpenCreateModal}
-            className="mt-4 px-4 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-semibold rounded-xl transition-colors cursor-pointer"
+            className="mt-4 px-4 py-2 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs text-xs font-semibold rounded-xl transition-colors cursor-pointer"
           >
             Adicionar Primeiro Serviço
           </button>
@@ -227,7 +227,7 @@ export const ServicesPage: React.FC = () => {
               <div>
                 {/* Imagem Quadrada Compacta (1:1) */}
                 {srv.imageUrl ? (
-                  <div className="relative w-full aspect-square bg-[#FAF8F5] dark:bg-[#19120D] overflow-hidden">
+                  <div className="relative w-full aspect-square bg-[#FAF8F5] dark:bg-[#111827] overflow-hidden">
                     <img
                       src={srv.imageUrl}
                       alt={srv.name}
@@ -293,9 +293,9 @@ export const ServicesPage: React.FC = () => {
               </div>
 
               {/* Rodapé do Card Compacto */}
-              <div className="p-2.5 sm:p-3 border-t border-[#EAE1D2] dark:border-[#33251D] space-y-2 bg-[#FAF8F5] dark:bg-slate-800">
+              <div className="p-2.5 sm:p-3 border-t border-[#EAE1D2] dark:border-[#1F2937] space-y-2 bg-[#FAF8F5] dark:bg-slate-800">
                 <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1 text-[#6B584C] dark:text-slate-400 font-medium text-[10px] sm:text-[11px]">
+                  <div className="flex items-center gap-1 text-[#94A3B8] dark:text-slate-400 font-medium text-[10px] sm:text-[11px]">
                     <Clock size={12} className="text-stone-500" />
                     <span>
                       {srv.durationMinutes} min
@@ -309,10 +309,10 @@ export const ServicesPage: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 pt-1 border-t border-[#EAE1D2] dark:border-[#33251D]">
+                <div className="flex items-center gap-1.5 pt-1 border-t border-[#EAE1D2] dark:border-[#1F2937]">
                   <button
                     onClick={() => handleOpenEditModal(srv)}
-                    className="flex-1 py-1.5 px-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs font-bold rounded-xl text-[11px] sm:text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-xs"
+                    className="flex-1 py-1.5 px-2 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs font-bold rounded-xl text-[11px] sm:text-xs flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-xs"
                   >
                     <Pencil size={12} />
                     <span>Editar</span>
@@ -371,7 +371,7 @@ export const ServicesPage: React.FC = () => {
               </div>
 
               {/* Duração com Presets Inteligentes */}
-              <div className="p-3.5 bg-[#E6D4B0]/25 dark:bg-[#201813] border border-[#EAE1D2] dark:border-slate-800 rounded-2xl space-y-2.5">
+              <div className="p-3.5 bg-[#E6D4B0]/25 dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-2xl space-y-2.5">
                 <div className="flex items-center justify-between">
                   <label className="text-stone-900 dark:text-white font-bold flex items-center gap-1.5">
                     <Clock size={14} className="text-stone-900 dark:text-[#E6D4B0]" />
@@ -558,7 +558,7 @@ export const ServicesPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center gap-1.5 shadow-sm shadow-[#E6D4B0]/20 transition-colors cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center gap-1.5 shadow-sm shadow-[#E6D4B0]/20 transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {submitting ? (
                     <Loader2 size={16} className="animate-spin" />

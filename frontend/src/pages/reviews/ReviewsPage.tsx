@@ -61,7 +61,7 @@ export const ReviewsPage: React.FC = () => {
           <Star
             key={star}
             size={16}
-            className={star <= rating ? 'fill-amber-400 text-amber-400' : 'text-[#D0C3B2] dark:text-[#334155]'}
+            className={star <= rating ? 'fill-amber-400 text-amber-400' : 'text-[#D8CCA6] dark:text-[#334155]'}
           />
         ))}
       </div>
@@ -203,7 +203,7 @@ export const ReviewsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-[#33251D] flex items-center justify-between">
+                <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-[#1F2937] flex items-center justify-between">
                   <button
                     onClick={() => handleToggleApproval(rev.id)}
                     disabled={isToggling}

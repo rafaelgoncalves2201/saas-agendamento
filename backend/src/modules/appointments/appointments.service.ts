@@ -637,7 +637,7 @@ export class AppointmentsService {
       },
     });
 
-    this.whatsAppService
+    await this.whatsAppService
       .sendCancellationNotification(appointment.id, cancellationReason)
       .catch((err) => console.error('Erro ao enviar notificação de cancelamento via WhatsApp:', err));
 
@@ -743,14 +743,14 @@ export class AppointmentsService {
 
     // Se cancelou, envia notificação de cancelamento WhatsApp
     if (dto.status === AppointmentStatus.CANCELLED && appointment.status !== AppointmentStatus.CANCELLED) {
-      this.whatsAppService
+      await this.whatsAppService
         .sendCancellationNotification(appointment.id, cancellationReason)
         .catch((err) => console.error('Erro ao enviar notificação de cancelamento WhatsApp:', err));
     }
 
     // Se mudou para CONFIRMED a partir de pendente, envia notificação WhatsApp
     if (dto.status === AppointmentStatus.CONFIRMED && appointment.status !== AppointmentStatus.CONFIRMED) {
-      this.whatsAppService
+      await this.whatsAppService
         .sendAppointmentConfirmation(appointment.id)
         .catch((err) => console.error('Erro ao enviar notificação WhatsApp após confirmação:', err));
     }

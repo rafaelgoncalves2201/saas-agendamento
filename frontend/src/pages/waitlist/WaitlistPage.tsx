@@ -223,7 +223,7 @@ export const WaitlistPage: React.FC = () => {
                 </div>
 
                 {/* Ações */}
-                <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-[#33251D] flex items-center justify-between gap-2">
+                <div className="pt-4 mt-4 border-t border-[#EAE1D2] dark:border-[#1F2937] flex items-center justify-between gap-2">
                   <button
                     onClick={() => handleOpenWhatsApp(entry)}
                     className="flex-1 py-2 px-3 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"

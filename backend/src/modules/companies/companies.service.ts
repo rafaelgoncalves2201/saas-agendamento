@@ -13,6 +13,19 @@ import { isPlanFeatureAllowed } from '../../common/config/plans.config';
 export class CompaniesService {
   constructor(private prisma: PrismaService) {}
 
+  private sanitizeCompanySettings(settings: any) {
+    if (!settings || typeof settings !== 'object') return settings;
+    const brownTones = [
+      '#6b3e26', '#4a2e18', '#5c3826', '#5c341e', '#6d381e', '#7a4422',
+      '#8a4b28', '#6366f1', '#381e0f', '#61361b', '#2b1d15', '#34241b',
+      '#796758', '#523a2c', '#382a21', '#826532', '#5f4820', '#3d2d10', '#9e7e45'
+    ];
+    if (settings.primaryColor && brownTones.includes(String(settings.primaryColor).toLowerCase())) {
+      settings.primaryColor = '#E6D4B0';
+    }
+    return settings;
+  }
+
   async getCompany(companyId: string) {
     if (!companyId) {
       throw new BadRequestException('Identificador da empresa não informado ou sessão sem empresa vinculada');
@@ -30,6 +43,10 @@ export class CompaniesService {
 
     if (!company) {
       throw new NotFoundException('Empresa não encontrada');
+    }
+
+    if (company.settings) {
+      company.settings = this.sanitizeCompanySettings(company.settings);
     }
 
     return company;
@@ -80,6 +97,7 @@ export class CompaniesService {
         ...settings,
         ...dto.settings,
       };
+      settings = this.sanitizeCompanySettings(settings);
     }
 
     return this.prisma.company.update({
@@ -162,6 +180,10 @@ export class CompaniesService {
 
     if (!company || !company.isActive) {
       throw new NotFoundException('Empresa não encontrada ou inativa');
+    }
+
+    if (company.settings) {
+      company.settings = this.sanitizeCompanySettings(company.settings);
     }
 
     return company;

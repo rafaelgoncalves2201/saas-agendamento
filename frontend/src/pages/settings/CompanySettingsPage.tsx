@@ -146,7 +146,7 @@ export const CompanySettingsPage: React.FC = () => {
           document: c.document || '',
           logoUrl: c.logoUrl || '',
           coverUrl: c.coverUrl || '',
-          primaryColor: (settings.primaryColor && !['#4a2e18', '#5c3826', '#5c341e', '#6d381e', '#7a4422', '#8a4b28', '#6366f1', '#381e0f', '#61361b'].includes(settings.primaryColor.toLowerCase())) ? settings.primaryColor : '#E6D4B0',
+          primaryColor: (settings.primaryColor && !['#4a2e18', '#5c3826', '#5c341e', '#6d381e', '#7a4422', '#8a4b28', '#6366f1', '#381e0f', '#61361b', '#6b3e26'].includes(settings.primaryColor.toLowerCase())) ? settings.primaryColor : '#E6D4B0',
           publicTheme: settings.publicTheme || 'light',
           bio: settings.bio || '',
           instagram: settings.instagram || '',
@@ -449,7 +449,7 @@ export const CompanySettingsPage: React.FC = () => {
                     </div>
                     <Link
                       to="/subscription"
-                      className="px-4 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 rounded-xl font-bold shrink-0 text-center transition-colors shadow-sm"
+                      className="px-4 py-2 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 rounded-xl font-bold shrink-0 text-center transition-colors shadow-sm"
                     >
                       Fazer Upgrade
                     </Link>

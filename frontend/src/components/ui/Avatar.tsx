@@ -25,9 +25,12 @@ export function Avatar({
     xl: 'h-20 w-20 text-2xl',
   } as const;
 
+  const hasCustomRounding = className.includes('rounded-');
+  const roundedClass = hasCustomRounding ? '' : 'rounded-full';
+
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E6D4B0] font-bold text-stone-900 ring-1 ring-[#D8C296]/60 shadow-xs ${sizes[size]} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden bg-[#E6D4B0] font-bold text-stone-900 ring-1 ring-[#D8C296]/60 shadow-xs ${roundedClass} ${sizes[size]} ${className}`}
     >
       {src ? (
         <img src={src} alt={name} className="h-full w-full object-cover" />

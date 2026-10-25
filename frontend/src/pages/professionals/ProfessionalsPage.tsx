@@ -281,7 +281,7 @@ export const ProfessionalsPage: React.FC = () => {
 
       {/* Banner de Ativação de Perfil para Administrador */}
       {isAdminWithoutProf && (
-        <div className="p-4 rounded-2xl bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A3220] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+        <div className="p-4 rounded-2xl bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#334155] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
           <div className="flex items-center gap-2.5 text-stone-900 dark:text-[#E6D4B0]">
             <Sparkles size={18} className="text-stone-900 dark:text-[#E6D4B0] shrink-0" />
             <div>
@@ -293,7 +293,7 @@ export const ProfessionalsPage: React.FC = () => {
             type="button"
             onClick={handleCreateAdminProfessional}
             disabled={creatingAdminProf}
-            className="px-4 py-2 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-sm"
+            className="px-4 py-2 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-sm"
           >
             {creatingAdminProf ? <Loader2 size={13} className="animate-spin" /> : <Plus size={14} />}
             <span>Ativar Meu Perfil Profissional</span>
@@ -322,7 +322,7 @@ export const ProfessionalsPage: React.FC = () => {
             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
               isLimitReached
                 ? 'bg-[#FAF8F5] dark:bg-slate-800 text-stone-500 dark:text-stone-500 cursor-not-allowed'
-                : 'bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs shadow-md shadow-[#E6D4B0]/20 cursor-pointer'
+                : 'bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs shadow-md shadow-[#E6D4B0]/20 cursor-pointer'
             }`}
           >
             <Plus size={16} />
@@ -333,7 +333,7 @@ export const ProfessionalsPage: React.FC = () => {
 
       {/* Plan limit warning banner */}
       {isLimitReached && (
-        <div className="p-4 rounded-xl bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A3220] flex items-center justify-between gap-4">
+        <div className="p-4 rounded-xl bg-[#E6D4B0]/25 dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#334155] flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5 text-xs text-stone-900 dark:text-[#E6D4B0]">
             <AlertCircle size={18} className="text-stone-900 dark:text-[#E6D4B0] shrink-0" />
             <span>
@@ -342,7 +342,7 @@ export const ProfessionalsPage: React.FC = () => {
           </div>
           <Link
             to="/subscription"
-            className="px-3 py-1.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-lg text-xs font-bold shrink-0 transition-colors"
+            className="px-3 py-1.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs rounded-lg text-xs font-bold shrink-0 transition-colors"
           >
             Fazer Upgrade
           </Link>
@@ -407,7 +407,7 @@ export const ProfessionalsPage: React.FC = () => {
                   </p>
 
                   {/* Status Mercado Pago e Sinal */}
-                  <div className="p-3 bg-[#FAF8F5] dark:bg-[#1E1713] rounded-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-2 mb-3">
+                  <div className="p-3 bg-[#FAF8F5] dark:bg-[#111827] rounded-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-2 mb-3">
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">
                         Sinal de Reserva:
@@ -459,7 +459,7 @@ export const ProfessionalsPage: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleCopyLink(prof.slug, prof.id)}
-                      className="flex-1 px-2.5 py-1.5 bg-[#FAF8F5] dark:bg-[#1E1713] hover:bg-[#FAF8F5] dark:hover:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs font-bold text-stone-900 dark:text-[#E6D4B0] dark:text-white flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      className="flex-1 px-2.5 py-1.5 bg-[#FAF8F5] dark:bg-[#111827] hover:bg-[#FAF8F5] dark:hover:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs font-bold text-stone-900 dark:text-[#E6D4B0] dark:text-white flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <Copy size={13} />
                       <span>{copiedId === prof.id ? 'Link Copiado! ✅' : 'Copiar Link'}</span>
@@ -469,7 +469,7 @@ export const ProfessionalsPage: React.FC = () => {
                       href={publicLink}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 bg-[#FAF8F5] dark:bg-[#1E1713] hover:bg-[#FAF8F5] dark:hover:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-[#E6D4B0] transition-colors"
+                      className="p-2 bg-[#FAF8F5] dark:bg-[#111827] hover:bg-[#FAF8F5] dark:hover:bg-slate-900 border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-stone-900 dark:text-[#E6D4B0] transition-colors"
                       title="Abrir Página Pública"
                     >
                       <ExternalLink size={14} />
@@ -509,7 +509,7 @@ export const ProfessionalsPage: React.FC = () => {
             </div>
 
             {/* FORMULÁRIO DE SINAL PERSONALIZADO */}
-            <form onSubmit={handleSaveDepositSettings} className="p-4 bg-[#FAF8F5] dark:bg-[#1E1713] rounded-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-4 text-xs">
+            <form onSubmit={handleSaveDepositSettings} className="p-4 bg-[#FAF8F5] dark:bg-[#111827] rounded-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-4 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-extrabold text-xs text-stone-900 dark:text-white">
                   Sinal Exclusivo deste Profissional
@@ -541,7 +541,7 @@ export const ProfessionalsPage: React.FC = () => {
                       <select
                         value={profDepositType}
                         onChange={(e) => setProfDepositType(e.target.value as any)}
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs font-bold"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-xl text-xs font-bold"
                       >
                         <option value="FIXED">Valor Fixo (R$)</option>
                         <option value="PERCENTAGE">Percentual (%)</option>
@@ -558,7 +558,7 @@ export const ProfessionalsPage: React.FC = () => {
                         placeholder={profDepositType === 'FIXED' ? 'Ex: 30.00 ou 50' : 'Ex: 30% ou 50%'}
                         value={profDepositValue}
                         onChange={(e) => setProfDepositValue(e.target.value)}
-                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs font-bold"
+                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-xl text-xs font-bold"
                       />
                     </div>
                   </div>
@@ -577,7 +577,7 @@ export const ProfessionalsPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={savingDeposit}
-                className="w-full py-2.5 px-4 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                className="w-full py-2.5 px-4 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer"
               >
                 {savingDeposit ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle2 size={14} />}
                 <span>Salvar Configuração do Sinal</span>
@@ -585,7 +585,7 @@ export const ProfessionalsPage: React.FC = () => {
             </form>
 
             {/* CONEXÃO OAUTH MERCADO PAGO */}
-            <div className="p-4 bg-[#FAF8F5] dark:bg-[#1E1713] rounded-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-3">
+            <div className="p-4 bg-[#FAF8F5] dark:bg-[#111827] rounded-2xl border border-[#EAE1D2] dark:border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-xs text-stone-900 dark:text-white">
@@ -642,7 +642,7 @@ export const ProfessionalsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDepositModalOpen(false)}
-                className="px-5 py-2 rounded-xl bg-[#FAF8F5] dark:bg-[#1E1713] text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] border border-[#EAE1D2] dark:border-slate-800 font-bold text-xs cursor-pointer transition-all"
+                className="px-5 py-2 rounded-xl bg-[#FAF8F5] dark:bg-[#111827] text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] border border-[#EAE1D2] dark:border-slate-800 font-bold text-xs cursor-pointer transition-all"
               >
                 Fechar
               </button>
@@ -680,7 +680,7 @@ export const ProfessionalsPage: React.FC = () => {
                     const slug = name.toLowerCase().trim().replace(/[^a-z0-9]/g, '-');
                     setFormData({ ...formData, name, slug });
                   }}
-                  className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                  className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                 />
               </div>
 
@@ -694,7 +694,7 @@ export const ProfessionalsPage: React.FC = () => {
                   placeholder="carlos-barbeiro"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                  className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                 />
               </div>
 
@@ -709,7 +709,7 @@ export const ProfessionalsPage: React.FC = () => {
                     placeholder="11999990000"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                    className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                   />
                 </div>
 
@@ -723,7 +723,7 @@ export const ProfessionalsPage: React.FC = () => {
                     placeholder="carlos@empresa.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                    className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                   />
                 </div>
               </div>
@@ -737,7 +737,7 @@ export const ProfessionalsPage: React.FC = () => {
                   placeholder="Especialidades e experiência do profissional..."
                   value={formData.bio}
                   onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                  className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                 />
               </div>
 
@@ -777,10 +777,10 @@ export const ProfessionalsPage: React.FC = () => {
                   placeholder="Ou cole a URL da foto (https://...)"
                   value={formData.avatarUrl.startsWith('data:') ? '' : formData.avatarUrl}
                   onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-[#4A392D] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                  className="w-full px-3 py-2 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-[#334155] text-stone-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
                 />
                 {formData.avatarUrl && (
-                  <div className="mt-2 flex items-center gap-2.5 p-2 bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl">
+                  <div className="mt-2 flex items-center gap-2.5 p-2 bg-[#E6D4B0]/25 dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl">
                     <img
                       src={formData.avatarUrl}
                       alt="Preview Avatar"
@@ -798,14 +798,14 @@ export const ProfessionalsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] dark:hover:bg-[#1E1713] font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-stone-500 dark:text-slate-400 hover:bg-[#FAF8F5] dark:hover:bg-[#111827] font-medium cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs font-bold flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs font-bold flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
                 >
                   {submitting && <Loader2 size={14} className="animate-spin" />}
                   <span>Salvar Profissional</span>

@@ -371,7 +371,7 @@ export const ProductsPage: React.FC = () => {
         {isFeatureAllowed && (
           <button
             onClick={handleOpenCreateModal}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer shrink-0"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer shrink-0"
           >
             <Plus size={16} />
             <span>Novo item</span>
@@ -394,7 +394,7 @@ export const ProductsPage: React.FC = () => {
           </div>
           <Link
             to="/subscription"
-            className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl shrink-0 transition-all text-center"
+            className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl shrink-0 transition-all text-center"
           >
             Fazer Upgrade do Plano
           </Link>
@@ -429,7 +429,7 @@ export const ProductsPage: React.FC = () => {
               {stats.totalActive}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-900 dark:text-[#E6D4B0]">
+          <div className="w-10 h-10 rounded-xl bg-[#E6D4B0]/25 dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-900 dark:text-[#E6D4B0]">
             <Package size={20} />
           </div>
         </div>
@@ -473,7 +473,7 @@ export const ProductsPage: React.FC = () => {
               {stats.totalArchived}
             </div>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-500 dark:text-slate-400">
+          <div className="w-10 h-10 rounded-xl bg-[#E6D4B0]/25 dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-500 dark:text-slate-400">
             <Archive size={20} />
           </div>
         </div>
@@ -521,7 +521,7 @@ export const ProductsPage: React.FC = () => {
                 placeholder="Buscar por nome ou SKU"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white placeholder-[#78716C] dark:placeholder-[#E6D4B0]/60 focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
+                className="w-full pl-10 pr-4 py-2 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white placeholder-[#78716C] dark:placeholder-[#E6D4B0]/60 focus:outline-none focus:ring-2 focus:ring-[#E6D4B0]"
               />
             </div>
 
@@ -529,7 +529,7 @@ export const ProductsPage: React.FC = () => {
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="px-3 py-2 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs font-semibold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#E6D4B0] cursor-pointer"
+                className="px-3 py-2 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs font-semibold text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#E6D4B0] cursor-pointer"
               >
                 <option value="ALL">Todos os tipos</option>
                 <option value="Insumo atendimento">Insumo atendimento</option>
@@ -544,7 +544,7 @@ export const ProductsPage: React.FC = () => {
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer shrink-0 ${
                   showArchived
                     ? 'bg-[#E6D4B0] text-stone-900 font-bold shadow-xs border-[#E6D4B0]'
-                    : 'bg-[#FAF8F5] dark:bg-[#1E1713] text-stone-500 dark:text-slate-400 border-[#EAE1D2] dark:border-slate-800 hover:text-stone-900 dark:hover:text-white'
+                    : 'bg-[#FAF8F5] dark:bg-[#111827] text-stone-500 dark:text-slate-400 border-[#EAE1D2] dark:border-slate-800 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
                 <Archive size={14} />
@@ -560,7 +560,7 @@ export const ProductsPage: React.FC = () => {
             </div>
           ) : products.length === 0 ? (
             <div className="bg-white dark:bg-slate-800 rounded-3xl p-12 text-center border border-[#EAE1D2] dark:border-slate-800 shadow-xs space-y-3">
-              <div className="w-14 h-14 bg-[#E6D4B0]/25 dark:bg-[#1E1713] rounded-2xl flex items-center justify-center mx-auto text-stone-900 dark:text-[#E6D4B0]">
+              <div className="w-14 h-14 bg-[#E6D4B0]/25 dark:bg-[#111827] rounded-2xl flex items-center justify-center mx-auto text-stone-900 dark:text-[#E6D4B0]">
                 <Package size={28} />
               </div>
               <h3 className="font-bold text-stone-900 dark:text-white text-base">
@@ -576,7 +576,7 @@ export const ProductsPage: React.FC = () => {
               {!showArchived && isFeatureAllowed && (
                 <button
                   onClick={handleOpenCreateModal}
-                  className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
                 >
                   <Plus size={15} />
                   <span>Cadastrar Primeiro Item</span>
@@ -600,7 +600,7 @@ export const ProductsPage: React.FC = () => {
                   >
                     {/* Left: Icon & Info */}
                     <div className="flex items-start sm:items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-900 dark:text-[#E6D4B0] shrink-0">
+                      <div className="w-12 h-12 rounded-2xl bg-[#E6D4B0]/25 dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 flex items-center justify-center text-stone-900 dark:text-[#E6D4B0] shrink-0">
                         <Package size={22} />
                       </div>
 
@@ -609,7 +609,7 @@ export const ProductsPage: React.FC = () => {
                           <h3 className="font-bold text-stone-900 dark:text-white text-sm">
                             {item.name}
                           </h3>
-                          <span className="px-2.5 py-0.5 bg-[#E6D4B0]/25 dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-full text-[10px] font-bold text-stone-900 dark:text-[#E6D4B0]">
+                          <span className="px-2.5 py-0.5 bg-[#E6D4B0]/25 dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-full text-[10px] font-bold text-stone-900 dark:text-[#E6D4B0]">
                             {item.type || 'Insumo de atendimento'}
                           </span>
                           {isLow && (
@@ -690,7 +690,7 @@ export const ProductsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenMovementModal(item)}
-                        className="px-3.5 py-1.5 bg-[#E6D4B0]/25 hover:bg-[#FAF8F5] dark:bg-[#201812] dark:hover:bg-[#2C211A] text-stone-900 dark:text-[#E6D4B0] border border-[#EAE1D2] dark:border-[#4A3728] rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
+                        className="px-3.5 py-1.5 bg-[#E6D4B0]/25 hover:bg-[#FAF8F5] dark:bg-[#111827] dark:hover:bg-[#1F2937] text-stone-900 dark:text-[#E6D4B0] border border-[#EAE1D2] dark:border-[#334155] rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-xs"
                       >
                         <ArrowUpDown size={13} />
                         <span>Movimentar</span>
@@ -699,7 +699,7 @@ export const ProductsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleOpenEditModal(item)}
-                        className="px-3 py-1.5 bg-white hover:bg-[#FAF8F5] dark:bg-slate-800 dark:hover:bg-[#1E1713] text-stone-900 dark:text-white border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1"
+                        className="px-3 py-1.5 bg-white hover:bg-[#FAF8F5] dark:bg-slate-800 dark:hover:bg-[#111827] text-stone-900 dark:text-white border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs font-semibold transition-all cursor-pointer flex items-center gap-1"
                       >
                         <Edit2 size={13} />
                         <span>Editar</span>
@@ -709,7 +709,7 @@ export const ProductsPage: React.FC = () => {
                         type="button"
                         onClick={() => handleToggleArchive(item)}
                         title={item.isArchived ? 'Desarquivar item' : 'Arquivar item'}
-                        className="p-2 text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-[#FAF8F5] dark:hover:bg-[#1E1713] transition-all cursor-pointer"
+                        className="p-2 text-stone-500 hover:text-stone-900 dark:text-slate-400 dark:hover:text-white rounded-xl hover:bg-[#FAF8F5] dark:hover:bg-[#111827] transition-all cursor-pointer"
                       >
                         {item.isArchived ? <RotateCcw size={15} /> : <Archive size={15} />}
                       </button>
@@ -758,7 +758,7 @@ export const ProductsPage: React.FC = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#FAF8F5] dark:bg-[#1E1713] text-stone-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#EAE1D2] dark:border-slate-800">
+                <thead className="bg-[#FAF8F5] dark:bg-[#111827] text-stone-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#EAE1D2] dark:border-slate-800">
                   <tr>
                     <th className="py-3 px-4">Data / Hora</th>
                     <th className="py-3 px-4">Insumo / Item</th>
@@ -778,7 +778,7 @@ export const ProductsPage: React.FC = () => {
                     });
 
                     return (
-                      <tr key={m.id} className="hover:bg-[#FAF8F5] dark:hover:bg-[#1E1713]/60 transition-colors">
+                      <tr key={m.id} className="hover:bg-[#FAF8F5] dark:hover:bg-[#111827]/60 transition-colors">
                         <td className="py-3 px-4 text-stone-500 dark:text-slate-400 font-mono text-[11px] whitespace-nowrap">
                           {dateFormatted}
                         </td>
@@ -864,7 +864,7 @@ export const ProductsPage: React.FC = () => {
                     placeholder="Ex.: Gel base"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-semibold"
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-semibold"
                   />
                 </div>
 
@@ -876,7 +876,7 @@ export const ProductsPage: React.FC = () => {
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none cursor-pointer font-medium"
+                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none cursor-pointer font-medium"
                     >
                       <option value="Insumo atendimento">Insumo atendimento</option>
                       <option value="Revenda">Revenda</option>
@@ -892,7 +892,7 @@ export const ProductsPage: React.FC = () => {
                     <select
                       value={formData.unit}
                       onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none cursor-pointer font-medium"
+                      className="w-full px-3 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none cursor-pointer font-medium"
                     >
                       <option value="un">un (Unidade)</option>
                       <option value="ml">ml (Mililitros)</option>
@@ -916,7 +916,7 @@ export const ProductsPage: React.FC = () => {
                     placeholder="Código interno"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-mono"
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-mono"
                   />
                 </div>
               </div>
@@ -937,7 +937,7 @@ export const ProductsPage: React.FC = () => {
                       min="0"
                       value={formData.stock}
                       onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-bold"
+                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-bold"
                     />
                   </div>
 
@@ -950,7 +950,7 @@ export const ProductsPage: React.FC = () => {
                       min="0"
                       value={formData.minStock}
                       onChange={(e) => setFormData({ ...formData, minStock: Number(e.target.value) })}
-                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-bold"
+                      className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-bold"
                     />
                   </div>
                 </div>
@@ -970,7 +970,7 @@ export const ProductsPage: React.FC = () => {
                       placeholder="0,00"
                       value={formData.cost}
                       onChange={(e) => setFormData({ ...formData, cost: Number(e.target.value) })}
-                      className="w-full pl-10 pr-4 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-semibold"
+                      className="w-full pl-10 pr-4 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none font-semibold"
                     />
                   </div>
                 </div>
@@ -986,7 +986,7 @@ export const ProductsPage: React.FC = () => {
                   placeholder="Fornecedor, referência ou observação interna"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none resize-none"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none resize-none"
                 />
               </div>
 
@@ -1002,7 +1002,7 @@ export const ProductsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
                 >
                   {submitting && <Loader2 size={14} className="animate-spin" />}
                   <span>{editingItem ? 'Salvar alterações' : 'Salvar item'}</span>
@@ -1102,7 +1102,7 @@ export const ProductsPage: React.FC = () => {
                     onChange={(e) =>
                       setMovementData({ ...movementData, quantity: Number(e.target.value) })
                     }
-                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-sm font-bold text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                   />
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-stone-500 dark:text-slate-400">
                     {selectedItemForMovement.unit}
@@ -1122,7 +1122,7 @@ export const ProductsPage: React.FC = () => {
                   onChange={(e) =>
                     setMovementData({ ...movementData, reason: e.target.value })
                   }
-                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#1E1713] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F5] dark:bg-[#111827] border border-[#EAE1D2] dark:border-slate-800 rounded-xl text-xs text-stone-900 dark:text-white focus:ring-2 focus:ring-[#E6D4B0] focus:outline-none"
                 />
               </div>
 
@@ -1167,7 +1167,7 @@ export const ProductsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 bg-[#E6D4B0] hover:bg-[#DAC295] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-[#E6D4B0] hover:bg-[#D8C296] text-stone-900 font-bold shadow-xs text-xs font-bold rounded-xl transition-all cursor-pointer shadow-md flex items-center gap-1.5"
                 >
                   {submitting && <Loader2 size={14} className="animate-spin" />}
                   <span>Confirmar Movimentação</span>

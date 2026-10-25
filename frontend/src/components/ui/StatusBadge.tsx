@@ -45,3 +45,4 @@ export function StatusBadge({ status, className = '' }: { status: BadgeStatus; c
     </span>
   );
 }
+
