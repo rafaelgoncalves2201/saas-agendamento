@@ -14,8 +14,10 @@ import {
   Pencil,
   CheckCircle2,
   AlertCircle,
+  Crop,
 } from 'lucide-react';
 import { DeleteConfirmationModal } from '../../components/DeleteConfirmationModal';
+import { ImageCropModal } from '../../components/ImageCropModal';
 
 const SERVICE_IMAGE_PRESETS = [
   { label: 'Corte Masculino', url: 'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=500' },
@@ -48,6 +50,7 @@ export const ServicesPage: React.FC = () => {
 
   // Edição
   const [editingService, setEditingService] = useState<any | null>(null);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
 
   // Deletion state
   const [serviceToDelete, setServiceToDelete] = useState<any | null>(null);
@@ -486,12 +489,14 @@ export const ServicesPage: React.FC = () => {
                         const file = e.target.files?.[0];
                         if (file) {
                           try {
-                            const compressed = await compressImage(file, 800, 800, 0.85);
+                            const compressed = await compressImage(file, 1200, 1200, 0.90);
                             setFormData((prev) => ({ ...prev, imageUrl: compressed }));
+                            setCropModalOpen(true);
                           } catch {
                             const reader = new FileReader();
                             reader.onloadend = () => {
                               setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
+                              setCropModalOpen(true);
                             };
                             reader.readAsDataURL(file);
                           }
@@ -533,16 +538,36 @@ export const ServicesPage: React.FC = () => {
                 </div>
 
                 {formData.imageUrl && (
-                  <div className="mt-3 relative w-32 h-32 rounded-xl overflow-hidden border border-[#EAE1D2] dark:border-slate-800">
-                    <img src={formData.imageUrl} alt="Prévia" className="w-full h-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, imageUrl: '' })}
-                      className="absolute top-1.5 right-1.5 p-1 bg-black/60 text-white rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
-                      title="Remover Imagem"
-                    >
-                      <X size={12} />
-                    </button>
+                  <div className="mt-3 p-3.5 bg-[#FAF8F5] dark:bg-slate-800/80 border border-[#EAE1D2] dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row items-center gap-3.5">
+                    <div className="relative w-36 aspect-[4/3] rounded-xl overflow-hidden border border-[#EAE1D2] dark:border-slate-700 shrink-0 shadow-xs bg-muted">
+                      <img src={formData.imageUrl} alt="Prévia" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 space-y-1.5 text-center sm:text-left">
+                      <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <p className="text-xs font-bold text-stone-900 dark:text-white">Foto do Procedimento</p>
+                      </div>
+                      <p className="text-[11px] text-stone-500 dark:text-slate-400 leading-relaxed">
+                        Arraste e dê zoom para posicionar com precisão o foco da foto (ex: cílios, olhos, corte).
+                      </p>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setCropModalOpen(true)}
+                          className="px-3 py-1.5 bg-[#E6D4B0] hover:brightness-105 text-stone-900 font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                        >
+                          <Crop size={13} />
+                          <span>Ajustar Enquadramento / Posição</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                          className="px-2.5 py-1.5 border border-border hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 text-foreground-muted rounded-xl text-xs font-medium transition cursor-pointer"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -578,6 +603,21 @@ export const ServicesPage: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal de Enquadramento e Ajuste de Foto */}
+      {cropModalOpen && formData.imageUrl && (
+        <ImageCropModal
+          isOpen={cropModalOpen}
+          imageSrc={formData.imageUrl}
+          aspectRatio={4 / 3}
+          title="Ajustar Enquadramento do Procedimento"
+          onClose={() => setCropModalOpen(false)}
+          onSave={(cropped) => {
+            setFormData((prev) => ({ ...prev, imageUrl: cropped }));
+            showNotification('success', 'Enquadramento atualizado com sucesso!');
+          }}
+        />
       )}
 
       {/* Modal Confirmar Exclusão */}

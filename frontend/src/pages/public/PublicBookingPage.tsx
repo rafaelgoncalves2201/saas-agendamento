@@ -553,11 +553,11 @@ export const PublicBookingPage: React.FC = () => {
                     >
                       {/* Foto do Serviço */}
                       {s.imageUrl ? (
-                        <div className="relative w-full aspect-[16/10] bg-muted overflow-hidden">
+                        <div className="relative w-full aspect-[4/3] bg-muted overflow-hidden">
                           <img
                             src={s.imageUrl}
                             alt={s.name}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
                             onError={(e) => {
                               (e.target as HTMLElement).style.display = 'none';
                             }}
